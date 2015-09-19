@@ -44,6 +44,13 @@ public class Main {
 	private String converter = null;
 
 	@Parameter (
+		names = "--help",
+		description = "Show the list of configuration options and exit",
+		help = true
+	)
+	private boolean help = false;
+
+	@Parameter (
 		names = "--pb-input",
 		description = "ProtoBuf input file",
 		required = true
@@ -71,6 +78,12 @@ public class Main {
 			commander.usage();
 
 			System.exit(-1);
+		}
+
+		if(main.help){
+			commander.usage();
+
+			System.exit(0);
 		}
 
 		main.run();
