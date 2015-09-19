@@ -23,8 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.transform.stream.StreamResult;
 
@@ -34,8 +32,16 @@ import com.beust.jcommander.ParameterException;
 import com.google.protobuf.CodedInputStream;
 import org.dmg.pmml.PMML;
 import org.jpmml.model.JAXBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+
+	@Parameter (
+		names = "--converter",
+		description = "Converter class"
+	)
+	private String converter = null;
 
 	@Parameter (
 		names = "--pb-input",
@@ -50,12 +56,6 @@ public class Main {
 		required = true
 	)
 	private File output = null;
-
-	@Parameter (
-		names = "--converter",
-		description = "Converter class"
-	)
-	private String name = null;
 
 
 	static
@@ -82,7 +82,7 @@ public class Main {
 		InputStream is = new FileInputStream(this.input);
 
 		try {
-			logger.log(Level.INFO, "Parsing ProtoBuf..");
+			logger.info("Parsing ProtoBuf..");
 
 			CodedInputStream cis = CodedInputStream.newInstance(is);
 			cis.setSizeLimit(Integer.MAX_VALUE);
@@ -91,9 +91,9 @@ public class Main {
 			rexp = RExp.parseFrom(cis);
 			long end = System.currentTimeMillis();
 
-			logger.log(Level.INFO, "Parsed ProtoBuf in " + (end - start) + " ms.");
+			logger.info("Parsed ProtoBuf in {} ms.", (end - start));
 		} catch(Exception e){
-			logger.log(Level.SEVERE, "Failed to parse ProtoBuf", e);
+			logger.error("Failed to parse ProtoBuf", e);
 
 			throw e;
 		} finally {
@@ -102,30 +102,40 @@ public class Main {
 
 		Converter converter;
 
-		if(this.name != null){
-			Class<?> clazz = Class.forName(this.name);
+		if(this.converter != null){
+			logger.info("Initializing user-specified Converter {}", this.converter);
+
+			Class<?> clazz = Class.forName(this.converter);
 
 			converter = (Converter)clazz.newInstance();
 		} else
 
 		{
+			logger.info("Initializing default Converter");
+
 			ConverterFactory converterFactory = ConverterFactory.newInstance();
 
 			converter = converterFactory.newConverter(rexp);
 		}
 
+		{
+			Class<?> clazz = converter.getClass();
+
+			logger.info("Initialized {}", clazz.getName());
+		}
+
 		PMML pmml;
 
 		try {
-			logger.log(Level.INFO, "Converting model..");
+			logger.info("Converting model..");
 
 			long start = System.currentTimeMillis();
 			pmml = converter.convert(rexp);
 			long end = System.currentTimeMillis();
 
-			logger.log(Level.INFO, "Converted model in " + (end - start) + " ms.");
+			logger.info("Converted model in {} ms.", (end - start));
 		} catch(Exception e){
-			logger.log(Level.SEVERE, "Failed to convert model", e);
+			logger.error("Failed to convert model", e);
 
 			throw e;
 		}
@@ -133,20 +143,28 @@ public class Main {
 		OutputStream os = new FileOutputStream(this.output);
 
 		try {
-			logger.log(Level.INFO, "Marshalling PMML..");
+			logger.info("Marshalling PMML..");
 
 			long start = System.currentTimeMillis();
 			JAXBUtil.marshalPMML(pmml, new StreamResult(os));
 			long end = System.currentTimeMillis();
 
-			logger.log(Level.INFO, "Marshalled PMML in " + (end - start) + " ms.");
+			logger.info("Marshalled PMML in {} ms.", (end - start));
 		} catch(Exception e){
-			logger.log(Level.SEVERE, "Failed to marshal PMML", e);
+			logger.error("Failed to marshal PMML", e);
 
 			throw e;
 		} finally {
 			os.close();
 		}
+	}
+
+	public String getConverter(){
+		return this.converter;
+	}
+
+	public void setConverter(String converter){
+		this.converter = converter;
 	}
 
 	public File getInput(){
@@ -175,13 +193,5 @@ public class Main {
 		this.output = output;
 	}
 
-	public String getConverter(){
-		return this.name;
-	}
-
-	public void setConverter(String name){
-		this.name = name;
-	}
-
-	private static final Logger logger = Logger.getLogger(Main.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
 }
