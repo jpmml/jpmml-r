@@ -1,7 +1,7 @@
 JPMML-R
 =======
 
-Java library for converting R models to PMML.
+Java library for converting [R] (http://www.r-project.org/) models to PMML.
 
 # Features #
 
@@ -21,9 +21,16 @@ Java library for converting R models to PMML.
     * `train.formula` ("formula interface") - All supported model types
     * `train` ("matrix interface") - All supported model types
 * Production quality:
+  * Complete test coverage.
   * Fully compliant with the [JPMML-Evaluator] (https://github.com/jpmml/jpmml-evaluator) library.
 
 # Prerequisites #
+
+### The R side of operations
+
+* [`RProtoBuf`] (http://cran.r-project.org/web/packages/RProtoBuf/) 0.4.3 or newer.
+
+### The JPMML-R side of operations
 
 * Java 1.7 or newer.
 
@@ -38,15 +45,15 @@ The build produces an executable uber-JAR file `target/converter-executable-1.0-
 
 # Usage #
 
-A typical fast conversion workflow has the following steps:
+A typical workflow can be summarized as follows:
 
 1. Use R to train a model.
-2. Serialize this model in [ProtoBuf data format] (https://code.google.com/p/protobuf/) to a file in local filesystem.
-3. Use the JPMML-R converter application to turn this ProtoBuf file to a PMML file.
+2. Serialize the model in [ProtoBuf data format] (https://code.google.com/p/protobuf/) to a file in a local filesystem.
+3. Use the JPMML-R command-line converter application to turn the ProtoBuf file to a PMML file.
 
 ### The R side of operations
 
-The serialization is handled by the [`RProtoBuf` package] (http://cran.r-project.org/web/packages/RProtoBuf/).
+The serialization is handled by the `RProtoBuf` package.
 
 The following R script trains a Random Forest (RF) model and saves it in ProtoBuf data format to a file `rf.pb`:
 ```R
