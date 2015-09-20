@@ -28,7 +28,7 @@ Java library for converting [R] (http://www.r-project.org/) models to PMML.
 
 ### The R side of operations
 
-* [`RProtoBuf`] (http://cran.r-project.org/web/packages/RProtoBuf/) 0.4.3 or newer.
+* [`RProtoBuf`] (http://cran.r-project.org/web/packages/RProtoBuf/) 0.4.2 or newer.
 
 ### The JPMML-R side of operations
 
