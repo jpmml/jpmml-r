@@ -13,7 +13,7 @@
 	<version>1.0-SNAPSHOT</version>
 
 	<name>JPMML-R</name>
-	<description>Java library for converting R models to PMML</description>
+	<description>Java library and command-line application for converting R models to PMML</description>
 	<url>http://www.jpmml.org</url>
 
 	<licenses>

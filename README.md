@@ -1,7 +1,7 @@
 JPMML-R
 =======
 
-Java library for converting [R] (http://www.r-project.org/) models to PMML.
+Java library and command-line application for converting [R] (http://www.r-project.org/) models to PMML.
 
 # Features #
 
