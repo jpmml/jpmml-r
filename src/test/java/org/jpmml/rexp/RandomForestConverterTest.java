@@ -22,10 +22,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Value;
+import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -59,16 +60,28 @@ public class RandomForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		Set<FieldName> ignoredFields = Sets.newHashSet(FieldName.create("probability_0"), FieldName.create("probability_1"));
+		Batch batch = createBatch("TrainRandomForestFormula", "AuditMatrix");
 
-		evaluate("TrainRandomForestFormula", "AuditMatrix", ignoredFields);
+		try {
+			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("probability_0"), FieldName.create("probability_1"));
+
+			evaluate(batch, ignoredFields);
+		} finally {
+			batch.close();
+		}
 	}
 
 	@Test
 	public void evaluateCaretAudit() throws Exception {
-		Set<FieldName> ignoredFields = Sets.newHashSet(FieldName.create("probability_0"), FieldName.create("probability_1"));
+		Batch batch = createBatch("TrainRandomForest", "Audit");
 
-		evaluate("TrainRandomForest", "Audit", ignoredFields);
+		try {
+			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("probability_0"), FieldName.create("probability_1"));
+
+			evaluate(batch, ignoredFields);
+		} finally {
+			batch.close();
+		}
 	}
 
 	@Test

@@ -20,24 +20,37 @@ package org.jpmml.rexp;
 
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import org.dmg.pmml.FieldName;
+import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
 public class GBMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {
-		Set<FieldName> ignoredFields = Sets.newHashSet(FieldName.create("adaBoostValue"));
+		Batch batch = createBatch("GBMAdaBoost", "AuditNA");
 
-		evaluate("GBMAdaBoost", "AuditNA", ignoredFields);
+		try {
+			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("adaBoostValue"));
+
+			evaluate(batch, ignoredFields);
+		} finally {
+			batch.close();
+		}
 	}
 
 	@Test
 	public void evaluateFitBernoulliAuditNA() throws Exception {
-		Set<FieldName> ignoredFields = Sets.newHashSet(FieldName.create("bernoulliValue"));
+		Batch batch = createBatch("GBMBernoulli", "AuditNA");
 
-		evaluate("GBMBernoulli", "AuditNA", ignoredFields);
+		try {
+			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("bernoulliValue"));
+
+			evaluate(batch, ignoredFields);
+		} finally {
+			batch.close();
+		}
 	}
 
 	@Test

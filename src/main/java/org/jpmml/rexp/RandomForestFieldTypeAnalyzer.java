@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.ValueUtil;
+
 import org.dmg.pmml.Array;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
@@ -25,7 +27,6 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.VisitorAction;
 import org.jpmml.converter.FieldTypeAnalyzer;
-import org.jpmml.converter.PMMLUtil;
 
 public class RandomForestFieldTypeAnalyzer extends FieldTypeAnalyzer {
 
@@ -71,7 +72,7 @@ public class RandomForestFieldTypeAnalyzer extends FieldTypeAnalyzer {
 		} else
 
 		if((SimplePredicate.Operator.EQUAL).equals(operator)){
-			addDataType(field, PMMLUtil.getDataType(value));
+			addDataType(field, ValueUtil.getDataType(value));
 		} else
 
 		{

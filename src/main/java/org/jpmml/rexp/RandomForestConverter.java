@@ -49,10 +49,10 @@ import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ElementKey;
-import org.jpmml.converter.FieldCollector;
 import org.jpmml.converter.FieldTypeAnalyzer;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.TreeModelFieldCollector;
+import org.jpmml.converter.ValueUtil;
+import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class RandomForestConverter extends Converter {
 
@@ -146,7 +146,7 @@ public class RandomForestConverter extends Converter {
 
 			@Override
 			public String encode(Double key){
-				return PMMLUtil.formatValue(key);
+				return ValueUtil.formatValue(key);
 			}
 		};
 
@@ -365,10 +365,10 @@ public class RandomForestConverter extends Converter {
 
 		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
 
-		FieldCollector fieldCollector = new TreeModelFieldCollector();
-		fieldCollector.applyTo(root);
+		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+		fieldReferenceFinder.applyTo(root);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldCollector);
+		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldReferenceFinder);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -471,7 +471,7 @@ public class RandomForestConverter extends Converter {
 			simplePredicate = new SimplePredicate()
 				.setField(dataField.getName())
 				.setOperator(left ? SimplePredicate.Operator.LESS_OR_EQUAL : SimplePredicate.Operator.GREATER_THAN)
-				.setValue(PMMLUtil.formatValue(split));
+				.setValue(ValueUtil.formatValue(split));
 		} else
 
 		if((DataType.BOOLEAN).equals(dataType)){

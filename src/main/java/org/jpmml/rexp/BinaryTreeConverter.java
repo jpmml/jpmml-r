@@ -39,10 +39,10 @@ import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
-import org.jpmml.converter.FieldCollector;
 import org.jpmml.converter.FieldComparator;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.TreeModelFieldCollector;
+import org.jpmml.converter.ValueUtil;
+import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class BinaryTreeConverter extends Converter {
 
@@ -152,10 +152,10 @@ public class BinaryTreeConverter extends Converter {
 
 		DataField dataField = this.dataFields.get(0);
 
-		FieldCollector fieldCollector = new TreeModelFieldCollector();
-		fieldCollector.applyTo(root);
+		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+		fieldReferenceFinder.applyTo(root);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(dataField, fieldCollector);
+		MiningSchema miningSchema = PMMLUtil.createMiningSchema(dataField, fieldReferenceFinder);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -236,7 +236,7 @@ public class BinaryTreeConverter extends Converter {
 	}
 
 	private List<Predicate> encodeContinuousSplit(DataField dataField, Double split){
-		String value = PMMLUtil.formatValue(split);
+		String value = ValueUtil.formatValue(split);
 
 		Predicate leftPredicate = new SimplePredicate()
 			.setField(dataField.getName())
@@ -337,7 +337,7 @@ public class BinaryTreeConverter extends Converter {
 
 		Double probability = probabilities.getRealValue(0);
 
-		node.setScore(PMMLUtil.formatValue(probability));
+		node.setScore(ValueUtil.formatValue(probability));
 
 		return node;
 	}

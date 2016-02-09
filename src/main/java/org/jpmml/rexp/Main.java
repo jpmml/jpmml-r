@@ -24,14 +24,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.xml.transform.stream.StreamResult;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.protobuf.CodedInputStream;
 import org.dmg.pmml.PMML;
-import org.jpmml.model.JAXBUtil;
+import org.jpmml.model.MetroJAXBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +157,7 @@ public class Main {
 			logger.info("Marshalling PMML..");
 
 			long start = System.currentTimeMillis();
-			JAXBUtil.marshalPMML(pmml, new StreamResult(os));
+			MetroJAXBUtil.marshalPMML(pmml, os);
 			long end = System.currentTimeMillis();
 
 			logger.info("Marshalled PMML in {} ms.", (end - start));

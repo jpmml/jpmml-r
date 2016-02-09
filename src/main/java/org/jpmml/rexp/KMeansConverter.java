@@ -41,6 +41,7 @@ import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.SquaredEuclidean;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.ValueUtil;
 
 public class KMeansConverter extends Converter {
 
@@ -127,11 +128,11 @@ public class KMeansConverter extends Converter {
 
 			@Override
 			public String apply(Double value){
-				return PMMLUtil.formatValue(value);
+				return ValueUtil.formatValue(value);
 			}
 		};
 
-		String value = PMMLUtil.formatArrayValue(Lists.transform(values, function));
+		String value = ValueUtil.formatArrayValue(Lists.transform(values, function));
 
 		Array array = new Array(Array.Type.REAL, value);
 

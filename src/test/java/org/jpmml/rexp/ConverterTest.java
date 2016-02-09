@@ -23,10 +23,10 @@ import java.io.InputStream;
 import com.google.protobuf.CodedInputStream;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ArchiveBatch;
-import org.jpmml.evaluator.ArchiveBatchTest;
+import org.jpmml.evaluator.IntegrationTest;
 
 abstract
-public class ConverterTest extends ArchiveBatchTest {
+public class ConverterTest extends IntegrationTest {
 
 	@Override
 	protected ArchiveBatch createBatch(String name, String dataset){

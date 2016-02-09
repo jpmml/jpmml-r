@@ -52,9 +52,9 @@ import org.dmg.pmml.TreeModel.SplitCharacteristic;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ElementKey;
-import org.jpmml.converter.FieldCollector;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.TreeModelFieldCollector;
+import org.jpmml.converter.ValueUtil;
+import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class GBMConverter extends Converter {
 
@@ -167,10 +167,10 @@ public class GBMConverter extends Converter {
 
 		encodeNode(root, 0, tree, c_splits);
 
-		FieldCollector fieldCollector = new TreeModelFieldCollector();
-		fieldCollector.applyTo(root);
+		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+		fieldReferenceFinder.applyTo(root);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldCollector);
+		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldReferenceFinder);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(SplitCharacteristic.MULTI_SPLIT);
@@ -223,7 +223,7 @@ public class GBMConverter extends Converter {
 		{
 			Double value = prediction.getRealValue(i);
 
-			node.setScore(PMMLUtil.formatValue(value));
+			node.setScore(ValueUtil.formatValue(value));
 		}
 
 		Integer missing = missingNode.getIntValue(i);
@@ -294,7 +294,7 @@ public class GBMConverter extends Converter {
 		SimplePredicate simplePredicate = new SimplePredicate()
 			.setField(dataField.getName())
 			.setOperator(left ? SimplePredicate.Operator.LESS_THAN : SimplePredicate.Operator.GREATER_OR_EQUAL)
-			.setValue(PMMLUtil.formatValue(split));
+			.setValue(ValueUtil.formatValue(split));
 
 		return simplePredicate;
 	}

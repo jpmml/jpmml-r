@@ -52,7 +52,25 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>jpmml-converter</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.xml.fastinfoset</groupId>
+					<artifactId>FastInfoset</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>txw2</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jvnet.staxex</groupId>
+					<artifactId>stax-ex</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jpmml</groupId>
@@ -81,13 +99,13 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator</artifactId>
-			<version>1.2.5</version>
+			<version>1.2.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator</artifactId>
-			<version>1.2.5</version>
+			<version>1.2.11</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
