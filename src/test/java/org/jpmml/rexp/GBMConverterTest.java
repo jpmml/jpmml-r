@@ -29,27 +29,21 @@ public class GBMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {
-		Batch batch = createBatch("GBMAdaBoost", "AuditNA");
 
-		try {
+		try(Batch batch = createBatch("GBMAdaBoost", "AuditNA")){
 			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("adaBoostValue"));
 
 			evaluate(batch, ignoredFields);
-		} finally {
-			batch.close();
 		}
 	}
 
 	@Test
 	public void evaluateFitBernoulliAuditNA() throws Exception {
-		Batch batch = createBatch("GBMBernoulli", "AuditNA");
 
-		try {
+		try(Batch batch = createBatch("GBMBernoulli", "AuditNA")){
 			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("bernoulliValue"));
 
 			evaluate(batch, ignoredFields);
-		} finally {
-			batch.close();
 		}
 	}
 

@@ -60,27 +60,21 @@ public class RandomForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		Batch batch = createBatch("TrainRandomForestFormula", "AuditMatrix");
 
-		try {
+		try(Batch batch = createBatch("TrainRandomForestFormula", "AuditMatrix")){
 			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("probability_0"), FieldName.create("probability_1"));
 
 			evaluate(batch, ignoredFields);
-		} finally {
-			batch.close();
 		}
 	}
 
 	@Test
 	public void evaluateCaretAudit() throws Exception {
-		Batch batch = createBatch("TrainRandomForest", "Audit");
 
-		try {
+		try(Batch batch = createBatch("TrainRandomForest", "Audit")){
 			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("probability_0"), FieldName.create("probability_1"));
 
 			evaluate(batch, ignoredFields);
-		} finally {
-			batch.close();
 		}
 	}
 

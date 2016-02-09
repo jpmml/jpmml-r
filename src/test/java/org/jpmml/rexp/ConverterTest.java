@@ -41,12 +41,9 @@ public class ConverterTest extends IntegrationTest {
 
 			@Override
 			public PMML getPMML() throws Exception {
-				InputStream is = open("/pb/" + getName() + getDataset() + ".pb");
 
-				try {
+				try(InputStream is = open("/pb/" + getName() + getDataset() + ".pb")){
 					return convert(is);
-				} finally {
-					is.close();
 				}
 			}
 		};

@@ -90,9 +90,7 @@ public class Main {
 	public void run() throws Exception {
 		RExp rexp;
 
-		InputStream is = new FileInputStream(this.input);
-
-		try {
+		try(InputStream is = new FileInputStream(this.input)){
 			logger.info("Parsing ProtoBuf..");
 
 			CodedInputStream cis = CodedInputStream.newInstance(is);
@@ -107,8 +105,6 @@ public class Main {
 			logger.error("Failed to parse ProtoBuf", e);
 
 			throw e;
-		} finally {
-			is.close();
 		}
 
 		Converter converter;
@@ -149,11 +145,9 @@ public class Main {
 			logger.error("Failed to convert model", e);
 
 			throw e;
-		}
+		} // End try
 
-		OutputStream os = new FileOutputStream(this.output);
-
-		try {
+		try(OutputStream os = new FileOutputStream(this.output)){
 			logger.info("Marshalling PMML..");
 
 			long start = System.currentTimeMillis();
@@ -165,8 +159,6 @@ public class Main {
 			logger.error("Failed to marshal PMML", e);
 
 			throw e;
-		} finally {
-			os.close();
 		}
 	}
 
