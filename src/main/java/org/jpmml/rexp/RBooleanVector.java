@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,22 +18,11 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
+import java.util.List;
 
-public class TrainConverter extends Converter {
+public class RBooleanVector extends RVector<Boolean> {
 
-	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
-
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
-
-		Converter converter = converterFactory.newConverter(finalModel);
-
-		return converter.convert(finalModel);
+	public RBooleanVector(List<Boolean> values, RPair attributes){
+		super(values, attributes);
 	}
 }

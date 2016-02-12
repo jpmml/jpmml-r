@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.google.protobuf.CodedInputStream;
 import org.dmg.pmml.PMML;
 import org.jpmml.model.MetroJAXBUtil;
 import org.slf4j.Logger;
@@ -49,8 +48,8 @@ public class Main {
 	private boolean help = false;
 
 	@Parameter (
-		names = "--pb-input",
-		description = "ProtoBuf input file",
+		names = "--rds-input",
+		description = "RDS input file",
 		required = true
 	)
 	private File input = null;
@@ -91,18 +90,17 @@ public class Main {
 		RExp rexp;
 
 		try(InputStream is = new FileInputStream(this.input)){
-			logger.info("Parsing ProtoBuf..");
+			logger.info("Parsing RDS..");
 
-			CodedInputStream cis = CodedInputStream.newInstance(is);
-			cis.setSizeLimit(Integer.MAX_VALUE);
+			RExpParser parser = new RExpParser(is);
 
 			long start = System.currentTimeMillis();
-			rexp = RExp.parseFrom(cis);
+			rexp = parser.parse();
 			long end = System.currentTimeMillis();
 
-			logger.info("Parsed ProtoBuf in {} ms.", (end - start));
+			logger.info("Parsed RDS in {} ms.", (end - start));
 		} catch(Exception e){
-			logger.error("Failed to parse ProtoBuf", e);
+			logger.error("Failed to parse RDS", e);
 
 			throw e;
 		}

@@ -20,7 +20,6 @@ package org.jpmml.rexp;
 
 import java.io.InputStream;
 
-import com.google.protobuf.CodedInputStream;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ArchiveBatch;
 import org.jpmml.evaluator.IntegrationTest;
@@ -42,7 +41,7 @@ public class ConverterTest extends IntegrationTest {
 			@Override
 			public PMML getPMML() throws Exception {
 
-				try(InputStream is = open("/pb/" + getName() + getDataset() + ".pb")){
+				try(InputStream is = open("/rds/" + getName() + getDataset() + ".rds")){
 					return convert(is);
 				}
 			}
@@ -53,9 +52,9 @@ public class ConverterTest extends IntegrationTest {
 
 	static
 	private PMML convert(InputStream is) throws Exception {
-		CodedInputStream cis = CodedInputStream.newInstance(is);
+		RExpParser parser = new RExpParser(is);
 
-		RExp rexp = RExp.parseFrom(cis);
+		RExp rexp = parser.parse();
 
 		ConverterFactory converterFactory = ConverterFactory.newInstance();
 

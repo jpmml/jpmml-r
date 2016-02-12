@@ -22,7 +22,7 @@ generateRandomForestFormulaAudit = function(){
 	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 7)
 	print(audit.randomForest)
 
-	storeProtoBuf(audit.randomForest, "pb/RandomForestFormulaAudit.pb")
+	storeRds(audit.randomForest, "rds/RandomForestFormulaAudit.rds")
 	storeCsv(predictRandomForestAudit(audit.randomForest, audit, "Adjusted"), "csv/RandomForestFormulaAudit.csv")
 }
 
@@ -30,7 +30,7 @@ generateRandomForestAudit = function(){
 	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 7)
 	print(audit.randomForest)
 
-	storeProtoBuf(audit.randomForest, "pb/RandomForestAudit.pb")
+	storeRds(audit.randomForest, "rds/RandomForestAudit.rds")
 	storeCsv(predictRandomForestAudit(audit.randomForest, audit_x, "_target"), "csv/RandomForestAudit.csv")
 }
 
@@ -45,7 +45,7 @@ generateTrainRandomForestFormulaAuditMatrix = function(){
 
 	adjusted = predict(audit.train, newdata = audit)
 
-	storeProtoBuf(audit.train, "pb/TrainRandomForestFormulaAuditMatrix.pb")
+	storeRds(audit.train, "rds/TrainRandomForestFormulaAuditMatrix.rds")
 	storeCsv(data.frame("_target" = adjusted), "csv/TrainRandomForestFormulaAuditMatrix.csv")
 }
 
@@ -55,7 +55,7 @@ generateTrainRandomForestAudit = function(){
 
 	adjusted = predict(audit.train, newdata = audit_x)
 
-	storeProtoBuf(audit.train, "pb/TrainRandomForestAudit.pb")
+	storeRds(audit.train, "rds/TrainRandomForestAudit.rds")
 	storeCsv(data.frame("_target" = adjusted), "csv/TrainRandomForestAudit.csv")
 }
 
@@ -75,7 +75,7 @@ generateRandomForestFormulaAuto = function(){
 
 	mpg = predict(auto.randomForest, newdata = auto)
 
-	storeProtoBuf(auto.randomForest, "pb/RandomForestFormulaAuto.pb")
+	storeRds(auto.randomForest, "rds/RandomForestFormulaAuto.rds")
 	storeCsv(data.frame("mpg" = mpg), "csv/RandomForestFormulaAuto.csv")
 }
 
@@ -85,7 +85,7 @@ generateRandomForestAuto = function(){
 
 	mpg = predict(auto.randomForest, newdata = auto_x)
 
-	storeProtoBuf(auto.randomForest, "pb/RandomForestAuto.pb")
+	storeRds(auto.randomForest, "rds/RandomForestAuto.rds")
 	storeCsv(data.frame("_target" = mpg), "csv/RandomForestAuto.csv")
 }
 
@@ -103,7 +103,7 @@ generateTrainRandomForestFormulaAuto = function(){
 
 	mpg = predict(auto.train, newdata = auto.caret)
 
-	storeProtoBuf(auto.train, "pb/TrainRandomForestFormulaAuto.pb")
+	storeRds(auto.train, "rds/TrainRandomForestFormulaAuto.rds")
 	storeCsv(data.frame("_target" = mpg), "csv/TrainRandomForestFormulaAuto.csv")
 }
 
@@ -113,7 +113,7 @@ generateTrainRandomForestAuto = function(){
 
 	mpg = predict(auto.train, newdata = auto_x)
 
-	storeProtoBuf(auto.train, "pb/TrainRandomForestAuto.pb")
+	storeRds(auto.train, "rds/TrainRandomForestAuto.rds")
 	storeCsv(data.frame("_target" = mpg), "csv/TrainRandomForestAuto.csv")
 }
 
@@ -141,7 +141,7 @@ generateRandomForestFormulaIris = function(){
 	iris.randomForest = randomForest(Species ~ ., data = iris, ntree = 7)
 	print(iris.randomForest)
 
-	storeProtoBuf(iris.randomForest, "pb/RandomForestFormulaIris.pb")
+	storeRds(iris.randomForest, "rds/RandomForestFormulaIris.rds")
 	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "csv/RandomForestFormulaIris.csv")
 }
 
@@ -149,7 +149,7 @@ generateRandomForestIris = function(){
 	iris.randomForest = randomForest(x = iris_x, y = iris_y, ntree = 7)
 	print(iris.randomForest)
 
-	storeProtoBuf(iris.randomForest, "pb/RandomForestIris.pb")
+	storeRds(iris.randomForest, "rds/RandomForestIris.rds")
 	storeCsv(predictRandomForestIris(iris.randomForest, iris_x, "_target"), "csv/RandomForestIris.csv")
 }
 
@@ -169,7 +169,7 @@ generateRandomForestFormulaWineQuality = function(){
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality)
 
-	storeProtoBuf(wine_quality.randomForest, "pb/RandomForestFormulaWineQuality.pb")
+	storeRds(wine_quality.randomForest, "rds/RandomForestFormulaWineQuality.rds")
 	storeCsv(data.frame("quality" = quality), "csv/RandomForestFormulaWineQuality.csv")
 }
 
@@ -179,7 +179,7 @@ generateRandomForestWineQuality = function(){
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality_x)
 
-	storeProtoBuf(wine_quality.randomForest, "pb/RandomForestWineQuality.pb")
+	storeRds(wine_quality.randomForest, "rds/RandomForestWineQuality.rds")
 	storeCsv(data.frame("_target" = quality), "csv/RandomForestWineQuality.csv")
 }
 
@@ -207,7 +207,7 @@ generateRandomForestFormulaWineColor = function(){
 	wine_color.randomForest = randomForest(color ~ ., data = wine_color, ntree = 7)
 	print(wine_color.randomForest)
 
-	storeProtoBuf(wine_color.randomForest, "pb/RandomForestFormulaWineColor.pb")
+	storeRds(wine_color.randomForest, "rds/RandomForestFormulaWineColor.rds")
 	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color, "color"), "csv/RandomForestFormulaWineColor.csv")
 }
 
@@ -215,7 +215,7 @@ generateRandomForestWineColor = function(){
 	wine_color.randomForest = randomForest(x = wine_color_x, y = wine_color_y, ntree = 7)
 	print(wine_color.randomForest)
 
-	storeProtoBuf(wine_color.randomForest, "pb/RandomForestWineColor.pb")
+	storeRds(wine_color.randomForest, "rds/RandomForestWineColor.rds")
 	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color_x, "_target"), "csv/RandomForestWineColor.csv")
 }
 

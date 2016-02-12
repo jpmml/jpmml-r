@@ -72,11 +72,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.jpmml</groupId>
-			<artifactId>proto-rexp</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -190,6 +185,7 @@
 				<version>2.19.1</version>
 				<configuration>
 					<argLine>${jacoco.agent}</argLine>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 			<plugin>

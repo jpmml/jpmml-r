@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,22 +18,14 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
+import java.io.Closeable;
+import java.io.IOException;
 
-public class TrainConverter extends Converter {
+public interface RDataInput extends Closeable {
 
-	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
+	int readInt() throws IOException;
 
-	private PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
+	double readDouble() throws IOException;
 
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
-
-		Converter converter = converterFactory.newConverter(finalModel);
-
-		return converter.convert(finalModel);
-	}
+	byte[] readByteArray(int length) throws IOException;
 }

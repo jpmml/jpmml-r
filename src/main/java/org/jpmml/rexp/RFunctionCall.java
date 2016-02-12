@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,22 +18,44 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
+public class RFunctionCall extends RExp {
 
-public class TrainConverter extends Converter {
+	private RExp tag = null;
 
-	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
+	private RExp function = null;
+
+	private RPair arguments = null;
+
+
+	public RFunctionCall(RExp tag, RExp function, RPair arguments, RPair attributes){
+		super(attributes);
+
+		setTag(tag);
+		setFunction(function);
+		setArguments(arguments);
 	}
 
-	private PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
+	public RExp getTag(){
+		return this.tag;
+	}
 
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
+	private void setTag(RExp tag){
+		this.tag = tag;
+	}
 
-		Converter converter = converterFactory.newConverter(finalModel);
+	public RExp getFunction(){
+		return this.function;
+	}
 
-		return converter.convert(finalModel);
+	private void setFunction(RExp function){
+		this.function = function;
+	}
+
+	public RPair getArguments(){
+		return this.arguments;
+	}
+
+	private void setArguments(RPair arguments){
+		this.arguments = arguments;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,22 +18,26 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
+/**
+ * @see https://github.com/wch/r-source/blob/trunk/src/main/serialize.c
+ */
+public interface SerializationTypes {
 
-public class TrainConverter extends Converter {
-
-	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
-
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
-
-		Converter converter = converterFactory.newConverter(finalModel);
-
-		return converter.convert(finalModel);
-	}
+	int ATTRLISTSXP = 239;
+	int ATTRLANGSXP = 240;
+	int BASEENVSXP = 241;
+	int EMPTYENVSXP = 242;
+	int BCREPREF = 243;
+	int BCREPDEF = 244;
+	int GENERICREFSXP = 245;
+	int CLASSREFSXP = 246;
+	int PERSISTSXP = 247;
+	int PACKAGESXP = 248;
+	int NAMESPACESXP = 249;
+	int BASENAMESPACESXP = 250;
+	int MISSINGARGSXP = 251;
+	int UNBOUNDVALUESXP = 252;
+	int GLOBALENVSXP = 253;
+	int NILVALUESXP = 254;
+	int REFSXP = 255;
 }

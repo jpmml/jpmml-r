@@ -27,12 +27,12 @@ public class ConverterFactory {
 	}
 
 	public Converter newConverter(RExp rexp){
-		RExp names = RExpUtil.attribute(rexp, "class");
+		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
 
-		for(int i = 0; i < names.getStringValueCount(); i++){
-			RString name = names.getStringValue(i);
+		for(int i = 0; i < names.size(); i++){
+			String name = names.getValue(i);
 
-			Class<? extends Converter> clazz = ConverterFactory.converters.get(name.getStrval());
+			Class<? extends Converter> clazz = ConverterFactory.converters.get(name);
 			if(clazz != null){
 
 				try {

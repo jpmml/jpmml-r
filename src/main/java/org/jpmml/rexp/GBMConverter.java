@@ -73,22 +73,26 @@ public class GBMConverter extends Converter {
 
 
 	@Override
-	public PMML convert(RExp gbm){
-		RExp initF = RExpUtil.field(gbm, "initF");
-		RExp trees = RExpUtil.field(gbm, "trees");
-		RExp c_splits = RExpUtil.field(gbm, "c.splits");
-		RExp distribution = RExpUtil.field(gbm, "distribution");
-		RExp response_name = RExpUtil.field(gbm, "response.name");
-		RExp var_levels = RExpUtil.field(gbm, "var.levels");
-		RExp var_names = RExpUtil.field(gbm, "var.names");
-		RExp var_type = RExpUtil.field(gbm, "var.type");
+	public PMML convert(RExp rexp){
+		return convert((RGenericVector)rexp);
+	}
+
+	private PMML convert(RGenericVector gbm){
+		RDoubleVector initF = (RDoubleVector)gbm.getValue("initF");
+		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
+		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
+		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
+		RStringVector response_name = (RStringVector)gbm.getValue("response.name");
+		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
+		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
+		RDoubleVector var_type = (RDoubleVector)gbm.getValue("var.type");
 
 		initFields(response_name, var_names, var_type, var_levels);
 
 		List<Segment> segments = new ArrayList<>();
 
-		for(int i = 0; i < trees.getRexpValueCount(); i++){
-			RExp tree = trees.getRexpValue(i);
+		for(int i = 0; i < trees.size(); i++){
+			RGenericVector tree = (RGenericVector)trees.getValue(i);
 
 			TreeModel treeModel = encodeTreeModel(MiningFunctionType.REGRESSION, tree, c_splits);
 
@@ -104,21 +108,21 @@ public class GBMConverter extends Converter {
 
 		MiningSchema miningSchema = PMMLUtil.createMiningSchema(this.dataFields);
 
-		Output output = encodeOutput(distribution);
-
 		DataField dataField = this.dataFields.get(0);
 
 		Target target = new Target()
 			.setField(dataField.getName())
-			.setRescaleConstant(RExpUtil.asDouble(initF.getRealValue(0)));
+			.setRescaleConstant(initF.getValue(0));
 
 		Targets targets = new Targets()
 			.addTargets(target);
 
+		Output output = encodeOutput(distribution);
+
 		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
 			.setSegmentation(segmentation)
-			.setOutput(output)
-			.setTargets(targets);
+			.setTargets(targets)
+			.setOutput(output);
 
 		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
 
@@ -128,30 +132,28 @@ public class GBMConverter extends Converter {
 		return pmml;
 	}
 
-	private void initFields(RExp response_name, RExp var_names, RExp var_type, RExp var_levels){
+	private void initFields(RStringVector response_name, RStringVector var_names, RDoubleVector var_type, RGenericVector var_levels){
 
 		// Dependent variable
 		{
-			RString name = response_name.getStringValue(0);
-
-			DataField dataField = PMMLUtil.createDataField(FieldName.create(name.getStrval()), DataType.DOUBLE);
+			DataField dataField = PMMLUtil.createDataField(FieldName.create(response_name.asScalar()), DataType.DOUBLE);
 
 			this.dataFields.add(dataField);
 		}
 
 		// Independent variables
-		for(int i = 0; i < var_names.getStringValueCount(); i++){
-			RString var_name = var_names.getStringValue(i);
+		for(int i = 0; i < var_names.size(); i++){
+			String var_name = var_names.getValue(i);
 
-			boolean categorical = (var_type.getRealValue(i) > 0d);
+			boolean categorical = (var_type.getValue(i) > 0d);
 
-			DataField dataField = PMMLUtil.createDataField(FieldName.create(var_name.getStrval()), categorical);
+			DataField dataField = PMMLUtil.createDataField(FieldName.create(var_name), categorical);
 
 			if(categorical){
-				RExp var_level = var_levels.getRexpValue(i);
+				RStringVector var_level = (RStringVector)var_levels.getValue(i);
 
 				List<Value> values = dataField.getValues();
-				values.addAll(PMMLUtil.createValues(RExpUtil.getStringList(var_level)));
+				values.addAll(PMMLUtil.createValues(var_level.getValues()));
 
 				dataField = PMMLUtil.refineDataField(dataField);
 			}
@@ -160,7 +162,7 @@ public class GBMConverter extends Converter {
 		}
 	}
 
-	private TreeModel encodeTreeModel(MiningFunctionType miningFunction, RExp tree, RExp c_splits){
+	private TreeModel encodeTreeModel(MiningFunctionType miningFunction, RGenericVector tree, RGenericVector c_splits){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
@@ -178,35 +180,35 @@ public class GBMConverter extends Converter {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int i, RExp tree, RExp c_splits){
-		RExp splitVar = tree.getRexpValue(0);
-		RExp splitCodePred = tree.getRexpValue(1);
-		RExp leftNode = tree.getRexpValue(2);
-		RExp rightNode = tree.getRexpValue(3);
-		RExp missingNode = tree.getRexpValue(4);
-		RExp prediction = tree.getRexpValue(7);
+	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits){
+		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
+		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
+		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
+		RIntegerVector rightNode = (RIntegerVector)tree.getValue(3);
+		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
+		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
 
 		Predicate missingPredicate = null;
 
 		Predicate leftPredicate = null;
 		Predicate rightPredicate = null;
 
-		Integer var = splitVar.getIntValue(i);
+		Integer var = splitVar.getValue(i);
 		if(var != -1){
 			DataField dataField = this.dataFields.get(var + 1);
 
 			missingPredicate = encodeIsMissingSplit(dataField);
 
-			Double split = splitCodePred.getRealValue(i);
+			Double split = splitCodePred.getValue(i);
 
 			OpType opType = dataField.getOpType();
 			switch(opType){
 				case CATEGORICAL:
-					Integer index = RExpUtil.asInteger(split);
+					Integer index = ValueUtil.asInteger(split);
 
-					RExp c_split = c_splits.getRexpValue(index);
+					RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
 
-					List<Integer> splitValues = c_split.getIntValueList();
+					List<Integer> splitValues = c_split.getValues();
 
 					leftPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, splitValues, Boolean.TRUE));
 					rightPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, splitValues, Boolean.FALSE));
@@ -221,12 +223,12 @@ public class GBMConverter extends Converter {
 		} else
 
 		{
-			Double value = prediction.getRealValue(i);
+			Double value = prediction.getValue(i);
 
 			node.setScore(ValueUtil.formatValue(value));
 		}
 
-		Integer missing = missingNode.getIntValue(i);
+		Integer missing = missingNode.getValue(i);
 		if(missing != -1){
 			Node missingChild = new Node()
 				.setId(String.valueOf(missing + 1))
@@ -237,7 +239,7 @@ public class GBMConverter extends Converter {
 			node.addNodes(missingChild);
 		}
 
-		Integer left = leftNode.getIntValue(i);
+		Integer left = leftNode.getValue(i);
 		if(left != -1){
 			Node leftChild = new Node()
 				.setId(String.valueOf(left + 1))
@@ -248,7 +250,7 @@ public class GBMConverter extends Converter {
 			node.addNodes(leftChild);
 		}
 
-		Integer right = rightNode.getIntValue(i);
+		Integer right = rightNode.getValue(i);
 		if(right != -1){
 			Node rightChild = new Node()
 				.setId(String.valueOf(right + 1))
@@ -299,17 +301,16 @@ public class GBMConverter extends Converter {
 		return simplePredicate;
 	}
 
-	private Output encodeOutput(RExp distribution){
-		RExp name = RExpUtil.field(distribution, "name");
+	private Output encodeOutput(RGenericVector distribution){
+		RStringVector name = (RStringVector)distribution.getValue("name");
 
-		RString distributionName = name.getStringValue(0);
-
-		if("adaboost".equals(distributionName.getStrval())){
-			return encodeAdaBoostOutput();
-		} else
-
-		if("bernoulli".equals(distributionName.getStrval())){
-			return encodeBernoulliOutput();
+		switch(name.asScalar()){
+			case "adaboost":
+				return encodeAdaBoostOutput();
+			case "bernoulli":
+				return encodeBernoulliOutput();
+			default:
+				break;
 		}
 
 		return null;

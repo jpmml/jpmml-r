@@ -21,8 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.dmg.pmml.Array;
 import org.dmg.pmml.Cluster;
 import org.dmg.pmml.ClusteringField;
@@ -41,20 +39,23 @@ import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.SquaredEuclidean;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.ValueUtil;
 
 public class KMeansConverter extends Converter {
 
 	@Override
-	public PMML convert(RExp kmeans){
-		RExp centers = RExpUtil.field(kmeans, "centers");
-		RExp size = RExpUtil.field(kmeans, "size");
+	public PMML convert(RExp rexp){
+		return convert((RGenericVector)rexp);
+	}
 
-		RExp dim = RExpUtil.attribute(centers, "dim");
-		RExp dimnames = RExpUtil.attribute(centers, "dimnames");
+	private PMML convert(RGenericVector kmeans){
+		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
+		RIntegerVector size = (RIntegerVector)kmeans.getValue("size");
 
-		int rows = dim.getIntValue(0);
-		int columns = dim.getIntValue(1);
+		RIntegerVector dim = centers.dim();
+		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
+
+		int rows = dim.getValue(0);
+		int columns = dim.getValue(1);
 
 		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE)
 			.setMeasure(new SquaredEuclidean())
@@ -64,12 +65,12 @@ public class KMeansConverter extends Converter {
 
 		List<ClusteringField> clusteringFields = new ArrayList<>();
 
-		RExp columnNames = dimnames.getRexpValue(1);
+		RStringVector columnNames = (RStringVector)dimnames.getValue(1);
 		for(int i = 0; i < columns; i++){
-			RString name = columnNames.getStringValue(i);
+			String columnName = columnNames.getValue(i);
 
 			DataField dataField = new DataField()
-				.setName(FieldName.create(name.getStrval()))
+				.setName(FieldName.create(columnName))
 				.setOpType(OpType.CONTINUOUS)
 				.setDataType(DataType.DOUBLE);
 
@@ -82,16 +83,16 @@ public class KMeansConverter extends Converter {
 
 		List<Cluster> clusters = new ArrayList<>();
 
-		RExp rowNames = dimnames.getRexpValue(0);
+		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
 		for(int i = 0; i < rows; i++){
-			RString name = rowNames.getStringValue(i);
+			String rowName = rowNames.getValue(i);
 
-			Array array = encodeArray(RExpUtil.getRow(centers.getRealValueList(), i, rows, columns));
+			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), i, rows, columns));
 
 			Cluster cluster = new Cluster()
-				.setName(name.getStrval())
+				.setName(rowName)
 				.setId(String.valueOf(i + 1))
-				.setSize(size.getIntValue(i))
+				.setSize(size.getValue(i))
 				.setArray(array);
 
 			clusters.add(cluster);
@@ -120,22 +121,5 @@ public class KMeansConverter extends Converter {
 		outputFields.addAll(PMMLUtil.createAffinityFields(clusters));
 
 		return output;
-	}
-
-	static
-	private Array encodeArray(List<Double> values){
-		Function<Double, String> function = new Function<Double, String>(){
-
-			@Override
-			public String apply(Double value){
-				return ValueUtil.formatValue(value);
-			}
-		};
-
-		String value = ValueUtil.formatArrayValue(Lists.transform(values, function));
-
-		Array array = new Array(Array.Type.REAL, value);
-
-		return array;
 	}
 }

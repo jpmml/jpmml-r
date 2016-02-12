@@ -21,7 +21,7 @@ generateKMeansIris = function(){
 	center_2 = as.list(centers[2, ])
 	center_3 = as.list(centers[3, ])
 
-	storeProtoBuf(iris.kmeans, "pb/KMeansIris.pb")
+	storeRds(iris.kmeans, "rds/KMeansIris.rds")
 	storeCsv(data.frame("cluster" = cluster, "affinity_1" = affinity(iris_x, center_1), "affinity_2" = affinity(iris_x, center_2), "affinity_3" = affinity(iris_x, center_3)), "csv/KMeansIris.csv")
 }
 

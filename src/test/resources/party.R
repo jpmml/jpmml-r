@@ -25,7 +25,7 @@ generateBinaryTreeAudit = function(){
 	audit.ctree = ctree(Adjusted ~ ., data = audit)
 	print(audit.ctree)
 
-	storeProtoBuf(audit.ctree, "pb/BinaryTreeAudit.pb")
+	storeRds(audit.ctree, "rds/BinaryTreeAudit.rds")
 	storeCsv(predictCTree(audit.ctree, audit, "Adjusted"), "csv/BinaryTreeAudit.csv")
 }
 
@@ -42,7 +42,7 @@ generateBinaryTreeAuto = function(){
 	mpg = auto.ctree@predict_response(newdata = auto, type = "response")
 	nodes = auto.ctree@predict_response(newdata = auto, type = "node")
 
-	storeProtoBuf(auto.ctree, "pb/BinaryTreeAuto.pb")
+	storeRds(auto.ctree, "rds/BinaryTreeAuto.rds")
 	storeCsv(data.frame("mpg" = mpg, "nodeId" = nodes), "csv/BinaryTreeAuto.csv")
 }
 
@@ -56,7 +56,7 @@ generateBinaryTreeIris = function(){
 	iris.ctree = ctree(Species ~ ., data = iris)
 	print(iris.ctree)
 
-	storeProtoBuf(iris.ctree, "pb/BinaryTreeIris.pb")
+	storeRds(iris.ctree, "rds/BinaryTreeIris.rds")
 	storeCsv(predictCTree(iris.ctree, iris, "Species"), "csv/BinaryTreeIris.csv")
 }
 

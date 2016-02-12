@@ -21,9 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.math.DoubleMath;
 import org.dmg.pmml.DataType;
 
 public class RExpUtil {
@@ -48,117 +45,19 @@ public class RExpUtil {
 	}
 
 	static
-	public boolean inherits(RExp rexp, String name){
-		RExp clazz = RExpUtil.attribute(rexp, "class");
-
-		for(int i = 0; i < clazz.getStringValueCount(); i++){
-			RString clazzValue = clazz.getStringValue(i);
-
-			if((name).equals(clazzValue.getStrval())){
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	static
-	public RExp field(RExp rexp, String name){
-		RExp names = attribute(rexp, "names");
-
-		for(int i = 0; i < names.getStringValueCount(); i++){
-			RString nameValue = names.getStringValue(i);
-
-			if((name).equals(nameValue.getStrval())){
-				return rexp.getRexpValue(i);
-			}
-		}
-
-		throw new IllegalArgumentException("Field " + name + " not in " + getStringList(names));
-	}
-
-	static
-	public RBoolean booleanField(RExp rexp, String name){
-		RExp names = attribute(rexp, "names");
-
-		for(int i = 0; i < names.getStringValueCount(); i++){
-			RString nameValue = names.getStringValue(i);
-
-			if((name).equals(nameValue.getStrval())){
-				return rexp.getBooleanValue(i);
-			}
-		}
-
-		throw new IllegalArgumentException("Field " + name + " not in " + getStringList(names));
-	}
-
-	static
-	public RExp attribute(RExp rexp, String name){
-
-		for(int i = 0; i < rexp.getAttrNameCount(); i++){
-
-			if((rexp.getAttrName(i)).equals(name)){
-				return rexp.getAttrValue(i);
-			}
-		}
-
-		throw new IllegalArgumentException("Attribute " + name + " not in " + rexp.getAttrNameList());
-	}
-
-	static
-	public List<String> getStringList(RExp rexp){
-		Function<RString, String> function = new Function<RString, String>(){
-
-			@Override
-			public String apply(RString string){
-				return string.getStrval();
-			}
-		};
-
-		return Lists.transform(rexp.getStringValueList(), function);
-	}
-
-	static
 	public DataType getDataType(String type){
 
-		if("factor".equals(type)){
-			return DataType.STRING;
-		} else
-
-		if("numeric".equals(type)){
-			return DataType.DOUBLE;
-		} else
-
-		if("logical".equals(type)){
-			return DataType.BOOLEAN;
+		switch(type){
+			case "factor":
+				return DataType.STRING;
+			case "numeric":
+				return DataType.DOUBLE;
+			case "logical":
+				return DataType.BOOLEAN;
+			default:
+				break;
 		}
 
-		throw new IllegalArgumentException();
-	}
-
-	static
-	public Integer asInteger(Number number){
-
-		if(number instanceof Integer){
-			return (Integer)number;
-		}
-
-		double value = number.doubleValue();
-
-		if(DoubleMath.isMathematicalInteger(value)){
-			return number.intValue();
-		}
-
-		throw new IllegalArgumentException();
-	}
-
-	static
-	public Double asDouble(Number number){
-
-		if(number instanceof Double){
-			return (Double)number;
-		}
-
-		return number.doubleValue();
+		throw new IllegalArgumentException(type);
 	}
 }

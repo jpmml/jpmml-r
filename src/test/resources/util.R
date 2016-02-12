@@ -1,9 +1,5 @@
-library("r2pmml")
-
-storeProtoBuf = function(x, file){
-	x.rexp = r2pmml:::.clean(x)
-
-	saveProtoBuf(x.rexp, file)
+storeRds = function(x, file){
+	saveRDS(x, file)
 }
 
 loadCsv = function(file){

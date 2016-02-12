@@ -27,7 +27,7 @@ generateGBMAdaBoostAuditNA = function(){
 	audit.gbm = gbm.fit(x = audit_x, y = audit_y, distribution = "adaboost", interaction.depth = 3, shrinkage = 0.1, n.trees = 100, response.name = "Adjusted")
 	print(audit.gbm)
 
-	storeProtoBuf(audit.gbm, "pb/GBMAdaBoostAuditNA.pb")
+	storeRds(audit.gbm, "rds/GBMAdaBoostAuditNA.rds")
 	storeCsv(predictGBMAudit(audit.gbm), "csv/GBMAdaBoostAuditNA.csv")
 }
 
@@ -35,7 +35,7 @@ generateGBMBernoulliAuditNA = function(){
 	audit.gbm = gbm.fit(x = audit_x, y = audit_y, distribution = "bernoulli", interaction.depth = 3, shrinkage = 0.1, n.trees = 100, response.name = "Adjusted")
 	print(audit.gbm)
 
-	storeProtoBuf(audit.gbm, "pb/GBMBernoulliAuditNA.pb")
+	storeRds(audit.gbm, "rds/GBMBernoulliAuditNA.rds")
 	storeCsv(predictGBMAudit(audit.gbm), "csv/GBMBernoulliAuditNA.csv")
 }
 
@@ -55,7 +55,7 @@ generateGBMFormulaAutoNA = function(){
 
 	mpg = predict(auto.gbm, newdata = auto, n.trees = 100)
 
-	storeProtoBuf(auto.gbm, "pb/GBMFormulaAutoNA.pb")
+	storeRds(auto.gbm, "rds/GBMFormulaAutoNA.rds")
 	storeCsv(data.frame("mpg" = mpg), "csv/GBMFormulaAutoNA.csv")
 }
 
@@ -65,7 +65,7 @@ generateGBMAutoNA = function(){
 
 	mpg = predict(auto.gbm, newdata = auto_x, n.trees = 100)
 
-	storeProtoBuf(auto.gbm, "pb/GBMAutoNA.pb")
+	storeRds(auto.gbm, "rds/GBMAutoNA.rds")
 	storeCsv(data.frame("mpg" = mpg), "csv/GBMAutoNA.csv")
 }
 
@@ -83,7 +83,7 @@ generateTrainGBMFormulaAutoNA = function(){
 
 	mpg = predict(auto.train, newdata = auto.caret, na.action = na.pass)
 
-	storeProtoBuf(auto.train, "pb/TrainGBMFormulaAutoNA.pb")
+	storeRds(auto.train, "rds/TrainGBMFormulaAutoNA.rds")
 	storeCsv(data.frame("mpg" = mpg), "csv/TrainGBMFormulaAutoNA.csv")
 }
 
@@ -93,7 +93,7 @@ generateTrainGBMAutoNA = function(){
 
 	mpg = predict(auto.train, newdata = auto_x)
 
-	storeProtoBuf(auto.train, "pb/TrainGBMAutoNA.pb")
+	storeRds(auto.train, "rds/TrainGBMAutoNA.rds")
 	storeCsv(data.frame("mpg" = mpg), "csv/TrainGBMAutoNA.csv")
 }
 
