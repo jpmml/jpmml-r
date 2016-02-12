@@ -104,6 +104,11 @@ public class RandomForestConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateCustFormulaIris() throws Exception {
+		evaluate("RandomForestCustFormula", "Iris");
+	}
+
+	@Test
 	public void evaluateIris() throws Exception {
 		evaluate("RandomForest", "Iris");
 	}

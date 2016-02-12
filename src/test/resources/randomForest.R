@@ -145,6 +145,14 @@ generateRandomForestFormulaIris = function(){
 	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "csv/RandomForestFormulaIris.csv")
 }
 
+generateRandomForestCustFormulaIris = function(){
+	iris.randomForest = randomForest(Species ~ . - Sepal.Length, data = iris, ntree = 7)
+	print(iris.randomForest)
+
+	storeRds(iris.randomForest, "rds/RandomForestCustFormulaIris.rds")
+	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "csv/RandomForestCustFormulaIris.csv")
+}
+
 generateRandomForestIris = function(){
 	iris.randomForest = randomForest(x = iris_x, y = iris_y, ntree = 7)
 	print(iris.randomForest)
@@ -156,6 +164,7 @@ generateRandomForestIris = function(){
 set.seed(42)
 
 generateRandomForestFormulaIris()
+generateRandomForestCustFormulaIris()
 generateRandomForestIris()
 
 wine_quality = loadWineQualityCsv("csv/WineQuality.csv")

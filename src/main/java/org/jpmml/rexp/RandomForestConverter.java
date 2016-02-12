@@ -56,6 +56,8 @@ public class RandomForestConverter extends Converter {
 
 	private List<DataField> dataFields = new ArrayList<>();
 
+	private List<DataField> treeDataFields = null;
+
 	private LoadingCache<ElementKey, Predicate> predicateCache = CacheBuilder.newBuilder()
 		.build(new CacheLoader<ElementKey, Predicate>(){
 
@@ -87,13 +89,13 @@ public class RandomForestConverter extends Converter {
 			// The RF model was trained using the formula interface
 			initFormulaFields(terms);
 		} catch(IllegalArgumentException iae){
-			RExp xlevels = forest.getValue("xlevels");
-
 			RStringVector xNames;
 
 			try {
 				xNames = (RStringVector)randomForest.getValue("xNames");
 			} catch(IllegalArgumentException iaeChild){
+				RExp xlevels = forest.getValue("xlevels");
+
 				xNames = xlevels.names();
 			}
 
@@ -295,9 +297,28 @@ public class RandomForestConverter extends Converter {
 	}
 
 	private void initActiveFields(RGenericVector xlevels, RVector<?> ncat){
+		RStringVector names;
+
+		try {
+			names = xlevels.names();
+		} catch(IllegalArgumentException iae){
+			names = null;
+		}
+
+		this.treeDataFields = new ArrayList<>();
 
 		for(int i = 0; i < ncat.size(); i++){
-			DataField dataField = this.dataFields.get(i + 1);
+			DataField dataField;
+
+			if(names != null){
+				dataField = RExpUtil.find(FieldName.create(names.getValue(i)), this.dataFields);
+			} else
+
+			{
+				dataField = this.dataFields.get(i + 1);
+			}
+
+			this.treeDataFields.add(dataField);
 
 			boolean categorical = (((Number)ncat.getValue(i)).doubleValue() > 1d);
 			if(!categorical){
@@ -348,7 +369,7 @@ public class RandomForestConverter extends Converter {
 
 		Integer var = bestvar.get(i);
 		if(var != 0){
-			DataField dataField = this.dataFields.get(var);
+			DataField dataField = this.treeDataFields.get(var - 1);
 
 			Double split = xbestsplit.get(i);
 
