@@ -96,6 +96,8 @@ public class RExpParser {
 				return readBytecode(flags);
 			case SExpTypes.S4SXP:
 				return readS4Object(flags);
+			case SerializationTypes.BASEENVSXP:
+				return null; // XXX
 			case SerializationTypes.EMPTYENVSXP:
 				return null; // XXX
 			case SerializationTypes.NAMESPACESXP:
