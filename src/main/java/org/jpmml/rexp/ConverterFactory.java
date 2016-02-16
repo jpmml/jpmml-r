@@ -57,6 +57,7 @@ public class ConverterFactory {
 		converters.put("BinaryTree", BinaryTreeConverter.class);
 		converters.put("gbm", GBMConverter.class);
 		converters.put("kmeans", KMeansConverter.class);
+		converters.put("iForest", IsolationForestConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("train", TrainConverter.class);
 	}

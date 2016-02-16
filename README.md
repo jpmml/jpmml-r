@@ -12,6 +12,8 @@ Java library and command-line application for converting [R] (http://www.r-proje
     * `kmeans` - K-Means clustering
   * [`gbm` package] (http://cran.r-project.org/web/packages/gbm/):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
+  * [`IsolationForest` package] (https://r-forge.r-project.org/R/?group_id=479):
+    * `iForest` - Isolation Forest (IF) anomaly detection
   * [`party` package] (http://cran.r-project.org/web/packages/party/):
     * `ctree` - Conditional Inference Tree (CIT) classification
   * [`randomForest` package] (http://cran.r-project.org/web/packages/randomForest/):
