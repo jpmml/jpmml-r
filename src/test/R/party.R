@@ -19,21 +19,21 @@ predictCTree = function(ctree, data, targetName){
 	return (result)
 }
 
-audit = loadAuditCsv("csv/Audit.csv")
+audit = loadAuditCsv("Audit")
 
 generateBinaryTreeAudit = function(){
 	audit.ctree = ctree(Adjusted ~ ., data = audit)
 	print(audit.ctree)
 
-	storeRds(audit.ctree, "rds/BinaryTreeAudit.rds")
-	storeCsv(predictCTree(audit.ctree, audit, "Adjusted"), "csv/BinaryTreeAudit.csv")
+	storeRds(audit.ctree, "BinaryTreeAudit")
+	storeCsv(predictCTree(audit.ctree, audit, "Adjusted"), "BinaryTreeAudit")
 }
 
 set.seed(42)
 
 generateBinaryTreeAudit()
 
-auto = loadAutoCsv("csv/Auto.csv")
+auto = loadAutoCsv("Auto")
 
 generateBinaryTreeAuto = function(){
 	auto.ctree = ctree(mpg ~ ., data = auto)
@@ -42,22 +42,22 @@ generateBinaryTreeAuto = function(){
 	mpg = auto.ctree@predict_response(newdata = auto, type = "response")
 	nodes = auto.ctree@predict_response(newdata = auto, type = "node")
 
-	storeRds(auto.ctree, "rds/BinaryTreeAuto.rds")
-	storeCsv(data.frame("mpg" = mpg, "nodeId" = nodes), "csv/BinaryTreeAuto.csv")
+	storeRds(auto.ctree, "BinaryTreeAuto")
+	storeCsv(data.frame("mpg" = mpg, "nodeId" = nodes), "BinaryTreeAuto")
 }
 
 set.seed(42)
 
 generateBinaryTreeAuto()
 
-iris = loadIrisCsv("csv/Iris.csv")
+iris = loadIrisCsv("Iris")
 
 generateBinaryTreeIris = function(){
 	iris.ctree = ctree(Species ~ ., data = iris)
 	print(iris.ctree)
 
-	storeRds(iris.ctree, "rds/BinaryTreeIris.rds")
-	storeCsv(predictCTree(iris.ctree, iris, "Species"), "csv/BinaryTreeIris.csv")
+	storeRds(iris.ctree, "BinaryTreeIris")
+	storeCsv(predictCTree(iris.ctree, iris, "Species"), "BinaryTreeIris")
 }
 
 set.seed(42)

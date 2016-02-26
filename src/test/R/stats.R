@@ -1,6 +1,6 @@
 source("util.R")
 
-iris = loadIrisCsv("csv/Iris.csv")
+iris = loadIrisCsv("Iris")
 
 iris_x = iris[, -ncol(iris)]
 
@@ -21,8 +21,8 @@ generateKMeansIris = function(){
 	center_2 = as.list(centers[2, ])
 	center_3 = as.list(centers[3, ])
 
-	storeRds(iris.kmeans, "rds/KMeansIris.rds")
-	storeCsv(data.frame("cluster" = cluster, "affinity_1" = affinity(iris_x, center_1), "affinity_2" = affinity(iris_x, center_2), "affinity_3" = affinity(iris_x, center_3)), "csv/KMeansIris.csv")
+	storeRds(iris.kmeans, "KMeansIris")
+	storeCsv(data.frame("cluster" = cluster, "affinity_1" = affinity(iris_x, center_1), "affinity_2" = affinity(iris_x, center_2), "affinity_3" = affinity(iris_x, center_3)), "KMeansIris")
 }
 
 set.seed(42)

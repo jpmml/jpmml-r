@@ -11,11 +11,11 @@ createAudit = function(audit){
 
 	names(audit)[ncol(audit)] = "Adjusted"
 
-	storeCsv(audit, "csv/AuditNA.csv")
+	storeCsv(audit, "AuditNA")
 
 	audit = na.omit(audit)
 
-	storeCsv(audit, "csv/Audit.csv")
+	storeCsv(audit, "Audit")
 
 	audit.matrix = data.frame(model.matrix(formula("Adjusted ~ ."), audit))
 	names(audit.matrix) = gsub("\\.", "-", names(audit.matrix))
@@ -23,7 +23,7 @@ createAudit = function(audit){
 	# Delete the leading "X-Intercept" column
 	audit.matrix = audit.matrix[, 2:ncol(audit.matrix)]
 
-	storeCsv(audit.matrix, "csv/AuditMatrix.csv")
+	storeCsv(audit.matrix, "AuditMatrix")
 }
 
 loadAuto = function(){
@@ -40,15 +40,15 @@ createAuto = function(){
 	# Move the "mpg" column to the last position
 	auto = subset(auto, select = c(cylinders:origin, mpg))
 
-	storeCsv(auto, "csv/AutoNA.csv")
+	storeCsv(auto, "AutoNA")
 
 	auto = na.omit(auto)
 
-	storeCsv(auto, "csv/Auto.csv")
+	storeCsv(auto, "Auto")
 }
 
 createIris = function(iris){
-	storeCsv(iris, "csv/Iris.csv")
+	storeCsv(iris, "Iris")
 }
 
 loadWineQuality = function(color){
@@ -63,14 +63,14 @@ createWineQuality = function(){
 
 	wine_quality = rbind(red_data, white_data)
 
-	storeCsv(wine_quality, "csv/WineQuality.csv")
+	storeCsv(wine_quality, "WineQuality")
 
 	wine_color = rbind(red_data, white_data)
 	wine_color$quality = NULL
 	wine_color$color = "white"
 	wine_color$color[1:nrow(red_data)] = "red"
 
-	storeCsv(wine_color, "csv/WineColor.csv")
+	storeCsv(wine_color, "WineColor")
 }
 
 data(audit)

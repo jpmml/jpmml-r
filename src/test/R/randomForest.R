@@ -3,7 +3,7 @@ library("randomForest")
 
 source("util.R")
 
-audit = loadAuditCsv("csv/Audit.csv")
+audit = loadAuditCsv("Audit")
 
 audit_x = audit[, -ncol(audit)]
 audit_y = audit[, ncol(audit)]
@@ -22,16 +22,16 @@ generateRandomForestFormulaAudit = function(){
 	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 7)
 	print(audit.randomForest)
 
-	storeRds(audit.randomForest, "rds/RandomForestFormulaAudit.rds")
-	storeCsv(predictRandomForestAudit(audit.randomForest, audit, "Adjusted"), "csv/RandomForestFormulaAudit.csv")
+	storeRds(audit.randomForest, "RandomForestFormulaAudit")
+	storeCsv(predictRandomForestAudit(audit.randomForest, audit, "Adjusted"), "RandomForestFormulaAudit")
 }
 
 generateRandomForestAudit = function(){
 	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 7)
 	print(audit.randomForest)
 
-	storeRds(audit.randomForest, "rds/RandomForestAudit.rds")
-	storeCsv(predictRandomForestAudit(audit.randomForest, audit_x, "_target"), "csv/RandomForestAudit.csv")
+	storeRds(audit.randomForest, "RandomForestAudit")
+	storeCsv(predictRandomForestAudit(audit.randomForest, audit_x, "_target"), "RandomForestAudit")
 }
 
 set.seed(42)
@@ -45,8 +45,8 @@ generateTrainRandomForestFormulaAuditMatrix = function(){
 
 	adjusted = predict(audit.train, newdata = audit)
 
-	storeRds(audit.train, "rds/TrainRandomForestFormulaAuditMatrix.rds")
-	storeCsv(data.frame("_target" = adjusted), "csv/TrainRandomForestFormulaAuditMatrix.csv")
+	storeRds(audit.train, "TrainRandomForestFormulaAuditMatrix")
+	storeCsv(data.frame("_target" = adjusted), "TrainRandomForestFormulaAuditMatrix")
 }
 
 generateTrainRandomForestAudit = function(){
@@ -55,8 +55,8 @@ generateTrainRandomForestAudit = function(){
 
 	adjusted = predict(audit.train, newdata = audit_x)
 
-	storeRds(audit.train, "rds/TrainRandomForestAudit.rds")
-	storeCsv(data.frame("_target" = adjusted), "csv/TrainRandomForestAudit.csv")
+	storeRds(audit.train, "TrainRandomForestAudit")
+	storeCsv(data.frame("_target" = adjusted), "TrainRandomForestAudit")
 }
 
 set.seed(42)
@@ -64,7 +64,7 @@ set.seed(42)
 generateTrainRandomForestFormulaAuditMatrix()
 generateTrainRandomForestAudit()
 
-auto = loadAutoCsv("csv/Auto.csv")
+auto = loadAutoCsv("Auto")
 
 auto_x = auto[, -ncol(auto)]
 auto_y = auto[, ncol(auto)]
@@ -75,8 +75,8 @@ generateRandomForestFormulaAuto = function(){
 
 	mpg = predict(auto.randomForest, newdata = auto)
 
-	storeRds(auto.randomForest, "rds/RandomForestFormulaAuto.rds")
-	storeCsv(data.frame("mpg" = mpg), "csv/RandomForestFormulaAuto.csv")
+	storeRds(auto.randomForest, "RandomForestFormulaAuto")
+	storeCsv(data.frame("mpg" = mpg), "RandomForestFormulaAuto")
 }
 
 generateRandomForestAuto = function(){
@@ -85,8 +85,8 @@ generateRandomForestAuto = function(){
 
 	mpg = predict(auto.randomForest, newdata = auto_x)
 
-	storeRds(auto.randomForest, "rds/RandomForestAuto.rds")
-	storeCsv(data.frame("_target" = mpg), "csv/RandomForestAuto.csv")
+	storeRds(auto.randomForest, "RandomForestAuto")
+	storeCsv(data.frame("_target" = mpg), "RandomForestAuto")
 }
 
 set.seed(42)
@@ -103,8 +103,8 @@ generateTrainRandomForestFormulaAuto = function(){
 
 	mpg = predict(auto.train, newdata = auto.caret)
 
-	storeRds(auto.train, "rds/TrainRandomForestFormulaAuto.rds")
-	storeCsv(data.frame("_target" = mpg), "csv/TrainRandomForestFormulaAuto.csv")
+	storeRds(auto.train, "TrainRandomForestFormulaAuto")
+	storeCsv(data.frame("_target" = mpg), "TrainRandomForestFormulaAuto")
 }
 
 generateTrainRandomForestAuto = function(){
@@ -113,8 +113,8 @@ generateTrainRandomForestAuto = function(){
 
 	mpg = predict(auto.train, newdata = auto_x)
 
-	storeRds(auto.train, "rds/TrainRandomForestAuto.rds")
-	storeCsv(data.frame("_target" = mpg), "csv/TrainRandomForestAuto.csv")
+	storeRds(auto.train, "TrainRandomForestAuto")
+	storeCsv(data.frame("_target" = mpg), "TrainRandomForestAuto")
 }
 
 set.seed(42)
@@ -122,7 +122,7 @@ set.seed(42)
 generateTrainRandomForestFormulaAuto()
 generateTrainRandomForestAuto()
 
-iris = loadIrisCsv("csv/Iris.csv")
+iris = loadIrisCsv("Iris")
 
 iris_x = iris[, -ncol(iris)]
 iris_y = iris[, ncol(iris)]
@@ -141,24 +141,24 @@ generateRandomForestFormulaIris = function(){
 	iris.randomForest = randomForest(Species ~ ., data = iris, ntree = 7)
 	print(iris.randomForest)
 
-	storeRds(iris.randomForest, "rds/RandomForestFormulaIris.rds")
-	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "csv/RandomForestFormulaIris.csv")
+	storeRds(iris.randomForest, "RandomForestFormulaIris")
+	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "RandomForestFormulaIris")
 }
 
 generateRandomForestCustFormulaIris = function(){
 	iris.randomForest = randomForest(Species ~ . - Sepal.Length, data = iris, ntree = 7)
 	print(iris.randomForest)
 
-	storeRds(iris.randomForest, "rds/RandomForestCustFormulaIris.rds")
-	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "csv/RandomForestCustFormulaIris.csv")
+	storeRds(iris.randomForest, "RandomForestCustFormulaIris")
+	storeCsv(predictRandomForestIris(iris.randomForest, iris, "Species"), "RandomForestCustFormulaIris")
 }
 
 generateRandomForestIris = function(){
 	iris.randomForest = randomForest(x = iris_x, y = iris_y, ntree = 7)
 	print(iris.randomForest)
 
-	storeRds(iris.randomForest, "rds/RandomForestIris.rds")
-	storeCsv(predictRandomForestIris(iris.randomForest, iris_x, "_target"), "csv/RandomForestIris.csv")
+	storeRds(iris.randomForest, "RandomForestIris")
+	storeCsv(predictRandomForestIris(iris.randomForest, iris_x, "_target"), "RandomForestIris")
 }
 
 set.seed(42)
@@ -167,7 +167,7 @@ generateRandomForestFormulaIris()
 generateRandomForestCustFormulaIris()
 generateRandomForestIris()
 
-wine_quality = loadWineQualityCsv("csv/WineQuality.csv")
+wine_quality = loadWineQualityCsv("WineQuality")
 
 wine_quality_x = wine_quality[, -ncol(wine_quality)]
 wine_quality_y = wine_quality[, ncol(wine_quality)]
@@ -178,8 +178,8 @@ generateRandomForestFormulaWineQuality = function(){
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality)
 
-	storeRds(wine_quality.randomForest, "rds/RandomForestFormulaWineQuality.rds")
-	storeCsv(data.frame("quality" = quality), "csv/RandomForestFormulaWineQuality.csv")
+	storeRds(wine_quality.randomForest, "RandomForestFormulaWineQuality")
+	storeCsv(data.frame("quality" = quality), "RandomForestFormulaWineQuality")
 }
 
 generateRandomForestWineQuality = function(){
@@ -188,8 +188,8 @@ generateRandomForestWineQuality = function(){
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality_x)
 
-	storeRds(wine_quality.randomForest, "rds/RandomForestWineQuality.rds")
-	storeCsv(data.frame("_target" = quality), "csv/RandomForestWineQuality.csv")
+	storeRds(wine_quality.randomForest, "RandomForestWineQuality")
+	storeCsv(data.frame("_target" = quality), "RandomForestWineQuality")
 }
 
 set.seed(42)
@@ -197,7 +197,7 @@ set.seed(42)
 generateRandomForestFormulaWineQuality()
 generateRandomForestWineQuality()
 
-wine_color = loadWineColorCsv("csv/WineColor.csv")
+wine_color = loadWineColorCsv("WineColor")
 
 wine_color_x = wine_color[, -ncol(wine_color)]
 wine_color_y = wine_color[, ncol(wine_color)]
@@ -216,16 +216,16 @@ generateRandomForestFormulaWineColor = function(){
 	wine_color.randomForest = randomForest(color ~ ., data = wine_color, ntree = 7)
 	print(wine_color.randomForest)
 
-	storeRds(wine_color.randomForest, "rds/RandomForestFormulaWineColor.rds")
-	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color, "color"), "csv/RandomForestFormulaWineColor.csv")
+	storeRds(wine_color.randomForest, "RandomForestFormulaWineColor")
+	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color, "color"), "RandomForestFormulaWineColor")
 }
 
 generateRandomForestWineColor = function(){
 	wine_color.randomForest = randomForest(x = wine_color_x, y = wine_color_y, ntree = 7)
 	print(wine_color.randomForest)
 
-	storeRds(wine_color.randomForest, "rds/RandomForestWineColor.rds")
-	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color_x, "_target"), "csv/RandomForestWineColor.csv")
+	storeRds(wine_color.randomForest, "RandomForestWineColor")
+	storeCsv(predictRandomForestWineColor(wine_color.randomForest, wine_color_x, "_target"), "RandomForestWineColor")
 }
 
 set.seed(42)
