@@ -94,6 +94,10 @@ public class RExpParser {
 				return readVector(flags);
 			case SExpTypes.BCODESXP:
 				return readBytecode(flags);
+			case SExpTypes.EXTPTRSXP:
+				return readExternalPointer(flags);
+			case SExpTypes.RAWSXP:
+				return readRaw(flags);
 			case SExpTypes.S4SXP:
 				return readS4Object(flags);
 			case SerializationTypes.BASEENVSXP:
@@ -318,6 +322,27 @@ public class RExpParser {
 		readBC1(reps);
 
 		return null;
+	}
+
+	private RExp readExternalPointer(int flags) throws IOException {
+		RExp rexp = null;
+
+		this.referenceTable.add(rexp);
+
+		RExp protected_ = readRExp();
+		RExp tag = readRExp();
+
+		readAttributes(flags);
+
+		return rexp;
+	}
+
+	private RRaw readRaw(int flags) throws IOException {
+		int length = readInt();
+
+		byte[] value = readByteArray(length);
+
+		return new RRaw(value, readAttributes(flags));
 	}
 
 	private void readBC1(List<RExp> reps) throws IOException {

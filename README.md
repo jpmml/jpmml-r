@@ -19,9 +19,11 @@ Java library and command-line application for converting [R] (http://www.r-proje
   * [`randomForest` package] (http://cran.r-project.org/web/packages/randomForest/):
     * `randomForest.formula` ("formula interface") - Random Forest (RF) regression and classification
     * `randomForest` ("matrix interface") - Random Forest regression and classification
+  * [`xgboost` package] (https://cran.r-project.org/web/packages/xgboost/):
+    * `xgb.Booster` - XGBoost (XGB) regression and classification
   * [`caret` package] (http://cran.r-project.org/web/packages/caret/):
-    * `train.formula` ("formula interface") - All JPMML-R supported model types
-    * `train` ("matrix interface") - All JPMML-R supported model types
+    * `train.formula` ("formula interface") - Selected JPMML-R model types
+    * `train` ("matrix interface") - Selected JPMML-R model types
 * Production quality:
   * Complete test coverage.
   * Fully compliant with the [JPMML-Evaluator] (https://github.com/jpmml/jpmml-evaluator) library.

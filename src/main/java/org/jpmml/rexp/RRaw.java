@@ -18,17 +18,22 @@
  */
 package org.jpmml.rexp;
 
-import java.util.List;
+public class RRaw extends RExp {
 
-public class RIntegerVector extends RVector<Integer> {
+	private byte[] value = null;
 
-	public RIntegerVector(List<Integer> values, RPair attributes){
-		super(values, attributes);
+
+	public RRaw(byte[] value, RPair attributes){
+		super(attributes);
+
+		setValue(value);
 	}
 
-	public String getFactorValue(int index){
-		RStringVector levels = (RStringVector)getAttributeValue("levels");
+	public byte[] getValue(){
+		return this.value;
+	}
 
-		return levels.getValue(getValue(index) - 1);
+	private void setValue(byte[] value){
+		this.value = value;
 	}
 }

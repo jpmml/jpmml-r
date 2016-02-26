@@ -18,17 +18,27 @@
  */
 package org.jpmml.rexp;
 
-import java.util.List;
+import java.util.Set;
 
-public class RIntegerVector extends RVector<Integer> {
+import com.google.common.collect.ImmutableSet;
+import org.dmg.pmml.FieldName;
+import org.jpmml.evaluator.Batch;
+import org.junit.Test;
 
-	public RIntegerVector(List<Integer> values, RPair attributes){
-		super(values, attributes);
+public class XGBoostConverterTest extends ConverterTest {
+
+	@Test
+	public void evaluateXGBoostAutoNA() throws Exception {
+
+		try(Batch batch = createBatch("XGBoost", "AutoNA")){
+			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("xgbValue"));
+
+			evaluate(batch, ignoredFields);
+		}
 	}
 
-	public String getFactorValue(int index){
-		RStringVector levels = (RStringVector)getAttributeValue("levels");
-
-		return levels.getValue(getValue(index) - 1);
+	@Override
+	public void evaluate(Batch batch, Set<FieldName> ignoredFields) throws Exception {
+		evaluate(batch, ignoredFields, 1e-6, 1e-6);
 	}
 }

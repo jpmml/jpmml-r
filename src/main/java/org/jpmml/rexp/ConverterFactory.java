@@ -59,6 +59,7 @@ public class ConverterFactory {
 		converters.put("kmeans", KMeansConverter.class);
 		converters.put("iForest", IsolationForestConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
+		converters.put("xgb.Booster", XGBoostConverter.class);
 		converters.put("train", TrainConverter.class);
 	}
 }
