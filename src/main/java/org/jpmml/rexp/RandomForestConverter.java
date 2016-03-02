@@ -99,7 +99,7 @@ public class RandomForestConverter extends Converter {
 				xNames = xlevels.names();
 			}
 
-			RVector<?> ncat = (RVector<?>)forest.getValue("ncat");
+			RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 
 			// The RF model was trained using the matrix (ie. non-formula) interface
 			initNonFormulaFields(xNames, ncat, y);
@@ -123,7 +123,7 @@ public class RandomForestConverter extends Converter {
 		RDoubleVector nodepred = (RDoubleVector)forest.getValue("nodepred");
 		RIntegerVector bestvar = (RIntegerVector)forest.getValue("bestvar");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
-		RVector<?> ncat = (RVector<?>)forest.getValue("ncat");
+		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
 		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
 		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
@@ -165,7 +165,7 @@ public class RandomForestConverter extends Converter {
 		RIntegerVector treemap = (RIntegerVector)forest.getValue("treemap");
 		RIntegerVector nodepred = (RIntegerVector)forest.getValue("nodepred");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
-		RVector<?> ncat = (RVector<?>)forest.getValue("ncat");
+		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
 		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
 		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
@@ -273,7 +273,7 @@ public class RandomForestConverter extends Converter {
 		}
 	}
 
-	private void initNonFormulaFields(RStringVector xNames, RVector<?> ncat, RVector<?> y){
+	private void initNonFormulaFields(RStringVector xNames, RNumberVector<?> ncat, RVector<?> y){
 
 		// Dependent variable
 		{
@@ -288,7 +288,7 @@ public class RandomForestConverter extends Converter {
 		for(int i = 0; i < xNames.size(); i++){
 			String xName = xNames.getValue(i);
 
-			boolean categorical = (((Number)ncat.getValue(i)).doubleValue() > 1d);
+			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
 
 			DataField dataField = PMMLUtil.createDataField(FieldName.create(xName), categorical);
 
@@ -296,7 +296,7 @@ public class RandomForestConverter extends Converter {
 		}
 	}
 
-	private void initActiveFields(RGenericVector xlevels, RVector<?> ncat){
+	private void initActiveFields(RGenericVector xlevels, RNumberVector<?> ncat){
 		RStringVector names;
 
 		try {
@@ -320,7 +320,7 @@ public class RandomForestConverter extends Converter {
 
 			this.treeDataFields.add(dataField);
 
-			boolean categorical = (((Number)ncat.getValue(i)).doubleValue() > 1d);
+			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
 			if(!categorical){
 				continue;
 			}

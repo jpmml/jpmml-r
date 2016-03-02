@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
-public class RIntegerVector extends RVector<Integer> {
+public class RIntegerVector extends RNumberVector<Integer> {
 
 	public RIntegerVector(List<Integer> values, RPair attributes){
 		super(values, attributes);

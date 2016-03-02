@@ -20,9 +20,10 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
-public class RDoubleVector extends RNumberVector<Double> {
+abstract
+public class RNumberVector<V extends Number> extends RVector<V> {
 
-	public RDoubleVector(List<Double> values, RPair attributes){
+	public RNumberVector(List<V> values, RPair attributes){
 		super(values, attributes);
 	}
 }

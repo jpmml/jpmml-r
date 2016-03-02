@@ -195,7 +195,7 @@ public class BinaryTreeConverter extends Converter {
 	}
 
 	private List<Predicate> encodeSplit(RGenericVector psplit, RGenericVector ssplits){
-		RVector<?> splitpoint = (RVector<?>)psplit.getValue("splitpoint");
+		RNumberVector<?> splitpoint = (RNumberVector<?>)psplit.getValue("splitpoint");
 		RStringVector variableName = (RStringVector)psplit.getValue("variableName");
 
 		if(ssplits.size() > 0){
@@ -211,7 +211,7 @@ public class BinaryTreeConverter extends Converter {
 			}
 
 			return encodeContinuousSplit(dataField, (Double)splitpoint.asScalar());
-		} // End if
+		} else
 
 		if(splitpoint instanceof RIntegerVector){
 			RStringVector levels = (RStringVector)splitpoint.getAttributeValue("levels");
