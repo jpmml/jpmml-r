@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.io.ByteStreams;
 
 public class RExpParser {
@@ -261,10 +263,16 @@ public class RExpParser {
 	private RIntegerVector readIntVector(int flags) throws IOException {
 		int length = readInt();
 
+		Interner<Integer> interner = createInterner(length);
+
 		List<Integer> values = new ArrayList<>(length);
 
 		for(int i = 0; i < length; i++){
-			int value = readInt();
+			Integer value = Integer.valueOf(readInt());
+
+			if(interner != null){
+				value = interner.intern(value);
+			}
 
 			values.add(value);
 		}
@@ -275,10 +283,16 @@ public class RExpParser {
 	private RDoubleVector readRealVector(int flags) throws IOException {
 		int length = readInt();
 
+		Interner<Double> interner = createInterner(length);
+
 		List<Double> values = new ArrayList<>(length);
 
 		for(int i = 0; i < length; i++){
-			double value = readDouble();
+			Double value = Double.valueOf(readDouble());
+
+			if(interner != null){
+				value = interner.intern(value);
+			}
 
 			values.add(value);
 		}
@@ -431,6 +445,16 @@ public class RExpParser {
 
 	private byte[] readByteArray(int length) throws IOException {
 		return this.input.readByteArray(length);
+	}
+
+	static
+	private <V> Interner<V> createInterner(int length){
+
+		if(length > 128){
+			return Interners.<V>newStrongInterner();
+		}
+
+		return null;
 	}
 
 	static
