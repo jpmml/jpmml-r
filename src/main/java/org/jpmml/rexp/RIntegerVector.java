@@ -26,8 +26,12 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		super(values, attributes);
 	}
 
+	public RStringVector getFactorLevels(){
+		return (RStringVector)getAttributeValue("levels");
+	}
+
 	public String getFactorValue(int index){
-		RStringVector levels = (RStringVector)getAttributeValue("levels");
+		RStringVector levels = getFactorLevels();
 
 		return levels.getValue(getValue(index) - 1);
 	}

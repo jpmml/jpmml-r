@@ -81,7 +81,7 @@ public class RandomForestConverter extends Converter {
 	private PMML convert(RGenericVector randomForest){
 		RStringVector type = (RStringVector)randomForest.getValue("type");
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
-		RVector<?> y = (RVector<?>)randomForest.getValue("y");
+		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y");
 
 		try {
 			RExp terms = randomForest.getValue("terms");
@@ -109,7 +109,7 @@ public class RandomForestConverter extends Converter {
 			case "regression":
 				return convertRegression(forest);
 			case "classification":
-				return convertClassification(forest, y);
+				return convertClassification(forest, (RIntegerVector)y);
 			default:
 				break;
 		}
@@ -160,7 +160,7 @@ public class RandomForestConverter extends Converter {
 		return encodePMML(MiningFunctionType.REGRESSION, treeModels);
 	}
 
-	private PMML convertClassification(RGenericVector forest, RExp y){
+	private PMML convertClassification(RGenericVector forest, RIntegerVector y){
 		RIntegerVector bestvar = (RIntegerVector)forest.getValue("bestvar");
 		RIntegerVector treemap = (RIntegerVector)forest.getValue("treemap");
 		RIntegerVector nodepred = (RIntegerVector)forest.getValue("nodepred");
@@ -273,11 +273,11 @@ public class RandomForestConverter extends Converter {
 		}
 	}
 
-	private void initNonFormulaFields(RStringVector xNames, RNumberVector<?> ncat, RVector<?> y){
+	private void initNonFormulaFields(RStringVector xNames, RNumberVector<?> ncat, RNumberVector<?> y){
 
 		// Dependent variable
 		{
-			boolean categorical = ((y instanceof RStringVector) && (y.size() > 0));
+			boolean categorical = (y instanceof RIntegerVector);
 
 			DataField dataField = PMMLUtil.createDataField(FieldName.create("_target"), categorical);
 
@@ -334,10 +334,10 @@ public class RandomForestConverter extends Converter {
 		}
 	}
 
-	private void initPredictedFields(RExp y){
+	private void initPredictedFields(RIntegerVector y){
 		DataField dataField = this.dataFields.get(0);
 
-		RStringVector levels = (RStringVector)y.getAttributeValue("levels");
+		RStringVector levels = y.getFactorLevels();
 
 		List<Value> values = dataField.getValues();
 		values.addAll(PMMLUtil.createValues(levels.getValues()));
