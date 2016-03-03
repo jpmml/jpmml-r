@@ -81,7 +81,14 @@ public class RandomForestConverter extends Converter {
 	private PMML convert(RGenericVector randomForest){
 		RStringVector type = (RStringVector)randomForest.getValue("type");
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
-		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y");
+
+		RNumberVector<?> y;
+
+		try {
+			y = (RNumberVector<?>)randomForest.getValue("y");
+		} catch(IllegalArgumentException iae){
+			y = null;
+		} // End try
 
 		try {
 			RExp terms = randomForest.getValue("terms");
@@ -118,10 +125,10 @@ public class RandomForestConverter extends Converter {
 	}
 
 	private PMML convertRegression(RGenericVector forest){
-		RIntegerVector leftDaughter = (RIntegerVector)forest.getValue("leftDaughter");
-		RIntegerVector rightDaughter = (RIntegerVector)forest.getValue("rightDaughter");
+		RNumberVector<?> leftDaughter = (RNumberVector<?>)forest.getValue("leftDaughter");
+		RNumberVector<?> rightDaughter = (RNumberVector<?>)forest.getValue("rightDaughter");
 		RDoubleVector nodepred = (RDoubleVector)forest.getValue("nodepred");
-		RIntegerVector bestvar = (RIntegerVector)forest.getValue("bestvar");
+		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
 		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
@@ -161,8 +168,8 @@ public class RandomForestConverter extends Converter {
 	}
 
 	private PMML convertClassification(RGenericVector forest, RIntegerVector y){
-		RIntegerVector bestvar = (RIntegerVector)forest.getValue("bestvar");
-		RIntegerVector treemap = (RIntegerVector)forest.getValue("treemap");
+		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
+		RNumberVector<?> treemap = (RNumberVector<?>)forest.getValue("treemap");
 		RIntegerVector nodepred = (RIntegerVector)forest.getValue("nodepred");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
 		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
@@ -189,7 +196,7 @@ public class RandomForestConverter extends Converter {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < columns; i++){
-			List<Integer> daughters = RExpUtil.getColumn(treemap.getValues(), i, 2 * rows, columns);
+			List<? extends Number> daughters = RExpUtil.getColumn(treemap.getValues(), i, 2 * rows, columns);
 
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunctionType.CLASSIFICATION,
@@ -345,7 +352,7 @@ public class RandomForestConverter extends Converter {
 		dataField = PMMLUtil.refineDataField(dataField);
 	}
 
-	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<Integer> leftDaughter, List<Integer> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<Integer> bestvar, List<Double> xbestsplit){
+	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
@@ -363,11 +370,11 @@ public class RandomForestConverter extends Converter {
 		return treeModel;
 	}
 
-	private <P extends Number> void encodeNode(Node node, int i, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> bestvar, List<Double> xbestsplit, ScoreEncoder<P> scoreEncoder, List<P> nodepred){
+	private <P extends Number> void encodeNode(Node node, int i, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, ScoreEncoder<P> scoreEncoder, List<P> nodepred){
 		Predicate leftPredicate = null;
 		Predicate rightPredicate = null;
 
-		Integer var = bestvar.get(i);
+		Integer var = ValueUtil.asInteger(bestvar.get(i));
 		if(var != 0){
 			DataField dataField = this.treeDataFields.get(var - 1);
 
@@ -404,7 +411,7 @@ public class RandomForestConverter extends Converter {
 			node.setScore(scoreEncoder.encode(prediction));
 		}
 
-		Integer left = leftDaughter.get(i);
+		Integer left = ValueUtil.asInteger(leftDaughter.get(i));
 		if(left != 0){
 			Node leftChild = new Node()
 				.setId(String.valueOf(left))
@@ -415,7 +422,7 @@ public class RandomForestConverter extends Converter {
 			node.addNodes(leftChild);
 		}
 
-		Integer right = rightDaughter.get(i);
+		Integer right = ValueUtil.asInteger(rightDaughter.get(i));
 		if(right != 0){
 			Node rightChild = new Node()
 				.setId(String.valueOf(right))
