@@ -37,14 +37,14 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segment;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.jpmml.converter.MiningModelUtil;
+import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class IsolationForestConverter extends Converter {
 
@@ -80,22 +80,17 @@ public class IsolationForestConverter extends Converter {
 
 		initFields(xcols);
 
-		List<Segment> segments = new ArrayList<>();
+		List<TreeModel> treeModels = new ArrayList<>();
 
-		for(int i = 0; i < ValueUtil.asInteger(ntree.asScalar()); i++){
+		for(int i = 0; i < ValueUtil.asInt(ntree.asScalar()); i++){
 			TreeModel treeModel = encodeTreeModel(trees, i);
 
-			Segment segment = new Segment()
-				.setId(String.valueOf(i + 1))
-				.setPredicate(new True())
-				.setModel(treeModel);
-
-			segments.add(segment);
+			treeModels.add(treeModel);
 		}
 
-		Segmentation segmentation = new Segmentation(MultipleModelMethodType.AVERAGE, segments);
+		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
 
 		Output output = encodeOutput(xrow);
 
@@ -105,7 +100,7 @@ public class IsolationForestConverter extends Converter {
 
 		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
 
-		PMML pmml = new PMML("4.2", PMMLUtil.createHeader(Converter.NAME), dataDictionary)
+		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
 			.addModels(miningModel);
 
 		return pmml;
@@ -158,10 +153,7 @@ public class IsolationForestConverter extends Converter {
 			RExpUtil.getColumn(splitPoint.getValues(), index, rows, columns)
 		);
 
-		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-		fieldReferenceFinder.applyTo(root);
-
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldReferenceFinder);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -220,8 +212,7 @@ public class IsolationForestConverter extends Converter {
 	}
 
 	private Output encodeOutput(RIntegerVector xrow){
-		OutputField rawPathLength = new OutputField(FieldName.create("rawPathLength"))
-			.setFeature(FeatureType.PREDICTED_VALUE);
+		OutputField rawPathLength = ModelUtil.createPredictedField(FieldName.create("rawPathLength"));
 
 		// "rawPathLength / avgPathLength(xrow)"
 		OutputField normalizedPathLength = new OutputField(FieldName.create("normalizedPathLength"))

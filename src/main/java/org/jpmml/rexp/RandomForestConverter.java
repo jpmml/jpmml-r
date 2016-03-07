@@ -39,7 +39,6 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segment;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.SimpleSetPredicate;
@@ -48,9 +47,10 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ElementKey;
 import org.jpmml.converter.FieldTypeAnalyzer;
+import org.jpmml.converter.MiningModelUtil;
+import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class RandomForestConverter extends Converter {
 
@@ -146,7 +146,7 @@ public class RandomForestConverter extends Converter {
 		};
 
 		int rows = nrnodes.asScalar();
-		int columns = ValueUtil.asInteger(ntree.asScalar());
+		int columns = ValueUtil.asInt(ntree.asScalar());
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
@@ -191,7 +191,7 @@ public class RandomForestConverter extends Converter {
 		};
 
 		int rows = nrnodes.asScalar();
-		int columns = ValueUtil.asInteger(ntree.asScalar());
+		int columns = ValueUtil.asInt(ntree.asScalar());
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
@@ -228,27 +228,14 @@ public class RandomForestConverter extends Converter {
 				throw new IllegalArgumentException();
 		}
 
-		List<Segment> segments = new ArrayList<>();
-
-		for(int i = 0; i < treeModels.size(); i++){
-			TreeModel treeModel = treeModels.get(i);
-
-			Segment segment = new Segment()
-				.setId(String.valueOf(i + 1))
-				.setPredicate(new True())
-				.setModel(treeModel);
-
-			segments.add(segment);
-		}
-
-		Segmentation segmentation = new Segmentation(multipleModelMethod, segments);
+		Segmentation segmentation = MiningModelUtil.createSegmentation(multipleModelMethod, treeModels);
 
 		FieldTypeAnalyzer fieldTypeAnalyzer = new RandomForestFieldTypeAnalyzer();
 		fieldTypeAnalyzer.applyTo(segmentation);
 
 		PMMLUtil.refineDataFields(this.dataFields, fieldTypeAnalyzer);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
 
 		Output output = encodeOutput(miningFunction);
 
@@ -258,7 +245,7 @@ public class RandomForestConverter extends Converter {
 
 		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
 
-		PMML pmml = new PMML("4.2", PMMLUtil.createHeader(Converter.NAME), dataDictionary)
+		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
 			.addModels(miningModel);
 
 		return pmml;
@@ -318,7 +305,7 @@ public class RandomForestConverter extends Converter {
 			DataField dataField;
 
 			if(names != null){
-				dataField = RExpUtil.find(FieldName.create(names.getValue(i)), this.dataFields);
+				dataField = PMMLUtil.getField(FieldName.create(names.getValue(i)), this.dataFields);
 			} else
 
 			{
@@ -359,10 +346,7 @@ public class RandomForestConverter extends Converter {
 
 		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
 
-		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-		fieldReferenceFinder.applyTo(root);
-
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldReferenceFinder);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -374,7 +358,7 @@ public class RandomForestConverter extends Converter {
 		Predicate leftPredicate = null;
 		Predicate rightPredicate = null;
 
-		Integer var = ValueUtil.asInteger(bestvar.get(i));
+		int var = ValueUtil.asInt(bestvar.get(i));
 		if(var != 0){
 			DataField dataField = this.treeDataFields.get(var - 1);
 
@@ -411,7 +395,7 @@ public class RandomForestConverter extends Converter {
 			node.setScore(scoreEncoder.encode(prediction));
 		}
 
-		Integer left = ValueUtil.asInteger(leftDaughter.get(i));
+		int left = ValueUtil.asInt(leftDaughter.get(i));
 		if(left != 0){
 			Node leftChild = new Node()
 				.setId(String.valueOf(left))
@@ -422,7 +406,7 @@ public class RandomForestConverter extends Converter {
 			node.addNodes(leftChild);
 		}
 
-		Integer right = ValueUtil.asInteger(rightDaughter.get(i));
+		int right = ValueUtil.asInt(rightDaughter.get(i));
 		if(right != 0){
 			Node rightChild = new Node()
 				.setId(String.valueOf(right))
@@ -495,7 +479,7 @@ public class RandomForestConverter extends Converter {
 	private Output encodeClassificationOutput(){
 		DataField dataField = this.dataFields.get(0);
 
-		Output output = new Output(PMMLUtil.createProbabilityFields(dataField));
+		Output output = new Output(ModelUtil.createProbabilityFields(dataField));
 
 		return output;
 	}

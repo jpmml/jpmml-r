@@ -41,20 +41,19 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segment;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.SimpleSetPredicate;
-import org.dmg.pmml.Target;
 import org.dmg.pmml.Targets;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.TreeModel.SplitCharacteristic;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ElementKey;
+import org.jpmml.converter.MiningModelUtil;
+import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class GBMConverter extends Converter {
 
@@ -89,33 +88,24 @@ public class GBMConverter extends Converter {
 
 		initFields(response_name, var_names, var_type, var_levels);
 
-		List<Segment> segments = new ArrayList<>();
+		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < trees.size(); i++){
 			RGenericVector tree = (RGenericVector)trees.getValue(i);
 
 			TreeModel treeModel = encodeTreeModel(MiningFunctionType.REGRESSION, tree, c_splits);
 
-			Segment segment = new Segment()
-				.setId(String.valueOf(i + 1))
-				.setPredicate(new True())
-				.setModel(treeModel);
-
-			segments.add(segment);
+			treeModels.add(treeModel);
 		}
 
-		Segmentation segmentation = new Segmentation(MultipleModelMethodType.SUM, segments);
+		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.SUM, treeModels);
 
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
 
 		DataField dataField = this.dataFields.get(0);
 
-		Target target = new Target()
-			.setField(dataField.getName())
-			.setRescaleConstant(initF.getValue(0));
-
 		Targets targets = new Targets()
-			.addTargets(target);
+			.addTargets(ModelUtil.createRescaleTarget(dataField, null, initF.getValue(0)));
 
 		Output output = encodeOutput(distribution);
 
@@ -126,7 +116,7 @@ public class GBMConverter extends Converter {
 
 		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
 
-		PMML pmml = new PMML("4.2", PMMLUtil.createHeader(Converter.NAME), dataDictionary)
+		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
 			.addModels(miningModel);
 
 		return pmml;
@@ -169,10 +159,7 @@ public class GBMConverter extends Converter {
 
 		encodeNode(root, 0, tree, c_splits);
 
-		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-		fieldReferenceFinder.applyTo(root);
-
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(fieldReferenceFinder);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(SplitCharacteristic.MULTI_SPLIT);
@@ -204,7 +191,7 @@ public class GBMConverter extends Converter {
 			OpType opType = dataField.getOpType();
 			switch(opType){
 				case CATEGORICAL:
-					Integer index = ValueUtil.asInteger(split);
+					int index = ValueUtil.asInt(split);
 
 					RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
 

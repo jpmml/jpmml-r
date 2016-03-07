@@ -18,7 +18,9 @@
  */
 package org.jpmml.rexp;
 
+import org.dmg.pmml.Header;
 import org.dmg.pmml.PMML;
+import org.jpmml.converter.PMMLUtil;
 
 abstract
 public class Converter {
@@ -26,5 +28,8 @@ public class Converter {
 	abstract
 	public PMML convert(RExp rexp);
 
-	public static final String NAME = "JPMML-R";
+	static
+	public Header createHeader(){
+		return PMMLUtil.createHeader("JPMML-R", "1.1-SNAPSHOT");
+	}
 }

@@ -20,7 +20,6 @@ package org.jpmml.rexp;
 
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Batch;
 import org.junit.Test;
@@ -29,12 +28,7 @@ public class XGBoostConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateXGBoostAutoNA() throws Exception {
-
-		try(Batch batch = createBatch("XGBoost", "AutoNA")){
-			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("xgbValue"));
-
-			evaluate(batch, ignoredFields);
-		}
+		evaluate("XGBoost", "AutoNA");
 	}
 
 	@Override

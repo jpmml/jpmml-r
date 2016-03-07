@@ -40,9 +40,9 @@ import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.FieldComparator;
+import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class BinaryTreeConverter extends Converter {
 
@@ -71,7 +71,7 @@ public class BinaryTreeConverter extends Converter {
 
 		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
 
-		PMML pmml = new PMML("4.2", PMMLUtil.createHeader(Converter.NAME), dataDictionary)
+		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
 			.addModels(treeModel);
 
 		return pmml;
@@ -118,25 +118,12 @@ public class BinaryTreeConverter extends Converter {
 		this.dataFields.add(dataField);
 	}
 
-	private DataField getDataField(FieldName name){
-
-		for(int i = 1; i < this.dataFields.size(); i++){
-			DataField dataField = this.dataFields.get(i);
-
-			if((dataField.getName()).equals(name)){
-				return dataField;
-			}
-		}
-
-		return null;
+	private DataField findDataField(FieldName name){
+		return PMMLUtil.getField(name, this.dataFields, 1);
 	}
 
 	private DataField createDataField(FieldName name, DataType dataType){
-		DataField dataField = new DataField()
-			.setName(name)
-			.setDataType(dataType);
-
-		dataField = PMMLUtil.refineDataField(dataField, dataType);
+		DataField dataField = PMMLUtil.createDataField(name, dataType);
 
 		this.dataFields.add(dataField);
 
@@ -149,12 +136,7 @@ public class BinaryTreeConverter extends Converter {
 
 		encodeNode(root, tree);
 
-		DataField dataField = this.dataFields.get(0);
-
-		FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-		fieldReferenceFinder.applyTo(root);
-
-		MiningSchema miningSchema = PMMLUtil.createMiningSchema(dataField, fieldReferenceFinder);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields, root);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -202,12 +184,15 @@ public class BinaryTreeConverter extends Converter {
 			throw new IllegalArgumentException();
 		}
 
-		FieldName field = FieldName.create(variableName.asScalar());
+		FieldName name = FieldName.create(variableName.asScalar());
 
 		if(splitpoint instanceof RDoubleVector){
-			DataField dataField = getDataField(field);
-			if(dataField == null){
-				dataField = createDataField(field, DataType.DOUBLE);
+			DataField dataField;
+
+			try {
+				dataField = findDataField(name);
+			} catch(IllegalArgumentException iae){
+				dataField = createDataField(name, DataType.DOUBLE);
 			}
 
 			return encodeContinuousSplit(dataField, (Double)splitpoint.asScalar());
@@ -218,9 +203,12 @@ public class BinaryTreeConverter extends Converter {
 
 			List<Value> levelValues = PMMLUtil.createValues(levels.getValues());
 
-			DataField dataField = getDataField(field);
-			if(dataField == null){
-				dataField = createDataField(field, DataType.STRING);
+			DataField dataField;
+
+			try {
+				dataField = findDataField(name);
+			} catch(IllegalArgumentException iae){
+				dataField = createDataField(name, DataType.STRING);
 
 				List<Value> values = dataField.getValues();
 				values.addAll(levelValues);
@@ -353,7 +341,7 @@ public class BinaryTreeConverter extends Converter {
 
 	private Output encodeRegressionOutput(){
 		Output output = new Output()
-			.addOutputFields(PMMLUtil.createEntityIdField(FieldName.create("nodeId")));
+			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
 
 		return output;
 	}
@@ -361,8 +349,8 @@ public class BinaryTreeConverter extends Converter {
 	private Output encodeClassificationOutput(){
 		DataField dataField = this.dataFields.get(0);
 
-		Output output = new Output(PMMLUtil.createProbabilityFields(dataField))
-			.addOutputFields(PMMLUtil.createEntityIdField(FieldName.create("nodeId")));
+		Output output = new Output(ModelUtil.createProbabilityFields(dataField))
+			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
 
 		return output;
 	}

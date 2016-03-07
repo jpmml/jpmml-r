@@ -21,9 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 
 public class RExpUtil {
 
@@ -44,19 +42,6 @@ public class RExpUtil {
 	static
 	public <E> List<E> getColumn(List<E> matrix, int k, int rows, int columns){
 		return matrix.subList(k * rows, (k * rows) + rows);
-	}
-
-	static
-	public DataField find(FieldName name, List<DataField> dataFields){
-
-		for(DataField dataField : dataFields){
-
-			if((name).equals(dataField.getName())){
-				return dataField;
-			}
-		}
-
-		throw new IllegalArgumentException();
 	}
 
 	static
