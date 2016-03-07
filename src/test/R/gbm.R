@@ -13,12 +13,10 @@ audit_y = audit[, ncol(audit)]
 audit_y = as.numeric(audit_y == "1")
 
 predictGBMAudit = function(audit.gbm){
-	adjusted = predict(audit.gbm, newdata = audit_x, n.trees = 100)
-
 	probability_1 = predict(audit.gbm, newdata = audit_x, type = "response", n.trees = 100)
 	probability_0 = (1 - probability_1)
 
-	result = data.frame("Adjusted" = adjusted, "probability_0" = probability_0, "probability_1" = probability_1)
+	result = data.frame("Adjusted" = as.integer(probability_1 > 0.5), "probability_0" = probability_0, "probability_1" = probability_1)
 
 	return (result)
 }
