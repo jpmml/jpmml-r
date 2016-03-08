@@ -62,6 +62,10 @@ public class IsolationForestConverter extends Converter {
 		RDoubleVector ntree = (RDoubleVector)iForest.getValue("ntree");
 		RBooleanVector colisfactor = (RBooleanVector)iForest.getValue("colisfactor");
 
+		if(trees == null){
+			throw new IllegalArgumentException();
+		}
+
 		RIntegerVector xrow = (RIntegerVector)trees.getValue("xrow");
 
 		if(xcols.size() != colisfactor.size()){
