@@ -47,7 +47,7 @@ public class XGBoostConverter extends Converter {
 
 			FeatureMap featureMap = loadFeatureMap(fmap);
 
-			pmml = learner.encodePMML(featureMap);
+			pmml = learner.encodePMML(null, null, featureMap);
 		} catch(IOException ioe){
 			throw new IllegalArgumentException(ioe);
 		}
