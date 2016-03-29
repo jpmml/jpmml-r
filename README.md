@@ -67,6 +67,11 @@ Converting the RDS file `rf.rds` to a PMML file `rf.pmml`:
 java -jar target/converter-executable-1.1-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
+Getting help:
+```
+java -jar target/converter-executable-1.1-SNAPSHOT.jar --help
+```
+
 The conversion of large files (1 GB and beyond) can be sped up by increasing the JVM heap size using `-Xms` and `-Xmx` options:
 ```
 java -Xms4G -Xmx8G -jar target/converter-executable-1.1-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
@@ -74,7 +79,7 @@ java -Xms4G -Xmx8G -jar target/converter-executable-1.1-SNAPSHOT.jar --rds-input
 
 # License #
 
-JPMML-R is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0] (http://www.gnu.org/licenses/agpl-3.0.html) and a commercial license.
+JPMML-R is licensed under the [GNU Affero General Public License (AGPL) version 3.0] (http://www.gnu.org/licenses/agpl-3.0.html). Other licenses are available on request.
 
 # Additional information #
 
