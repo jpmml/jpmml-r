@@ -33,6 +33,21 @@ public class GBMConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateFormulaIris() throws Exception {
+		evaluate("GBMFormula", "Iris");
+	}
+
+	@Test
+	public void evaluateFitIris() throws Exception {
+		evaluate("GBM", "Iris");
+	}
+
+	@Test
+	public void evaluateCaretFormulaIris() throws Exception {
+		evaluate("TrainGBMFormula", "Iris");
+	}
+
+	@Test
 	public void evaluateFormulaAutoNA() throws Exception {
 		evaluate("GBMFormula", "AutoNA");
 	}

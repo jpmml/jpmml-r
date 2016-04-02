@@ -42,6 +42,62 @@ set.seed(42)
 generateGBMAdaBoostAuditNA()
 generateGBMBernoulliAuditNA()
 
+iris = loadIrisCsv("Iris")
+
+iris_x = iris[, -ncol(iris)]
+iris_y = iris[, ncol(iris)]
+
+predictGBMIris = function(iris.gbm){
+	probabilities = predict(iris.gbm, newdata = iris_x, type = "response", n.trees = 7)
+	probabilities = drop(probabilities)
+
+	species = as.factor(apply(probabilities, 1, FUN = which.max))
+	levels(species) = c("setosa", "versicolor", "virginica")
+
+	result = data.frame("Species" = species, "probability_setosa" = probabilities[, 1], "probability_versicolor" = probabilities[, 2], "probability_virginica" = probabilities[, 3])
+
+	return (result)
+}
+
+generateGBMFormulaIris = function(){
+	iris.gbm = gbm(Species ~ ., data = iris, interaction.depth = 2, shrinkage = 0.1, n.trees = 7)
+	print(iris.gbm)
+
+	storeRds(iris.gbm, "GBMFormulaIris")
+	storeCsv(predictGBMIris(iris.gbm), "GBMFormulaIris")
+}
+
+generateGBMIris = function(){
+	iris.gbm = gbm.fit(x = iris_x, y = iris_y, distribution = "multinomial", interaction.depth = 2, shrinkage = 0.1, n.trees = 7, response.name = "Species")
+	print(iris.gbm)
+
+	storeRds(iris.gbm, "GBMIris")
+	storeCsv(predictGBMIris(iris.gbm), "GBMIris")
+}
+
+set.seed(42)
+
+generateGBMFormulaIris()
+generateGBMIris()
+
+generateTrainGBMFormulaIris = function(){
+	iris.train = train(Species ~ ., data = iris, method = "gbm", response.name = "Species")
+	print(iris.train)
+
+	species = predict(iris.train, newdata = iris)
+	probabilities = predict(iris.train, newdata = iris, type = "prob")
+
+	result = cbind(species, probabilities)
+	names(result) = c("Species", "probability_setosa", "probability_versicolor", "probability_virginica")
+
+	storeRds(iris.train, "TrainGBMFormulaIris")
+	storeCsv(result, "TrainGBMFormulaIris")
+}
+
+set.seed(42)
+
+generateTrainGBMFormulaIris()
+
 auto = loadAutoCsv("AutoNA")
 
 auto_x = auto[, -ncol(auto)]
