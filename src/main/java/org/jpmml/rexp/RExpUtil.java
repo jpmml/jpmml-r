@@ -29,19 +29,23 @@ public class RExpUtil {
 	}
 
 	static
-	public <E> List<E> getRow(List<E> matrix, int k, int rows, int columns){
-		List<E> row = new ArrayList<>();
+	public <E> List<E> getRow(List<E> values, int rows, int columns, int row){
+		List<E> result = new ArrayList<>(columns);
 
 		for(int i = 0; i < columns; i++){
-			row.add(matrix.get((i * rows) + k));
+			E value = values.get((i * rows) + row);
+
+			result.add(value);
 		}
 
-		return row;
+		return result;
 	}
 
 	static
-	public <E> List<E> getColumn(List<E> matrix, int k, int rows, int columns){
-		return matrix.subList(k * rows, (k * rows) + rows);
+	public <E> List<E> getColumn(List<E> values, int rows, int columns, int column){
+		int offset = (column * rows);
+
+		return values.subList(offset, offset + rows);
 	}
 
 	static

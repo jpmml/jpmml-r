@@ -77,7 +77,7 @@ public class KMeansConverter extends Converter {
 		List<Cluster> clusters = new ArrayList<>();
 
 		for(int i = 0; i < rows; i++){
-			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), i, rows, columns));
+			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), rows, columns, i));
 
 			Cluster cluster = new Cluster()
 				.setName(rowNames.getValue(i))

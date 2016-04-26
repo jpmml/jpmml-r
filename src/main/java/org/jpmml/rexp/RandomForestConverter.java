@@ -153,12 +153,12 @@ public class RandomForestConverter extends Converter {
 		for(int i = 0; i < columns; i++){
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunctionType.REGRESSION,
-					RExpUtil.getColumn(leftDaughter.getValues(), i, rows, columns),
-					RExpUtil.getColumn(rightDaughter.getValues(), i, rows, columns),
+					RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, i),
+					RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, i),
 					scoreEncoder,
-					RExpUtil.getColumn(nodepred.getValues(), i, rows, columns),
-					RExpUtil.getColumn(bestvar.getValues(), i, rows, columns),
-					RExpUtil.getColumn(xbestsplit.getValues(), i, rows, columns)
+					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
+					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
+					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i)
 				);
 
 			treeModels.add(treeModel);
@@ -196,16 +196,16 @@ public class RandomForestConverter extends Converter {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < columns; i++){
-			List<? extends Number> daughters = RExpUtil.getColumn(treemap.getValues(), i, 2 * rows, columns);
+			List<? extends Number> daughters = RExpUtil.getColumn(treemap.getValues(), 2 * rows, columns, i);
 
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunctionType.CLASSIFICATION,
-					RExpUtil.getColumn(daughters, 0, rows, columns),
-					RExpUtil.getColumn(daughters, 1, rows, columns),
+					RExpUtil.getColumn(daughters, rows, columns, 0),
+					RExpUtil.getColumn(daughters, rows, columns, 1),
 					scoreEncoder,
-					RExpUtil.getColumn(nodepred.getValues(), i, rows, columns),
-					RExpUtil.getColumn(bestvar.getValues(), i, rows, columns),
-					RExpUtil.getColumn(xbestsplit.getValues(), i, rows, columns)
+					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
+					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
+					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i)
 				);
 
 			treeModels.add(treeModel);

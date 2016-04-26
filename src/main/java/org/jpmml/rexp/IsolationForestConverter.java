@@ -149,12 +149,12 @@ public class IsolationForestConverter extends Converter {
 			root,
 			0,
 			0,
-			RExpUtil.getColumn(nodeStatus.getValues(), index, rows, columns),
-			RExpUtil.getColumn(nSam.getValues(), index, rows, columns),
-			RExpUtil.getColumn(leftDaughter.getValues(), index, rows, columns),
-			RExpUtil.getColumn(rightDaughter.getValues(), index, rows, columns),
-			RExpUtil.getColumn(splitAtt.getValues(), index, rows, columns),
-			RExpUtil.getColumn(splitPoint.getValues(), index, rows, columns)
+			RExpUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
+			RExpUtil.getColumn(nSam.getValues(), rows, columns, index),
+			RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, index),
+			RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, index),
+			RExpUtil.getColumn(splitAtt.getValues(), rows, columns, index),
+			RExpUtil.getColumn(splitPoint.getValues(), rows, columns, index)
 		);
 
 		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
