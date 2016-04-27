@@ -85,10 +85,17 @@ public class GBMConverter extends Converter {
 		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
 		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
-		RStringVector response_name = (RStringVector)gbm.getValue("response.name");
 		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
 		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
-		RDoubleVector var_type = (RDoubleVector)gbm.getValue("var.type");
+		RNumberVector<?> var_type = (RNumberVector<?>)gbm.getValue("var.type");
+
+		RStringVector response_name;
+
+		try {
+			response_name = (RStringVector)gbm.getValue("response.name");
+		} catch(IllegalArgumentException iae){
+			response_name = null;
+		}
 
 		RStringVector classes;
 
@@ -124,11 +131,19 @@ public class GBMConverter extends Converter {
 		return pmml;
 	}
 
-	private void initFields(RStringVector distribution, RStringVector response_name, RStringVector classes, RStringVector var_names, RDoubleVector var_type, RGenericVector var_levels){
+	private void initFields(RStringVector distribution, RStringVector response_name, RStringVector classes, RStringVector var_names, RNumberVector<?> var_type, RGenericVector var_levels){
 
 		// Dependent variable
 		{
-			FieldName responseName = FieldName.create(response_name.asScalar());
+			FieldName responseName;
+
+			if(response_name != null){
+				responseName = FieldName.create(response_name.asScalar());
+			} else
+
+			{
+				responseName = FieldName.create("y");
+			}
 
 			DataField dataField;
 
@@ -166,7 +181,7 @@ public class GBMConverter extends Converter {
 		for(int i = 0; i < var_names.size(); i++){
 			FieldName varName = FieldName.create(var_names.getValue(i));
 
-			boolean categorical = (var_type.getValue(i) > 0d);
+			boolean categorical = (ValueUtil.asInt(var_type.getValue(i)) > 0);
 
 			DataField dataField = PMMLUtil.createDataField(varName, categorical);
 
