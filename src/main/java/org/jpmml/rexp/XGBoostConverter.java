@@ -38,7 +38,14 @@ public class XGBoostConverter extends Converter {
 
 	private PMML convert(RGenericVector booster){
 		RRaw raw = (RRaw)booster.getValue("raw");
-		RVector<?> fmap = (RVector<?>)booster.getValue("fmap");
+
+		RVector<?> fmap;
+
+		try {
+			fmap = (RVector<?>)booster.getValue("fmap");
+		} catch(IllegalArgumentException iae){
+			throw new IllegalArgumentException("No feature map information. Please initialize the \'fmap\' attribute");
+		}
 
 		PMML pmml;
 

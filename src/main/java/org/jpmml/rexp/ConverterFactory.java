@@ -43,7 +43,7 @@ public class ConverterFactory {
 			}
 		}
 
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException("No built-in converter for class " + names.getValues());
 	}
 
 	static
