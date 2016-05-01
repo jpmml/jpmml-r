@@ -25,7 +25,6 @@ import java.util.List;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
 import org.dmg.pmml.DataDictionary;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
@@ -44,6 +43,7 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
+import org.dmg.pmml.RegressionNormalizationMethodType;
 import org.dmg.pmml.Segment;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
@@ -251,13 +251,11 @@ public class GBMConverter extends Converter {
 		Output output = new Output()
 			.addOutputFields(rawGbmValue, scaledGbmValue);
 
-		FieldName inputField = scaledGbmValue.getName();
-
 		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
 			.setSegmentation(segmentation)
 			.setOutput(output);
 
-		return MiningModelUtil.createBinaryLogisticClassification(targetField, Lists.reverse(GBMConverter.BINARY_CLASSES), activeFields, miningModel, inputField, coefficient, true);
+		return MiningModelUtil.createBinaryLogisticClassification(targetField, GBMConverter.BINARY_CLASSES, activeFields, miningModel, coefficient, true);
 	}
 
 	private MiningModel encodeMultinomialClassification(RStringVector classes, Segmentation segmentation, Double initF){
@@ -273,8 +271,6 @@ public class GBMConverter extends Converter {
 
 		List<Model> models = new ArrayList<>();
 
-		List<FieldName> inputFields = new ArrayList<>();
-
 		for(int i = 0; i < classes.size(); i++){
 			String value = classes.getValue(i);
 
@@ -284,9 +280,7 @@ public class GBMConverter extends Converter {
 				.setFeature(FeatureType.TRANSFORMED_VALUE)
 				.setDataType(DataType.DOUBLE)
 				.setOpType(OpType.CONTINUOUS)
-				.setExpression(PMMLUtil.createApply("exp", encodeScalingExpression(rawGbmValue.getName(), initF)));
-
-			inputFields.add(transformedGbmValue.getName());
+				.setExpression(encodeScalingExpression(rawGbmValue.getName(), initF));
 
 			List<Segment> valueSegments = getColumn(segments, i, (segments.size() / classes.size()), classes.size());
 
@@ -302,7 +296,7 @@ public class GBMConverter extends Converter {
 			models.add(valueMiningModel);
 		}
 
-		MiningModel miningModel = MiningModelUtil.createClassification(targetField, classes.getValues(), activeFields, models, inputFields, true);
+		MiningModel miningModel = MiningModelUtil.createClassification(targetField, classes.getValues(), activeFields, models, RegressionNormalizationMethodType.SOFTMAX, true);
 
 		return miningModel;
 	}
