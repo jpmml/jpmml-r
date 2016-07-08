@@ -48,7 +48,7 @@ public class Main {
 	private boolean help = false;
 
 	@Parameter (
-		names = "--rds-input",
+		names = {"--model-rds-input", "--rds-input"},
 		description = "RDS input file",
 		required = true
 	)
@@ -143,15 +143,15 @@ public class Main {
 		PMML pmml;
 
 		try {
-			logger.info("Converting model..");
+			logger.info("Converting..");
 
 			long start = System.currentTimeMillis();
 			pmml = converter.convert(rexp);
 			long end = System.currentTimeMillis();
 
-			logger.info("Converted model in {} ms.", (end - start));
+			logger.info("Converted in {} ms.", (end - start));
 		} catch(Exception e){
-			logger.error("Failed to convert model", e);
+			logger.error("Failed to convert", e);
 
 			throw e;
 		} // End try

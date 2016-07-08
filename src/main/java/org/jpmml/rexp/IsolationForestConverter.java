@@ -94,7 +94,7 @@ public class IsolationForestConverter extends Converter {
 
 		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
 
 		Output output = encodeOutput(xrow);
 
@@ -114,7 +114,7 @@ public class IsolationForestConverter extends Converter {
 
 		// Dependent variable
 		{
-			DataField dataField = PMMLUtil.createDataField(FieldName.create("pathLength"), false);
+			DataField dataField = DataFieldUtil.createDataField(FieldName.create("pathLength"), false);
 
 			this.dataFields.add(dataField);
 		}
@@ -123,7 +123,7 @@ public class IsolationForestConverter extends Converter {
 		for(int i = 0; i < xcols.size(); i++){
 			String xcol = xcols.getValue(i);
 
-			DataField dataField = PMMLUtil.createDataField(FieldName.create(xcol), false);
+			DataField dataField = DataFieldUtil.createDataField(FieldName.create(xcol), false);
 
 			this.dataFields.add(dataField);
 		}
@@ -157,7 +157,7 @@ public class IsolationForestConverter extends Converter {
 			RExpUtil.getColumn(splitPoint.getValues(), rows, columns, index)
 		);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);

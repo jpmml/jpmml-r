@@ -97,7 +97,7 @@ public class BinaryTreeConverter extends Converter {
 
 			RStringVector targetClass = (RStringVector)target.getAttributeValue("class");
 
-			dataField = PMMLUtil.createDataField(FieldName.create(name), RExpUtil.getDataType(targetClass.asScalar()));
+			dataField = DataFieldUtil.createDataField(FieldName.create(name), RExpUtil.getDataType(targetClass.asScalar()));
 
 			RStringVector targetLevels = (RStringVector)levels.getValue(name);
 
@@ -108,7 +108,7 @@ public class BinaryTreeConverter extends Converter {
 		if((Boolean.FALSE).equals(categorical)){
 			this.miningFunction = MiningFunctionType.REGRESSION;
 
-			dataField = PMMLUtil.createDataField(FieldName.create(name), false);
+			dataField = DataFieldUtil.createDataField(FieldName.create(name), false);
 		} else
 
 		{
@@ -123,7 +123,7 @@ public class BinaryTreeConverter extends Converter {
 	}
 
 	private DataField createDataField(FieldName name, DataType dataType){
-		DataField dataField = PMMLUtil.createDataField(name, dataType);
+		DataField dataField = DataFieldUtil.createDataField(name, dataType);
 
 		this.dataFields.add(dataField);
 
@@ -136,7 +136,7 @@ public class BinaryTreeConverter extends Converter {
 
 		encodeNode(root, tree);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields, root);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields, root);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -260,12 +260,12 @@ public class BinaryTreeConverter extends Converter {
 		Predicate leftPredicate = new SimpleSetPredicate()
 			.setField(dataField.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(PMMLUtil.createArray(dataField.getDataType(), leftValues));
+			.setArray(DataFieldUtil.createArray(dataField, leftValues));
 
 		Predicate rightPredicate = new SimpleSetPredicate()
 			.setField(dataField.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(PMMLUtil.createArray(dataField.getDataType(), rightValues));
+			.setArray(DataFieldUtil.createArray(dataField, rightValues));
 
 		return Arrays.asList(leftPredicate, rightPredicate);
 	}
@@ -349,7 +349,7 @@ public class BinaryTreeConverter extends Converter {
 	private Output encodeClassificationOutput(){
 		DataField dataField = this.dataFields.get(0);
 
-		Output output = new Output(ModelUtil.createProbabilityFields(dataField))
+		Output output = new Output(DataFieldUtil.createProbabilityFields(dataField))
 			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
 
 		return output;

@@ -45,10 +45,7 @@ import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
-import org.jpmml.converter.ElementKey;
-import org.jpmml.converter.FieldTypeAnalyzer;
 import org.jpmml.converter.MiningModelUtil;
-import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
 
@@ -233,9 +230,9 @@ public class RandomForestConverter extends Converter {
 		FieldTypeAnalyzer fieldTypeAnalyzer = new RandomForestFieldTypeAnalyzer();
 		fieldTypeAnalyzer.applyTo(segmentation);
 
-		PMMLUtil.refineDataFields(this.dataFields, fieldTypeAnalyzer);
+		DataFieldUtil.refineDataFields(this.dataFields, fieldTypeAnalyzer);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
 
 		Output output = encodeOutput(miningFunction);
 
@@ -261,7 +258,7 @@ public class RandomForestConverter extends Converter {
 
 			String dataClass = dataClasses.getValue(i);
 
-			DataField dataField = PMMLUtil.createDataField(FieldName.create(name), RExpUtil.getDataType(dataClass));
+			DataField dataField = DataFieldUtil.createDataField(FieldName.create(name), RExpUtil.getDataType(dataClass));
 
 			this.dataFields.add(dataField);
 		}
@@ -273,7 +270,7 @@ public class RandomForestConverter extends Converter {
 		{
 			boolean categorical = (y instanceof RIntegerVector);
 
-			DataField dataField = PMMLUtil.createDataField(FieldName.create("_target"), categorical);
+			DataField dataField = DataFieldUtil.createDataField(FieldName.create("_target"), categorical);
 
 			this.dataFields.add(dataField);
 		}
@@ -284,7 +281,7 @@ public class RandomForestConverter extends Converter {
 
 			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
 
-			DataField dataField = PMMLUtil.createDataField(FieldName.create(xName), categorical);
+			DataField dataField = DataFieldUtil.createDataField(FieldName.create(xName), categorical);
 
 			this.dataFields.add(dataField);
 		}
@@ -324,7 +321,7 @@ public class RandomForestConverter extends Converter {
 			List<Value> values = dataField.getValues();
 			values.addAll(PMMLUtil.createValues(xvalues.getValues()));
 
-			dataField = PMMLUtil.refineDataField(dataField);
+			dataField = DataFieldUtil.refineDataField(dataField);
 		}
 	}
 
@@ -336,7 +333,7 @@ public class RandomForestConverter extends Converter {
 		List<Value> values = dataField.getValues();
 		values.addAll(PMMLUtil.createValues(levels.getValues()));
 
-		dataField = PMMLUtil.refineDataField(dataField);
+		dataField = DataFieldUtil.refineDataField(dataField);
 	}
 
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit){
@@ -346,7 +343,7 @@ public class RandomForestConverter extends Converter {
 
 		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -435,7 +432,7 @@ public class RandomForestConverter extends Converter {
 		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
 			.setField(dataField.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(PMMLUtil.createArray(dataField.getDataType(), values));
+			.setArray(DataFieldUtil.createArray(dataField, values));
 
 		return simpleSetPredicate;
 	}
@@ -479,7 +476,7 @@ public class RandomForestConverter extends Converter {
 	private Output encodeClassificationOutput(){
 		DataField dataField = this.dataFields.get(0);
 
-		Output output = new Output(ModelUtil.createProbabilityFields(dataField));
+		Output output = new Output(DataFieldUtil.createProbabilityFields(dataField));
 
 		return output;
 	}

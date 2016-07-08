@@ -53,7 +53,6 @@ import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.TreeModel.SplitCharacteristic;
 import org.dmg.pmml.True;
 import org.dmg.pmml.Value;
-import org.jpmml.converter.ElementKey;
 import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
@@ -150,13 +149,13 @@ public class GBMConverter extends Converter {
 			switch(distribution.asScalar()){
 				case "gaussian":
 					{
-						dataField = PMMLUtil.createDataField(responseName, false);
+						dataField = DataFieldUtil.createDataField(responseName, false);
 					}
 					break;
 				case "adaboost":
 				case "bernoulli":
 					{
-						dataField = PMMLUtil.createDataField(responseName, true);
+						dataField = DataFieldUtil.createDataField(responseName, true);
 
 						List<Value> values = dataField.getValues();
 						values.addAll(PMMLUtil.createValues(GBMConverter.BINARY_CLASSES));
@@ -164,7 +163,7 @@ public class GBMConverter extends Converter {
 					break;
 				case "multinomial":
 					{
-						dataField = PMMLUtil.createDataField(responseName, true);
+						dataField = DataFieldUtil.createDataField(responseName, true);
 
 						List<Value> values = dataField.getValues();
 						values.addAll(PMMLUtil.createValues(classes.getValues()));
@@ -183,7 +182,7 @@ public class GBMConverter extends Converter {
 
 			boolean categorical = (ValueUtil.asInt(var_type.getValue(i)) > 0);
 
-			DataField dataField = PMMLUtil.createDataField(varName, categorical);
+			DataField dataField = DataFieldUtil.createDataField(varName, categorical);
 
 			if(categorical){
 				RStringVector var_level = (RStringVector)var_levels.getValue(i);
@@ -191,7 +190,7 @@ public class GBMConverter extends Converter {
 				List<Value> values = dataField.getValues();
 				values.addAll(PMMLUtil.createValues(var_level.getValues()));
 
-				dataField = PMMLUtil.refineDataField(dataField);
+				dataField = DataFieldUtil.refineDataField(dataField);
 			}
 
 			this.dataFields.add(dataField);
@@ -219,10 +218,10 @@ public class GBMConverter extends Converter {
 	private MiningModel encodeRegression(Segmentation segmentation, Double initF){
 		DataField dataField = this.dataFields.get(0);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
 
 		Targets targets = new Targets()
-			.addTargets(ModelUtil.createRescaleTarget(dataField, null, initF));
+			.addTargets(ModelUtil.createRescaleTarget(dataField.getName(), null, initF));
 
 		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
 			.setSegmentation(segmentation)
@@ -308,7 +307,7 @@ public class GBMConverter extends Converter {
 
 		encodeNode(root, 0, tree, c_splits);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(SplitCharacteristic.MULTI_SPLIT);
@@ -425,7 +424,7 @@ public class GBMConverter extends Converter {
 		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
 			.setField(dataField.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(PMMLUtil.createArray(dataField.getDataType(), values));
+			.setArray(DataFieldUtil.createArray(dataField, values));
 
 		return simpleSetPredicate;
 	}
