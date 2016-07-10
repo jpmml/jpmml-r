@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,18 +18,36 @@
  */
 package org.jpmml.rexp;
 
+import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
+import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.Schema;
 
-public class TrainConverter extends Converter<RGenericVector> {
+abstract
+public class ModelConverter<R extends RExp> extends Converter<R> {
+
+	abstract
+	public void encodeFeatures(R rexp, FeatureMapper featureMapper);
+
+	abstract
+	public Schema createSchema(FeatureMapper featureMapper);
+
+	abstract
+	public Model encodeModel(R rexp, Schema schema);
 
 	@Override
-	public PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
+	public PMML convert(R rexp){
+		FeatureMapper featureMapper = new FeatureMapper();
 
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
+		encodeFeatures(rexp, featureMapper);
 
-		ModelConverter<RExp> converter = (ModelConverter<RExp>)converterFactory.newConverter(finalModel);
+		Schema schema = createSchema(featureMapper);
 
-		return converter.convert(finalModel);
+		Model model = encodeModel(rexp, schema);
+
+		PMML pmml = featureMapper.encodePMML(model)
+			.setHeader(PMMLUtil.createHeader("JPMML-R", "1.1-SNAPSHOT"));
+
+		return pmml;
 	}
 }

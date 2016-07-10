@@ -23,22 +23,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.dmg.pmml.PMML;
+import org.dmg.pmml.DataField;
+import org.dmg.pmml.FieldName;
+import org.dmg.pmml.MiningModel;
+import org.jpmml.converter.Schema;
+import org.jpmml.xgboost.Classification;
 import org.jpmml.xgboost.FeatureMap;
+import org.jpmml.xgboost.GBTree;
 import org.jpmml.xgboost.Learner;
+import org.jpmml.xgboost.ObjFunction;
 import org.jpmml.xgboost.XGBoostUtil;
 
-public class XGBoostConverter extends Converter {
+public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector booster){
-		RRaw raw = (RRaw)booster.getValue("raw");
-
+	public void encodeFeatures(RGenericVector booster, FeatureMapper featureMapper){
 		RVector<?> fmap;
 
 		try {
@@ -47,28 +49,64 @@ public class XGBoostConverter extends Converter {
 			throw new IllegalArgumentException("No feature map information. Please initialize the \'fmap\' attribute");
 		}
 
-		PMML pmml;
+		FeatureMap featureMap;
 
 		try {
-			Learner learner = loadLearner(raw);
-
-			FeatureMap featureMap = loadFeatureMap(fmap);
-
-			pmml = learner.encodePMML(null, null, featureMap);
+			featureMap = loadFeatureMap(fmap);
 		} catch(IOException ioe){
 			throw new IllegalArgumentException(ioe);
 		}
 
-		return pmml;
+		// Dependent variable
+		{
+			featureMapper.append(FieldName.create("_target"), false);
+		}
+
+		// Independent variables
+		List<DataField> dataFields = featureMap.getDataFields();
+		for(DataField dataField : dataFields){
+			featureMapper.append(dataField);
+		}
 	}
 
-	static
-	private Learner loadLearner(RRaw raw) throws IOException {
-		byte[] value = raw.getValue();
+	@Override
+	public Schema createSchema(FeatureMapper featureMapper){
+		return featureMapper.createSupervisedSchema();
+	}
 
-		try(InputStream is = new ByteArrayInputStream(value)){
-			return XGBoostUtil.loadLearner(is);
+	@Override
+	public MiningModel encodeModel(RGenericVector booster, Schema schema){
+		RRaw raw = (RRaw)booster.getValue("raw");
+
+		Learner learner;
+
+		try {
+			learner = loadLearner(raw);
+		} catch(IOException ioe){
+			throw new IllegalArgumentException(ioe);
 		}
+
+		ObjFunction obj = learner.getObj();
+
+		float baseScore = learner.getBaseScore();
+
+		if(obj instanceof Classification){
+			Classification classification = (Classification)obj;
+
+			List<String> targetCategories = new ArrayList<>();
+
+			for(int i = 0; i < classification.getNumClass(); i++){
+				targetCategories.add(String.valueOf(i + 1));
+			}
+
+			schema = new Schema(schema.getTargetField(), targetCategories, schema.getActiveFields(), schema.getFeatures());
+		}
+
+		GBTree gbt = learner.getGBTree();
+
+		MiningModel miningModel = gbt.encodeMiningModel(obj, baseScore, schema);
+
+		return miningModel;
 	}
 
 	static
@@ -107,5 +145,14 @@ public class XGBoostConverter extends Converter {
 		}
 
 		return featureMap;
+	}
+
+	static
+	private Learner loadLearner(RRaw raw) throws IOException {
+		byte[] value = raw.getValue();
+
+		try(InputStream is = new ByteArrayInputStream(value)){
+			return XGBoostUtil.loadLearner(is);
+		}
 	}
 }

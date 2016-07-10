@@ -18,18 +18,11 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.Header;
 import org.dmg.pmml.PMML;
-import org.jpmml.converter.PMMLUtil;
 
 abstract
-public class Converter {
+public class Converter<R extends RExp> {
 
 	abstract
-	public PMML convert(RExp rexp);
-
-	static
-	public Header createHeader(){
-		return PMMLUtil.createHeader("JPMML-R", "1.1-SNAPSHOT");
-	}
+	public PMML convert(R rexp);
 }

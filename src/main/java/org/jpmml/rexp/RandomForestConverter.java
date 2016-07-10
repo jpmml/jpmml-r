@@ -26,8 +26,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
-import org.dmg.pmml.DataDictionary;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunctionType;
@@ -35,25 +33,22 @@ import org.dmg.pmml.MiningModel;
 import org.dmg.pmml.MiningSchema;
 import org.dmg.pmml.MultipleModelMethodType;
 import org.dmg.pmml.Node;
-import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
-import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
-import org.dmg.pmml.Value;
+import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.Feature;
+import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.MiningModelUtil;
-import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class RandomForestConverter extends Converter {
-
-	private List<DataField> dataFields = new ArrayList<>();
-
-	private List<DataField> treeDataFields = null;
+public class RandomForestConverter extends ModelConverter<RGenericVector> {
 
 	private LoadingCache<ElementKey, Predicate> predicateCache = CacheBuilder.newBuilder()
 		.build(new CacheLoader<ElementKey, Predicate>(){
@@ -62,21 +57,13 @@ public class RandomForestConverter extends Converter {
 			public Predicate load(ElementKey key){
 				Object[] content = key.getContent();
 
-				return encodeCategoricalSplit((DataField)content[0], (Double)content[1], (Boolean)content[2]);
+				return encodeCategoricalSplit((ListFeature)content[0], (Double)content[1], (Boolean)content[2]);
 			}
 		});
 
 
-	public RandomForestConverter(){
-	}
-
 	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector randomForest){
-		RStringVector type = (RStringVector)randomForest.getValue("type");
+	public void encodeFeatures(RGenericVector randomForest, FeatureMapper featureMapper){
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
 
 		RNumberVector<?> y;
@@ -85,54 +72,136 @@ public class RandomForestConverter extends Converter {
 			y = (RNumberVector<?>)randomForest.getValue("y");
 		} catch(IllegalArgumentException iae){
 			y = null;
-		} // End try
+		}
+
+		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
+		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
 
 		try {
 			RExp terms = randomForest.getValue("terms");
 
 			// The RF model was trained using the formula interface
-			initFormulaFields(terms);
+			encodeFormula(terms, y, xlevels, ncat, featureMapper);
 		} catch(IllegalArgumentException iae){
 			RStringVector xNames;
 
 			try {
 				xNames = (RStringVector)randomForest.getValue("xNames");
 			} catch(IllegalArgumentException iaeChild){
-				RExp xlevels = forest.getValue("xlevels");
-
 				xNames = xlevels.names();
 			}
 
-			RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
-
 			// The RF model was trained using the matrix (ie. non-formula) interface
-			initNonFormulaFields(xNames, ncat, y);
+			encodeNonFormula(xNames, y, xlevels, ncat, featureMapper);
 		}
+	}
+
+	@Override
+	public Schema createSchema(FeatureMapper featureMapper){
+		return featureMapper.createSupervisedSchema();
+	}
+
+	@Override
+	public MiningModel encodeModel(RGenericVector randomForest, Schema schema){
+		RStringVector type = (RStringVector)randomForest.getValue("type");
+		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
 
 		switch(type.asScalar()){
 			case "regression":
-				return convertRegression(forest);
+				return encodeRegression(forest, schema);
 			case "classification":
-				return convertClassification(forest, (RIntegerVector)y);
+				return encodeClassification(forest, schema);
 			default:
-				break;
+				throw new IllegalArgumentException();
 		}
-
-		throw new IllegalArgumentException();
 	}
 
-	private PMML convertRegression(RGenericVector forest){
+	private void encodeFormula(RExp terms, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, FeatureMapper featureMapper){
+		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
+
+		RStringVector dataClassNames = dataClasses.names();
+
+		// Dependent variable
+		{
+			FieldName name = FieldName.create(dataClassNames.getValue(0));
+			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(0));
+
+			List<String> targetCategories = getFactorLevels(y);
+			if(targetCategories != null){
+				featureMapper.append(name, dataType, targetCategories);
+			} else
+
+			{
+				featureMapper.append(name, dataType);
+			}
+		}
+
+		RStringVector xlevelNames = xlevels.names();
+
+		// Independent variables
+		for(int i = 0; i < ncat.size(); i++){
+			int index = (dataClassNames.getValues()).indexOf(xlevelNames.getValue(i));
+			if(index < 1){
+				throw new IllegalArgumentException();
+			}
+
+			FieldName name = FieldName.create(dataClassNames.getValue(index));
+			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(index));
+
+			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
+			if(categorical){
+				RStringVector levels = (RStringVector)xlevels.getValue(i);
+
+				featureMapper.append(name, dataType, levels.getValues());
+			} else
+
+			{
+				featureMapper.append(name, dataType);
+			}
+		}
+	}
+
+	private void encodeNonFormula(RStringVector xNames, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, FeatureMapper featureMapper){
+
+		// Dependent variable
+		{
+			FieldName name = FieldName.create("_target");
+
+			List<String> targetCategories = getFactorLevels(y);
+			if(targetCategories != null){
+				featureMapper.append(name, targetCategories);
+			} else
+
+			{
+				featureMapper.append(name, false);
+			}
+		}
+
+		// Independernt variables
+		for(int i = 0; i < ncat.size(); i++){
+			FieldName name = FieldName.create(xNames.getValue(i));
+
+			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
+			if(categorical){
+				RStringVector levels = (RStringVector)xlevels.getValue(i);
+
+				featureMapper.append(name, levels.getValues());
+			} else
+
+			{
+				featureMapper.append(name, false);
+			}
+		}
+	}
+
+	private MiningModel encodeRegression(RGenericVector forest, final Schema schema){
 		RNumberVector<?> leftDaughter = (RNumberVector<?>)forest.getValue("leftDaughter");
 		RNumberVector<?> rightDaughter = (RNumberVector<?>)forest.getValue("rightDaughter");
 		RDoubleVector nodepred = (RDoubleVector)forest.getValue("nodepred");
 		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
-		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
 		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
-		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
-
-		initActiveFields(xlevels, ncat);
 
 		ScoreEncoder<Double> scoreEncoder = new ScoreEncoder<Double>(){
 
@@ -145,6 +214,8 @@ public class RandomForestConverter extends Converter {
 		int rows = nrnodes.asScalar();
 		int columns = ValueUtil.asInt(ntree.asScalar());
 
+		Schema segmentSchema = schema.toAnonymousSchema();
+
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < columns; i++){
@@ -155,40 +226,46 @@ public class RandomForestConverter extends Converter {
 					scoreEncoder,
 					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
 					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
-					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i)
+					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
+					segmentSchema
 				);
 
 			treeModels.add(treeModel);
 		}
 
-		return encodePMML(MiningFunctionType.REGRESSION, treeModels);
+		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
+
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
+
+		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
+			.setSegmentation(segmentation);
+
+		return miningModel;
 	}
 
-	private PMML convertClassification(RGenericVector forest, RIntegerVector y){
+	private MiningModel encodeClassification(RGenericVector forest, final Schema schema){
 		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
 		RNumberVector<?> treemap = (RNumberVector<?>)forest.getValue("treemap");
 		RIntegerVector nodepred = (RIntegerVector)forest.getValue("nodepred");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
-		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
 		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
-		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
-
-		initPredictedFields(y);
-		initActiveFields(xlevels, ncat);
 
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){
 
+			private List<String> targetCategories = schema.getTargetCategories();
+
+
 			@Override
 			public String encode(Integer key){
-				Value value = getLevel(key - 1);
-
-				return value.getValue();
+				return this.targetCategories.get(key - 1);
 			}
 		};
 
 		int rows = nrnodes.asScalar();
 		int columns = ValueUtil.asInt(ntree.asScalar());
+
+		Schema segmentSchema = schema.toAnonymousSchema();
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
@@ -202,148 +279,34 @@ public class RandomForestConverter extends Converter {
 					scoreEncoder,
 					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
 					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
-					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i)
+					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
+					segmentSchema
 				);
 
 			treeModels.add(treeModel);
 		}
 
-		return encodePMML(MiningFunctionType.CLASSIFICATION, treeModels);
-	}
+		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels);
 
-	private PMML encodePMML(MiningFunctionType miningFunction, List<TreeModel> treeModels){
-		MultipleModelMethodType multipleModelMethod;
+		Output output = ModelUtil.createProbabilityOutput(schema);
 
-		switch(miningFunction){
-			case REGRESSION:
-				multipleModelMethod = MultipleModelMethodType.AVERAGE;
-				break;
-			case CLASSIFICATION:
-				multipleModelMethod = MultipleModelMethodType.MAJORITY_VOTE;
-				break;
-			default:
-				throw new IllegalArgumentException();
-		}
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(multipleModelMethod, treeModels);
-
-		FieldTypeAnalyzer fieldTypeAnalyzer = new RandomForestFieldTypeAnalyzer();
-		fieldTypeAnalyzer.applyTo(segmentation);
-
-		DataFieldUtil.refineDataFields(this.dataFields, fieldTypeAnalyzer);
-
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
-
-		Output output = encodeOutput(miningFunction);
-
-		MiningModel miningModel = new MiningModel(miningFunction, miningSchema)
+		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, miningSchema)
 			.setSegmentation(segmentation)
 			.setOutput(output);
 
-		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
-
-		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
-			.addModels(miningModel);
-
-		return pmml;
+		return miningModel;
 	}
 
-	private void initFormulaFields(RExp terms){
-		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
-
-		RStringVector names = dataClasses.names();
-
-		for(int i = 0; i < names.size(); i++){
-			String name = names.getValue(i);
-
-			String dataClass = dataClasses.getValue(i);
-
-			DataField dataField = DataFieldUtil.createDataField(FieldName.create(name), RExpUtil.getDataType(dataClass));
-
-			this.dataFields.add(dataField);
-		}
-	}
-
-	private void initNonFormulaFields(RStringVector xNames, RNumberVector<?> ncat, RNumberVector<?> y){
-
-		// Dependent variable
-		{
-			boolean categorical = (y instanceof RIntegerVector);
-
-			DataField dataField = DataFieldUtil.createDataField(FieldName.create("_target"), categorical);
-
-			this.dataFields.add(dataField);
-		}
-
-		// Independent variable(s)
-		for(int i = 0; i < xNames.size(); i++){
-			String xName = xNames.getValue(i);
-
-			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
-
-			DataField dataField = DataFieldUtil.createDataField(FieldName.create(xName), categorical);
-
-			this.dataFields.add(dataField);
-		}
-	}
-
-	private void initActiveFields(RGenericVector xlevels, RNumberVector<?> ncat){
-		RStringVector names;
-
-		try {
-			names = xlevels.names();
-		} catch(IllegalArgumentException iae){
-			names = null;
-		}
-
-		this.treeDataFields = new ArrayList<>();
-
-		for(int i = 0; i < ncat.size(); i++){
-			DataField dataField;
-
-			if(names != null){
-				dataField = PMMLUtil.getField(FieldName.create(names.getValue(i)), this.dataFields);
-			} else
-
-			{
-				dataField = this.dataFields.get(i + 1);
-			}
-
-			this.treeDataFields.add(dataField);
-
-			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
-			if(!categorical){
-				continue;
-			}
-
-			RStringVector xvalues = (RStringVector)xlevels.getValue(i);
-
-			List<Value> values = dataField.getValues();
-			values.addAll(PMMLUtil.createValues(xvalues.getValues()));
-
-			dataField = DataFieldUtil.refineDataField(dataField);
-		}
-	}
-
-	private void initPredictedFields(RIntegerVector y){
-		DataField dataField = this.dataFields.get(0);
-
-		RStringVector levels = y.getFactorLevels();
-
-		List<Value> values = dataField.getValues();
-		values.addAll(PMMLUtil.createValues(levels.getValues()));
-
-		dataField = DataFieldUtil.refineDataField(dataField);
-	}
-
-	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit){
+	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
 
-		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
+		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
 
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -351,38 +314,28 @@ public class RandomForestConverter extends Converter {
 		return treeModel;
 	}
 
-	private <P extends Number> void encodeNode(Node node, int i, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, ScoreEncoder<P> scoreEncoder, List<P> nodepred){
+	private <P extends Number> void encodeNode(Node node, int i, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, ScoreEncoder<P> scoreEncoder, List<P> nodepred, Schema schema){
 		Predicate leftPredicate = null;
 		Predicate rightPredicate = null;
 
 		int var = ValueUtil.asInt(bestvar.get(i));
 		if(var != 0){
-			DataField dataField = this.treeDataFields.get(var - 1);
+			Feature feature = schema.getFeature(var - 1);
 
 			Double split = xbestsplit.get(i);
 
-			OpType opType = dataField.getOpType();
+			if(feature instanceof ListFeature){
+				leftPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, split, Boolean.TRUE));
+				rightPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, split, Boolean.FALSE));
+			} else
 
-			DataType dataType = dataField.getDataType();
-			switch(dataType){
-				case BOOLEAN:
-					opType = OpType.CONTINUOUS;
-					break;
-				default:
-					break;
-			}
+			if(feature instanceof ContinuousFeature){
+				leftPredicate = encodeContinuousSplit(feature, split, true);
+				rightPredicate = encodeContinuousSplit(feature, split, false);
+			} else
 
-			switch(opType){
-				case CATEGORICAL:
-					leftPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, split, Boolean.TRUE));
-					rightPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, split, Boolean.FALSE));
-					break;
-				case CONTINUOUS:
-					leftPredicate = encodeContinuousSplit(dataField, split, true);
-					rightPredicate = encodeContinuousSplit(dataField, split, false);
-					break;
-				default:
-					throw new IllegalArgumentException();
+			{
+				throw new IllegalArgumentException();
 			}
 		} else
 
@@ -398,7 +351,7 @@ public class RandomForestConverter extends Converter {
 				.setId(String.valueOf(left))
 				.setPredicate(leftPredicate);
 
-			encodeNode(leftChild, left - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
+			encodeNode(leftChild, left - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
 
 			node.addNodes(leftChild);
 		}
@@ -409,94 +362,66 @@ public class RandomForestConverter extends Converter {
 				.setId(String.valueOf(right))
 				.setPredicate(rightPredicate);
 
-			encodeNode(rightChild, right - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred);
+			encodeNode(rightChild, right - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
 
 			node.addNodes(rightChild);
 		}
 	}
 
-	private Predicate encodeCategoricalSplit(DataField dataField, Double split, boolean left){
-		List<Value> values = selectValues(dataField.getValues(), split, left);
+	private Predicate encodeCategoricalSplit(ListFeature listFeature, Double split, boolean left){
+		List<String> values = selectValues(listFeature.getValues(), split, left);
 
 		if(values.size() == 1){
-			Value value = values.get(0);
+			String value = values.get(0);
 
 			SimplePredicate simplePredicate = new SimplePredicate()
-				.setField(dataField.getName())
+				.setField(listFeature.getName())
 				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(value.getValue());
+				.setValue(value);
 
 			return simplePredicate;
 		}
 
 		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
-			.setField(dataField.getName())
+			.setField(listFeature.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(DataFieldUtil.createArray(dataField, values));
+			.setArray(FeatureUtil.createArray(listFeature, values));
 
 		return simpleSetPredicate;
 	}
 
-	private Predicate encodeContinuousSplit(DataField dataField, Double split, boolean left){
+	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
 		SimplePredicate simplePredicate;
 
-		DataType dataType = dataField.getDataType();
-
-		if((DataType.DOUBLE).equals(dataType)){
-			simplePredicate = new SimplePredicate()
-				.setField(dataField.getName())
-				.setOperator(left ? SimplePredicate.Operator.LESS_OR_EQUAL : SimplePredicate.Operator.GREATER_THAN)
-				.setValue(ValueUtil.formatValue(split));
-		} else
-
-		if((DataType.BOOLEAN).equals(dataType)){
-			simplePredicate = new SimplePredicate()
-				.setField(dataField.getName())
-				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(split.doubleValue() <= 0.5d ? Boolean.toString(!left) : Boolean.toString(left));
-		} else
-
-		{
-			throw new IllegalArgumentException();
+		DataType dataType = feature.getDataType();
+		switch(dataType){
+			case DOUBLE:
+				simplePredicate = new SimplePredicate()
+					.setField(feature.getName())
+					.setOperator(left ? SimplePredicate.Operator.LESS_OR_EQUAL : SimplePredicate.Operator.GREATER_THAN)
+					.setValue(ValueUtil.formatValue(split));
+				break;
+			case BOOLEAN:
+				simplePredicate = new SimplePredicate()
+					.setField(feature.getName())
+					.setOperator(SimplePredicate.Operator.EQUAL)
+					.setValue(split.doubleValue() <= 0.5d ? Boolean.toString(!left) : Boolean.toString(left));
+				break;
+			default:
+				throw new IllegalArgumentException();
 		}
 
 		return simplePredicate;
 	}
 
-	private Output encodeOutput(MiningFunctionType miningFunction){
-
-		switch(miningFunction){
-			case CLASSIFICATION:
-				return encodeClassificationOutput();
-			default:
-				return null;
-		}
-	}
-
-	private Output encodeClassificationOutput(){
-		DataField dataField = this.dataFields.get(0);
-
-		Output output = new Output(DataFieldUtil.createProbabilityFields(dataField));
-
-		return output;
-	}
-
-	private Value getLevel(int i){
-		DataField dataField = this.dataFields.get(0);
-
-		List<Value> values = dataField.getValues();
-
-		return values.get(i);
-	}
-
 	static
-	List<Value> selectValues(List<Value> values, Double split, boolean left){
-		List<Value> result = new ArrayList<>();
+	<E> List<E> selectValues(List<E> values, Double split, boolean left){
+		List<E> result = new ArrayList<>();
 
 		UnsignedLong bits = toUnsignedLong(split.doubleValue());
 
 		for(int i = 0; i < values.size(); i++){
-			Value value = values.get(i);
+			E value = values.get(i);
 
 			boolean append;
 
@@ -530,6 +455,20 @@ public class RandomForestConverter extends Converter {
 		}
 
 		return UnsignedLong.fromLongBits((long)value);
+	}
+
+	static
+	private List<String> getFactorLevels(RExp rexp){
+
+		if(rexp instanceof RIntegerVector){
+			RIntegerVector factor = (RIntegerVector)rexp;
+
+			RStringVector levels = factor.getFactorLevels();
+
+			return levels.getValues();
+		}
+
+		return null;
 	}
 
 	static

@@ -21,65 +21,61 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.dmg.pmml.Array;
 import org.dmg.pmml.Cluster;
 import org.dmg.pmml.ClusteringField;
 import org.dmg.pmml.ClusteringModel;
 import org.dmg.pmml.CompareFunctionType;
 import org.dmg.pmml.ComparisonMeasure;
-import org.dmg.pmml.DataDictionary;
-import org.dmg.pmml.DataField;
-import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunctionType;
 import org.dmg.pmml.MiningSchema;
-import org.dmg.pmml.OpType;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.Output;
-import org.dmg.pmml.PMML;
 import org.dmg.pmml.SquaredEuclidean;
 import org.jpmml.converter.ClusteringModelUtil;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.WildcardFeature;
+import org.jpmml.converter.Schema;
 
-public class KMeansConverter extends Converter {
+public class KMeansConverter extends ModelConverter<RGenericVector> {
 
 	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
+	public void encodeFeatures(RGenericVector kmeans, FeatureMapper featureMapper){
+		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
+
+		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
+
+		RStringVector columnNames = (RStringVector)dimnames.getValue(1);
+		for(int i = 0; i < columnNames.size(); i++){
+			String columnName = columnNames.getValue(i);
+
+			featureMapper.append(FieldName.create(columnName), false);
+		}
 	}
 
-	private PMML convert(RGenericVector kmeans){
+	@Override
+	public Schema createSchema(FeatureMapper featureMapper){
+		return featureMapper.createUnsupervisedSchema();
+	}
+
+	@Override
+	public Model encodeModel(RGenericVector kmeans, Schema schema){
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
 		RIntegerVector size = (RIntegerVector)kmeans.getValue("size");
 
 		RIntegerVector dim = centers.dim();
-		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
 
 		int rows = dim.getValue(0);
 		int columns = dim.getValue(1);
 
-		List<DataField> dataFields = new ArrayList<>();
-
-		RStringVector columnNames = (RStringVector)dimnames.getValue(1);
-		for(int i = 0; i < columns; i++){
-			String columnName = columnNames.getValue(i);
-
-			DataField dataField = new DataField()
-				.setName(FieldName.create(columnName))
-				.setOpType(OpType.CONTINUOUS)
-				.setDataType(DataType.DOUBLE);
-
-			dataFields.add(dataField);
-		}
-
-		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
+		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
 
 		List<Cluster> clusters = new ArrayList<>();
 
-		for(int i = 0; i < rows; i++){
+		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
+		for(int i = 0; i < rowNames.size(); i++){
 			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), rows, columns, i));
 
 			Cluster cluster = new Cluster()
@@ -91,17 +87,7 @@ public class KMeansConverter extends Converter {
 			clusters.add(cluster);
 		}
 
-		Function<DataField, Feature> function = new Function<DataField, Feature>(){
-
-			@Override
-			public Feature apply(DataField dataField){
-				Feature feature = new WildcardFeature(dataField);
-
-				return feature;
-			}
-		};
-
-		List<Feature> features = Lists.transform(dataFields, function);
+		List<Feature> features = schema.getFeatures();
 
 		List<ClusteringField> clusteringFields = ClusteringModelUtil.createClusteringFields(features);
 
@@ -109,18 +95,13 @@ public class KMeansConverter extends Converter {
 			.setCompareFunction(CompareFunctionType.ABS_DIFF)
 			.setMeasure(new SquaredEuclidean());
 
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, dataFields, null);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		Output output = ClusteringModelUtil.createOutput(FieldName.create("cluster"), clusters);
 
 		ClusteringModel clusteringModel = new ClusteringModel(MiningFunctionType.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, miningSchema, comparisonMeasure, clusteringFields, clusters)
 			.setOutput(output);
 
-		DataDictionary dataDictionary = new DataDictionary(dataFields);
-
-		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
-			.addModels(clusteringModel);
-
-		return pmml;
+		return clusteringModel;
 	}
 }

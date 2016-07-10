@@ -25,8 +25,6 @@ import java.util.List;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.dmg.pmml.DataDictionary;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FeatureType;
@@ -41,7 +39,6 @@ import org.dmg.pmml.Node;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
-import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.RegressionNormalizationMethodType;
 import org.dmg.pmml.Segment;
@@ -52,15 +49,16 @@ import org.dmg.pmml.Targets;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.TreeModel.SplitCharacteristic;
 import org.dmg.pmml.True;
-import org.dmg.pmml.Value;
+import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.Feature;
+import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class GBMConverter extends Converter {
-
-	private List<DataField> dataFields = new ArrayList<>();
+public class GBMConverter extends ModelConverter<RGenericVector> {
 
 	private LoadingCache<ElementKey, Predicate> predicateCache = CacheBuilder.newBuilder()
 		.build(new CacheLoader<ElementKey, Predicate>(){
@@ -69,20 +67,13 @@ public class GBMConverter extends Converter {
 			public Predicate load(ElementKey key){
 				Object[] content = key.getContent();
 
-				return encodeCategoricalSplit((DataField)content[0], (List<Integer>)content[1], (Boolean)content[2]);
+				return encodeCategoricalSplit((ListFeature)content[0], (List<Integer>)content[1], (Boolean)content[2]);
 			}
 		});
 
 
 	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector gbm){
-		RDoubleVector initF = (RDoubleVector)gbm.getValue("initF");
-		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
-		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
+	public void encodeFeatures(RGenericVector gbm, FeatureMapper featureMapper){
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
 		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
 		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
@@ -106,32 +97,6 @@ public class GBMConverter extends Converter {
 
 		RStringVector name = (RStringVector)distribution.getValue("name");
 
-		initFields(name, response_name, classes, var_names, var_type, var_levels);
-
-		List<TreeModel> treeModels = new ArrayList<>();
-
-		for(int i = 0; i < trees.size(); i++){
-			RGenericVector tree = (RGenericVector)trees.getValue(i);
-
-			TreeModel treeModel = encodeTreeModel(MiningFunctionType.REGRESSION, tree, c_splits);
-
-			treeModels.add(treeModel);
-		}
-
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.SUM, treeModels);
-
-		MiningModel miningModel = encodeMiningModel(name, classes, segmentation, initF.asScalar());
-
-		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
-
-		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
-			.addModels(miningModel);
-
-		return pmml;
-	}
-
-	private void initFields(RStringVector distribution, RStringVector response_name, RStringVector classes, RStringVector var_names, RNumberVector<?> var_type, RGenericVector var_levels){
-
 		// Dependent variable
 		{
 			FieldName responseName;
@@ -144,36 +109,20 @@ public class GBMConverter extends Converter {
 				responseName = FieldName.create("y");
 			}
 
-			DataField dataField;
-
-			switch(distribution.asScalar()){
+			switch(name.asScalar()){
 				case "gaussian":
-					{
-						dataField = DataFieldUtil.createDataField(responseName, false);
-					}
+					featureMapper.append(responseName, false);
 					break;
 				case "adaboost":
 				case "bernoulli":
-					{
-						dataField = DataFieldUtil.createDataField(responseName, true);
-
-						List<Value> values = dataField.getValues();
-						values.addAll(PMMLUtil.createValues(GBMConverter.BINARY_CLASSES));
-					}
+					featureMapper.append(responseName, GBMConverter.BINARY_CLASSES);
 					break;
 				case "multinomial":
-					{
-						dataField = DataFieldUtil.createDataField(responseName, true);
-
-						List<Value> values = dataField.getValues();
-						values.addAll(PMMLUtil.createValues(classes.getValues()));
-					}
+					featureMapper.append(responseName, classes.getValues());
 					break;
 				default:
 					throw new IllegalArgumentException();
 			}
-
-			this.dataFields.add(dataField);
 		}
 
 		// Independent variables
@@ -181,33 +130,62 @@ public class GBMConverter extends Converter {
 			FieldName varName = FieldName.create(var_names.getValue(i));
 
 			boolean categorical = (ValueUtil.asInt(var_type.getValue(i)) > 0);
-
-			DataField dataField = DataFieldUtil.createDataField(varName, categorical);
-
 			if(categorical){
 				RStringVector var_level = (RStringVector)var_levels.getValue(i);
 
-				List<Value> values = dataField.getValues();
-				values.addAll(PMMLUtil.createValues(var_level.getValues()));
+				featureMapper.append(varName, var_level.getValues());
+			} else
 
-				dataField = DataFieldUtil.refineDataField(dataField);
+			{
+				featureMapper.append(varName, false);
 			}
-
-			this.dataFields.add(dataField);
 		}
 	}
 
-	private MiningModel encodeMiningModel(RStringVector distribution, RStringVector classes, Segmentation segmentation, Double initF){
+	@Override
+	public Schema createSchema(FeatureMapper featureMapper){
+		return featureMapper.createSupervisedSchema();
+	}
 
-		switch(distribution.asScalar()){
+	@Override
+	public MiningModel encodeModel(RGenericVector gbm, Schema schema){
+		RDoubleVector initF = (RDoubleVector)gbm.getValue("initF");
+		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
+		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
+		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
+
+		RStringVector name = (RStringVector)distribution.getValue("name");
+
+		Schema segmentSchema = schema.toAnonymousSchema();
+
+		List<TreeModel> treeModels = new ArrayList<>();
+
+		for(int i = 0; i < trees.size(); i++){
+			RGenericVector tree = (RGenericVector)trees.getValue(i);
+
+			TreeModel treeModel = encodeTreeModel(MiningFunctionType.REGRESSION, tree, c_splits, segmentSchema);
+
+			treeModels.add(treeModel);
+		}
+
+		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.SUM, treeModels);
+
+		MiningModel miningModel = encodeMiningModel(name, segmentation, initF.asScalar(), schema);
+
+		return miningModel;
+	}
+
+	private MiningModel encodeMiningModel(RStringVector name, Segmentation segmentation, Double initF, Schema schema){
+
+		switch(name.asScalar()){
 			case "gaussian":
-				return encodeRegression(segmentation, initF);
+				return encodeRegression(segmentation, initF, schema);
 			case "adaboost":
-				return encodeBinaryClassification(segmentation, initF, -2d);
+				return encodeBinaryClassification(segmentation, initF, -2d, schema);
 			case "bernoulli":
-				return encodeBinaryClassification(segmentation, initF, -1d);
+				return encodeBinaryClassification(segmentation, initF, -1d, schema);
 			case "multinomial":
-				return encodeMultinomialClassification(classes, segmentation, initF);
+				return encodeMultinomialClassification(segmentation, initF, schema);
 			default:
 				break;
 		}
@@ -215,13 +193,11 @@ public class GBMConverter extends Converter {
 		throw new IllegalArgumentException();
 	}
 
-	private MiningModel encodeRegression(Segmentation segmentation, Double initF){
-		DataField dataField = this.dataFields.get(0);
-
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
+	private MiningModel encodeRegression(Segmentation segmentation, Double initF, Schema schema){
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		Targets targets = new Targets()
-			.addTargets(ModelUtil.createRescaleTarget(dataField.getName(), null, initF));
+			.addTargets(ModelUtil.createRescaleTarget(schema.getTargetField(), null, initF));
 
 		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
 			.setSegmentation(segmentation)
@@ -230,14 +206,10 @@ public class GBMConverter extends Converter {
 		return miningModel;
 	}
 
-	private MiningModel encodeBinaryClassification(Segmentation segmentation, Double initF, double coefficient){
-		DataField dataField = this.dataFields.get(0);
+	private MiningModel encodeBinaryClassification(Segmentation segmentation, Double initF, double coefficient, Schema schema){
+		Schema segmentSchema = schema.toAnonymousSchema();
 
-		FieldName targetField = dataField.getName();
-
-		List<FieldName> activeFields = PMMLUtil.getNames(this.dataFields.subList(1, this.dataFields.size()));
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(null, activeFields);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(segmentSchema);
 
 		OutputField rawGbmValue = ModelUtil.createPredictedField(FieldName.create("rawGbmValue"));
 
@@ -254,60 +226,55 @@ public class GBMConverter extends Converter {
 			.setSegmentation(segmentation)
 			.setOutput(output);
 
-		return MiningModelUtil.createBinaryLogisticClassification(targetField, GBMConverter.BINARY_CLASSES, activeFields, miningModel, coefficient, true);
+		return MiningModelUtil.createBinaryLogisticClassification(schema, miningModel, coefficient, true);
 	}
 
-	private MiningModel encodeMultinomialClassification(RStringVector classes, Segmentation segmentation, Double initF){
-		DataField dataField = this.dataFields.get(0);
-
-		FieldName targetField = dataField.getName();
-
-		List<FieldName> activeFields = PMMLUtil.getNames(this.dataFields.subList(1, this.dataFields.size()));
-
-		MiningSchema valueMiningSchema = ModelUtil.createMiningSchema(null, activeFields);
-
+	private MiningModel encodeMultinomialClassification(Segmentation segmentation, Double initF, Schema schema){
 		List<Segment> segments = segmentation.getSegments();
 
-		List<Model> models = new ArrayList<>();
+		List<Model> miningModels = new ArrayList<>();
 
-		for(int i = 0; i < classes.size(); i++){
-			String value = classes.getValue(i);
+		Schema segmentSchema = schema.toAnonymousSchema();
 
-			OutputField rawGbmValue = ModelUtil.createPredictedField(FieldName.create("rawGbmValue_" + value));
+		List<String> targetCategories = schema.getTargetCategories();
+		for(int i = 0; i < targetCategories.size(); i++){
+			String targetCategory = targetCategories.get(i);
 
-			OutputField transformedGbmValue = new OutputField(FieldName.create("transformedGbmValue_" + value))
+			OutputField rawGbmValue = ModelUtil.createPredictedField(FieldName.create("rawGbmValue_" + targetCategory));
+
+			OutputField transformedGbmValue = new OutputField(FieldName.create("transformedGbmValue_" + targetCategory))
 				.setFeature(FeatureType.TRANSFORMED_VALUE)
 				.setDataType(DataType.DOUBLE)
 				.setOpType(OpType.CONTINUOUS)
 				.setExpression(encodeScalingExpression(rawGbmValue.getName(), initF));
 
-			List<Segment> valueSegments = getColumn(segments, i, (segments.size() / classes.size()), classes.size());
+			List<Segment> segmentSegments = getColumn(segments, i, (segments.size() / targetCategories.size()), targetCategories.size());
 
-			Segmentation valueSegmentation = new Segmentation(MultipleModelMethodType.SUM, valueSegments);
+			Segmentation segmentSegmentation = new Segmentation(MultipleModelMethodType.SUM, segmentSegments);
 
-			Output valueOutput = new Output()
+			MiningSchema miningSchema = ModelUtil.createMiningSchema(segmentSchema);
+
+			Output output = new Output()
 				.addOutputFields(rawGbmValue, transformedGbmValue);
 
-			MiningModel valueMiningModel = new MiningModel(MiningFunctionType.REGRESSION, valueMiningSchema)
-				.setSegmentation(valueSegmentation)
-				.setOutput(valueOutput);
+			MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
+				.setSegmentation(segmentSegmentation)
+				.setOutput(output);
 
-			models.add(valueMiningModel);
+			miningModels.add(miningModel);
 		}
 
-		MiningModel miningModel = MiningModelUtil.createClassification(targetField, classes.getValues(), activeFields, models, RegressionNormalizationMethodType.SOFTMAX, true);
-
-		return miningModel;
+		return MiningModelUtil.createClassification(schema, miningModels, RegressionNormalizationMethodType.SOFTMAX, true);
 	}
 
-	private TreeModel encodeTreeModel(MiningFunctionType miningFunction, RGenericVector tree, RGenericVector c_splits){
+	private TreeModel encodeTreeModel(MiningFunctionType miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
 
-		encodeNode(root, 0, tree, c_splits);
+		encodeNode(root, 0, tree, c_splits, schema);
 
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(SplitCharacteristic.MULTI_SPLIT);
@@ -315,7 +282,7 @@ public class GBMConverter extends Converter {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits){
+	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, Schema schema){
 		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
 		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
 		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
@@ -330,30 +297,30 @@ public class GBMConverter extends Converter {
 
 		Integer var = splitVar.getValue(i);
 		if(var != -1){
-			DataField dataField = this.dataFields.get(var + 1);
+			Feature feature = schema.getFeature(var);
 
-			missingPredicate = encodeIsMissingSplit(dataField);
+			missingPredicate = encodeIsMissingSplit(feature);
 
 			Double split = splitCodePred.getValue(i);
 
-			OpType opType = dataField.getOpType();
-			switch(opType){
-				case CATEGORICAL:
-					int index = ValueUtil.asInt(split);
+			if(feature instanceof ListFeature){
+				int index = ValueUtil.asInt(split);
 
-					RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
+				RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
 
-					List<Integer> splitValues = c_split.getValues();
+				List<Integer> splitValues = c_split.getValues();
 
-					leftPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, splitValues, Boolean.TRUE));
-					rightPredicate = this.predicateCache.getUnchecked(new ElementKey(dataField, splitValues, Boolean.FALSE));
-					break;
-				case CONTINUOUS:
-					leftPredicate = encodeContinuousSplit(dataField, split, true);
-					rightPredicate = encodeContinuousSplit(dataField, split, false);
-					break;
-				default:
-					throw new IllegalArgumentException();
+				leftPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, splitValues, Boolean.TRUE));
+				rightPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, splitValues, Boolean.FALSE));
+			} else
+
+			if(feature instanceof ContinuousFeature){
+				leftPredicate = encodeContinuousSplit(feature, split, true);
+				rightPredicate = encodeContinuousSplit(feature, split, false);
+			} else
+
+			{
+				throw new IllegalArgumentException();
 			}
 		} else
 
@@ -369,7 +336,7 @@ public class GBMConverter extends Converter {
 				.setId(String.valueOf(missing + 1))
 				.setPredicate(missingPredicate);
 
-			encodeNode(missingChild, missing, tree, c_splits);
+			encodeNode(missingChild, missing, tree, c_splits, schema);
 
 			node.addNodes(missingChild);
 		}
@@ -380,7 +347,7 @@ public class GBMConverter extends Converter {
 				.setId(String.valueOf(left + 1))
 				.setPredicate(leftPredicate);
 
-			encodeNode(leftChild, left, tree, c_splits);
+			encodeNode(leftChild, left, tree, c_splits, schema);
 
 			node.addNodes(leftChild);
 		}
@@ -391,48 +358,48 @@ public class GBMConverter extends Converter {
 				.setId(String.valueOf(right + 1))
 				.setPredicate(rightPredicate);
 
-			encodeNode(rightChild, right, tree, c_splits);
+			encodeNode(rightChild, right, tree, c_splits, schema);
 
 			node.addNodes(rightChild);
 		}
 	}
 
 	static
-	private Predicate encodeIsMissingSplit(DataField dataField){
+	private Predicate encodeIsMissingSplit(Feature feature){
 		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(dataField.getName())
+			.setField(feature.getName())
 			.setOperator(SimplePredicate.Operator.IS_MISSING);
 
 		return simplePredicate;
 	}
 
 	static
-	private Predicate encodeCategoricalSplit(DataField dataField, List<Integer> splitValues, boolean left){
-		List<Value> values = selectValues(dataField.getValues(), splitValues, left);
+	private Predicate encodeCategoricalSplit(ListFeature listFeature, List<Integer> splitValues, boolean left){
+		List<String> values = selectValues(listFeature.getValues(), splitValues, left);
 
 		if(values.size() == 1){
-			Value value = values.get(0);
+			String value = values.get(0);
 
 			SimplePredicate simplePredicate = new SimplePredicate()
-				.setField(dataField.getName())
+				.setField(listFeature.getName())
 				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(value.getValue());
+				.setValue(value);
 
 			return simplePredicate;
 		}
 
 		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
-			.setField(dataField.getName())
+			.setField(listFeature.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(DataFieldUtil.createArray(dataField, values));
+			.setArray(FeatureUtil.createArray(listFeature, values));
 
 		return simpleSetPredicate;
 	}
 
 	static
-	private Predicate encodeContinuousSplit(DataField dataField, Double split, boolean left){
+	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
 		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(dataField.getName())
+			.setField(feature.getName())
 			.setOperator(left ? SimplePredicate.Operator.LESS_THAN : SimplePredicate.Operator.GREATER_OR_EQUAL)
 			.setValue(ValueUtil.formatValue(split));
 
@@ -451,16 +418,16 @@ public class GBMConverter extends Converter {
 	}
 
 	static
-	private List<Value> selectValues(List<Value> values, List<Integer> splitValues, boolean left){
+	private <E> List<E> selectValues(List<E> values, List<Integer> splitValues, boolean left){
 
 		if(values.size() != splitValues.size()){
 			throw new IllegalArgumentException();
 		}
 
-		List<Value> result = new ArrayList<>();
+		List<E> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){
-			Value value = values.get(i);
+			E value = values.get(i);
 
 			boolean append;
 

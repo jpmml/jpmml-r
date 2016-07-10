@@ -25,7 +25,6 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.Value;
 import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
@@ -35,10 +34,10 @@ public class RandomForestConverterTest extends ConverterTest {
 
 	@Test
 	public void selectValues(){
-		List<Value> values = Arrays.asList(new Value("1"), new Value("2"), new Value("3"), new Value("4"));
+		List<String> values = Arrays.asList("1", "2", "3", "4");
 
-		assertEquals(Arrays.asList(values.get(0), values.get(2), values.get(3)), RandomForestConverter.selectValues(values, 13d, true));
-		assertEquals(Arrays.asList(values.get(1)), RandomForestConverter.selectValues(values, 13d, false));
+		assertEquals(Arrays.asList("1", "3", "4"), RandomForestConverter.selectValues(values, 13d, true));
+		assertEquals(Arrays.asList("2"), RandomForestConverter.selectValues(values, 13d, false));
 	}
 
 	@Test

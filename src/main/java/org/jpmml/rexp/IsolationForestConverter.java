@@ -21,8 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataDictionary;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FeatureType;
 import org.dmg.pmml.FieldName;
@@ -30,43 +28,30 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunctionType;
 import org.dmg.pmml.MiningModel;
 import org.dmg.pmml.MiningSchema;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.MultipleModelMethodType;
 import org.dmg.pmml.Node;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
-import org.dmg.pmml.PMML;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.jpmml.converter.Feature;
 import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class IsolationForestConverter extends Converter {
-
-	private List<DataField> dataFields = new ArrayList<>();
-
+public class IsolationForestConverter extends ModelConverter<RGenericVector> {
 
 	@Override
-	public PMML convert(RExp rexp){
-		return convert((RGenericVector)rexp);
-	}
-
-	private PMML convert(RGenericVector iForest){
+	public void encodeFeatures(RGenericVector iForest, FeatureMapper featureMapper){
 		RStringVector xcols = (RStringVector)iForest.getValue("xcols");
-		RGenericVector trees = (RGenericVector)iForest.getValue("trees");
-		RDoubleVector ntree = (RDoubleVector)iForest.getValue("ntree");
 		RBooleanVector colisfactor = (RBooleanVector)iForest.getValue("colisfactor");
-
-		if(trees == null){
-			throw new IllegalArgumentException();
-		}
-
-		RIntegerVector xrow = (RIntegerVector)trees.getValue("xrow");
 
 		if(xcols.size() != colisfactor.size()){
 			throw new IllegalArgumentException();
@@ -82,19 +67,48 @@ public class IsolationForestConverter extends Converter {
 			throw new IllegalArgumentException();
 		}
 
-		initFields(xcols);
+		// Dependent variable
+		{
+			featureMapper.append(FieldName.create("pathLength"), false);
+		}
+
+		// Independent variables
+		for(int i = 0; i < xcols.size(); i++){
+			String xcol = xcols.getValue(i);
+
+			featureMapper.append(FieldName.create(xcol), false);
+		}
+	}
+
+	@Override
+	public Schema createSchema(FeatureMapper featureMapper){
+		return featureMapper.createSupervisedSchema();
+	}
+
+	@Override
+	public Model encodeModel(RGenericVector iForest, Schema schema){
+		RGenericVector trees = (RGenericVector)iForest.getValue("trees");
+		RDoubleVector ntree = (RDoubleVector)iForest.getValue("ntree");
+
+		if(trees == null){
+			throw new IllegalArgumentException();
+		}
+
+		RIntegerVector xrow = (RIntegerVector)trees.getValue("xrow");
+
+		Schema segmentSchema = schema.toAnonymousSchema();
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < ValueUtil.asInt(ntree.asScalar()); i++){
-			TreeModel treeModel = encodeTreeModel(trees, i);
+			TreeModel treeModel = encodeTreeModel(trees, i, segmentSchema);
 
 			treeModels.add(treeModel);
 		}
 
 		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
 
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(this.dataFields);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		Output output = encodeOutput(xrow);
 
@@ -102,34 +116,10 @@ public class IsolationForestConverter extends Converter {
 			.setSegmentation(segmentation)
 			.setOutput(output);
 
-		DataDictionary dataDictionary = new DataDictionary(this.dataFields);
-
-		PMML pmml = new PMML("4.2", createHeader(), dataDictionary)
-			.addModels(miningModel);
-
-		return pmml;
+		return miningModel;
 	}
 
-	private void initFields(RStringVector xcols){
-
-		// Dependent variable
-		{
-			DataField dataField = DataFieldUtil.createDataField(FieldName.create("pathLength"), false);
-
-			this.dataFields.add(dataField);
-		}
-
-		// Independent variables
-		for(int i = 0; i < xcols.size(); i++){
-			String xcol = xcols.getValue(i);
-
-			DataField dataField = DataFieldUtil.createDataField(FieldName.create(xcol), false);
-
-			this.dataFields.add(dataField);
-		}
-	}
-
-	private TreeModel encodeTreeModel(RGenericVector trees, int index){
+	private TreeModel encodeTreeModel(RGenericVector trees, int index, Schema schema){
 		RIntegerVector nrnodes = (RIntegerVector)trees.getValue("nrnodes");
 		RIntegerVector ntree = (RIntegerVector)trees.getValue("ntree");
 		RIntegerVector nodeStatus = (RIntegerVector)trees.getValue("nodeStatus");
@@ -154,10 +144,11 @@ public class IsolationForestConverter extends Converter {
 			RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, index),
 			RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, index),
 			RExpUtil.getColumn(splitAtt.getValues(), rows, columns, index),
-			RExpUtil.getColumn(splitPoint.getValues(), rows, columns, index)
+			RExpUtil.getColumn(splitPoint.getValues(), rows, columns, index),
+			schema
 		);
 
-		MiningSchema miningSchema = DataFieldUtil.createMiningSchema(null, this.dataFields.subList(1, this.dataFields.size()), root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
 
 		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -165,7 +156,7 @@ public class IsolationForestConverter extends Converter {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int index, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue){
+	private void encodeNode(Node node, int index, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue, Schema schema){
 		int status = nodeStatus.get(index);
 		int size = nodeSize.get(index);
 
@@ -175,23 +166,23 @@ public class IsolationForestConverter extends Converter {
 		if(status == -3){
 			int att = splitAtt.get(index);
 
-			DataField dataField = this.dataFields.get(att);
+			Feature feature = schema.getFeature(att - 1);
 
 			Double value = splitValue.get(index);
 
 			Node leftChild = new Node()
-				.setPredicate(encodeContinuousSplit(dataField, value, true));
+				.setPredicate(encodeContinuousSplit(feature, value, true));
 
 			int leftIndex = (leftDaughter.get(index) - 1);
 
-			encodeNode(leftChild, leftIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue);
+			encodeNode(leftChild, leftIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
 			Node rightChild = new Node()
-				.setPredicate(encodeContinuousSplit(dataField, value, false));
+				.setPredicate(encodeContinuousSplit(feature, value, false));
 
 			int rightIndex = (rightDaughter.get(index) - 1);
 
-			encodeNode(rightChild, rightIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue);
+			encodeNode(rightChild, rightIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
 			node.addNodes(leftChild, rightChild);
 		} else
@@ -206,9 +197,9 @@ public class IsolationForestConverter extends Converter {
 		}
 	}
 
-	private Predicate encodeContinuousSplit(DataField dataField, Double split, boolean left){
+	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
 		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(dataField.getName())
+			.setField(feature.getName())
 			.setOperator(left ? SimplePredicate.Operator.LESS_THAN : SimplePredicate.Operator.GREATER_OR_EQUAL)
 			.setValue(ValueUtil.formatValue(split));
 

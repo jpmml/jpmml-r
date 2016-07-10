@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,18 +18,33 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
+import java.util.List;
 
-public class TrainConverter extends Converter<RGenericVector> {
+import org.dmg.pmml.Array;
+import org.dmg.pmml.DataType;
+import org.jpmml.converter.Feature;
+import org.jpmml.converter.ValueUtil;
 
-	@Override
-	public PMML convert(RGenericVector train){
-		RExp finalModel = train.getValue("finalModel");
+public class FeatureUtil {
 
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
+	private FeatureUtil(){
+	}
 
-		ModelConverter<RExp> converter = (ModelConverter<RExp>)converterFactory.newConverter(finalModel);
+	static
+	public Array createArray(Feature feature, List<String> values){
+		String value = ValueUtil.formatArrayValue(values);
 
-		return converter.convert(finalModel);
+		DataType dataType = feature.getDataType();
+		switch(dataType){
+			case STRING:
+				return new Array(Array.Type.STRING, value);
+			case DOUBLE:
+			case FLOAT:
+				return new Array(Array.Type.REAL, value);
+			case INTEGER:
+				return new Array(Array.Type.INT, value);
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 }

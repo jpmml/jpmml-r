@@ -26,7 +26,7 @@ public class ConverterFactory {
 	protected ConverterFactory(){
 	}
 
-	public Converter newConverter(RExp rexp){
+	public Converter<RExp> newConverter(RExp rexp){
 		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
 
 		for(int i = 0; i < names.size(); i++){
