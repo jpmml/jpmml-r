@@ -22,19 +22,48 @@ import java.util.List;
 
 import org.dmg.pmml.Array;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.Predicate;
+import org.dmg.pmml.SimplePredicate;
+import org.dmg.pmml.SimpleSetPredicate;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ValueUtil;
 
-public class FeatureUtil {
+public class PredicateUtil {
 
-	private FeatureUtil(){
+	private PredicateUtil(){
 	}
 
 	static
-	public Array createArray(Feature feature, List<String> values){
+	public Predicate createSimpleSetPredicate(Feature feature, List<String> values){
+
+		if(values.size() == 1){
+			String value = values.get(0);
+
+			return createSimplePredicate(feature, SimplePredicate.Operator.EQUAL, value);
+		}
+
+		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
+			.setField(feature.getName())
+			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
+			.setArray(createArray(feature.getDataType(), values));
+
+		return simpleSetPredicate;
+	}
+
+	static
+	public Predicate createSimplePredicate(Feature feature, SimplePredicate.Operator operator, String value){
+		SimplePredicate simplePredicate = new SimplePredicate()
+			.setField(feature.getName())
+			.setOperator(operator)
+			.setValue(value);
+
+		return simplePredicate;
+	}
+
+	static
+	private Array createArray(DataType dataType, List<String> values){
 		String value = ValueUtil.formatArrayValue(values);
 
-		DataType dataType = feature.getDataType();
 		switch(dataType){
 			case STRING:
 				return new Array(Array.Type.STRING, value);

@@ -19,7 +19,6 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.jpmml.converter.ContinuousFeature;
@@ -180,28 +178,15 @@ public class BinaryTreeConverter extends ModelConverter<S4Object> {
 			return;
 		}
 
-		List<Predicate> predicates = encodeSplit(psplit, ssplits, schema);
-
-		Node leftChild = new Node()
-			.setPredicate(predicates.get(0));
-
-		encodeNode(leftChild, left, schema);
-
-		Node rightChild = new Node()
-			.setPredicate(predicates.get(1));
-
-		encodeNode(rightChild, right, schema);
-
-		node.addNodes(leftChild, rightChild);
-	}
-
-	private List<Predicate> encodeSplit(RGenericVector psplit, RGenericVector ssplits, Schema schema){
 		RNumberVector<?> splitpoint = (RNumberVector<?>)psplit.getValue("splitpoint");
 		RStringVector variableName = (RStringVector)psplit.getValue("variableName");
 
 		if(ssplits.size() > 0){
 			throw new IllegalArgumentException();
 		}
+
+		Predicate leftPredicate;
+		Predicate rightPredicate;
 
 		FieldName name = FieldName.create(variableName.asScalar());
 
@@ -213,16 +198,36 @@ public class BinaryTreeConverter extends ModelConverter<S4Object> {
 		Feature feature = schema.getFeature(index);
 
 		if(feature instanceof ListFeature){
-			return encodeCategoricalSplit((ListFeature)feature, (List<Integer>)splitpoint.getValues());
+			ListFeature listFeature = (ListFeature)feature;
+
+			List<String> values = listFeature.getValues();
+
+			leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), true));
+			rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), false));
 		} else
 
 		if(feature instanceof ContinuousFeature){
-			return encodeContinuousSplit(feature, (Double)splitpoint.asScalar());
+			String value = ValueUtil.formatValue((Double)splitpoint.asScalar());
+
+			leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
 		} else
 
 		{
 			throw new IllegalArgumentException();
 		}
+
+		Node leftChild = new Node()
+			.setPredicate(leftPredicate);
+
+		encodeNode(leftChild, left, schema);
+
+		Node rightChild = new Node()
+			.setPredicate(rightPredicate);
+
+		encodeNode(rightChild, right, schema);
+
+		node.addNodes(leftChild, rightChild);
 	}
 
 	private Node encodeScore(Node node, RDoubleVector probabilities, Schema schema){
@@ -250,57 +255,34 @@ public class BinaryTreeConverter extends ModelConverter<S4Object> {
 	}
 
 	static
-	private List<Predicate> encodeContinuousSplit(Feature feature, Double split){
-		String value = ValueUtil.formatValue(split);
+	private <E> List<E> selectValues(List<E> values, List<Integer> splits, boolean left){
 
-		Predicate leftPredicate = new SimplePredicate()
-			.setField(feature.getName())
-			.setOperator(SimplePredicate.Operator.LESS_OR_EQUAL)
-			.setValue(value);
-
-		Predicate rightPredicate = new SimplePredicate()
-			.setField(feature.getName())
-			.setOperator(SimplePredicate.Operator.GREATER_THAN)
-			.setValue(value);
-
-		return Arrays.asList(leftPredicate, rightPredicate);
-	}
-
-	static
-	private List<Predicate> encodeCategoricalSplit(ListFeature listFeature, List<Integer> splits){
-		List<String> values = listFeature.getValues();
-
-		if(splits.size() != values.size()){
+		if(values.size() != splits.size()){
 			throw new IllegalArgumentException();
 		}
 
-		List<String> leftValues = new ArrayList<>();
-		List<String> rightValues = new ArrayList<>();
+		List<E> result = new ArrayList<>();
 
-		for(int i = 0; i < splits.size(); i++){
+		for(int i = 0; i < values.size(); i++){
+			E value = values.get(i);
 			Integer split = splits.get(i);
-			String value = listFeature.getValue(i);
 
-			if(split == 1){
-				leftValues.add(value);
+			boolean append;
+
+			if(left){
+				append = (split == 1);
 			} else
 
 			{
-				rightValues.add(value);
+				append = (split == 0);
+			} // End if
+
+			if(append){
+				result.add(value);
 			}
 		}
 
-		Predicate leftPredicate = new SimpleSetPredicate()
-			.setField(listFeature.getName())
-			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(FeatureUtil.createArray(listFeature, leftValues));
-
-		Predicate rightPredicate = new SimpleSetPredicate()
-			.setField(listFeature.getName())
-			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(FeatureUtil.createArray(listFeature, rightValues));
-
-		return Arrays.asList(leftPredicate, rightPredicate);
+		return result;
 	}
 
 	static

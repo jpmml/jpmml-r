@@ -21,9 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.DataType;
@@ -37,7 +34,6 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
 import org.jpmml.converter.ContinuousFeature;
@@ -49,18 +45,6 @@ import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
 public class RandomForestConverter extends ModelConverter<RGenericVector> {
-
-	private LoadingCache<ElementKey, Predicate> predicateCache = CacheBuilder.newBuilder()
-		.build(new CacheLoader<ElementKey, Predicate>(){
-
-			@Override
-			public Predicate load(ElementKey key){
-				Object[] content = key.getContent();
-
-				return encodeCategoricalSplit((ListFeature)content[0], (Double)content[1], (Boolean)content[2]);
-			}
-		});
-
 
 	@Override
 	public void encodeFeatures(RGenericVector randomForest, FeatureMapper featureMapper){
@@ -325,13 +309,19 @@ public class RandomForestConverter extends ModelConverter<RGenericVector> {
 			Double split = xbestsplit.get(i);
 
 			if(feature instanceof ListFeature){
-				leftPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, split, Boolean.TRUE));
-				rightPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, split, Boolean.FALSE));
+				ListFeature listFeature = (ListFeature)feature;
+
+				List<String> values = listFeature.getValues();
+
+				leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, split, true));
+				rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, split, false));
 			} else
 
 			if(feature instanceof ContinuousFeature){
-				leftPredicate = encodeContinuousSplit(feature, split, true);
-				rightPredicate = encodeContinuousSplit(feature, split, false);
+				String value = ValueUtil.formatValue(split);
+
+				leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+				rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
 			} else
 
 			{
@@ -368,57 +358,11 @@ public class RandomForestConverter extends ModelConverter<RGenericVector> {
 		}
 	}
 
-	private Predicate encodeCategoricalSplit(ListFeature listFeature, Double split, boolean left){
-		List<String> values = selectValues(listFeature.getValues(), split, left);
-
-		if(values.size() == 1){
-			String value = values.get(0);
-
-			SimplePredicate simplePredicate = new SimplePredicate()
-				.setField(listFeature.getName())
-				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(value);
-
-			return simplePredicate;
-		}
-
-		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
-			.setField(listFeature.getName())
-			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(FeatureUtil.createArray(listFeature, values));
-
-		return simpleSetPredicate;
-	}
-
-	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
-		SimplePredicate simplePredicate;
-
-		DataType dataType = feature.getDataType();
-		switch(dataType){
-			case DOUBLE:
-				simplePredicate = new SimplePredicate()
-					.setField(feature.getName())
-					.setOperator(left ? SimplePredicate.Operator.LESS_OR_EQUAL : SimplePredicate.Operator.GREATER_THAN)
-					.setValue(ValueUtil.formatValue(split));
-				break;
-			case BOOLEAN:
-				simplePredicate = new SimplePredicate()
-					.setField(feature.getName())
-					.setOperator(SimplePredicate.Operator.EQUAL)
-					.setValue(split.doubleValue() <= 0.5d ? Boolean.toString(!left) : Boolean.toString(left));
-				break;
-			default:
-				throw new IllegalArgumentException();
-		}
-
-		return simplePredicate;
-	}
-
 	static
 	<E> List<E> selectValues(List<E> values, Double split, boolean left){
-		List<E> result = new ArrayList<>();
-
 		UnsignedLong bits = toUnsignedLong(split.doubleValue());
+
+		List<E> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){
 			E value = values.get(i);

@@ -168,17 +168,21 @@ public class IsolationForestConverter extends ModelConverter<RGenericVector> {
 
 			Feature feature = schema.getFeature(att - 1);
 
-			Double value = splitValue.get(index);
+			String value = ValueUtil.formatValue(splitValue.get(index));
+
+			Predicate leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 
 			Node leftChild = new Node()
-				.setPredicate(encodeContinuousSplit(feature, value, true));
+				.setPredicate(leftPredicate);
 
 			int leftIndex = (leftDaughter.get(index) - 1);
 
 			encodeNode(leftChild, leftIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
+			Predicate rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+
 			Node rightChild = new Node()
-				.setPredicate(encodeContinuousSplit(feature, value, false));
+				.setPredicate(rightPredicate);
 
 			int rightIndex = (rightDaughter.get(index) - 1);
 
@@ -195,15 +199,6 @@ public class IsolationForestConverter extends ModelConverter<RGenericVector> {
 		{
 			throw new IllegalArgumentException();
 		}
-	}
-
-	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
-		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(feature.getName())
-			.setOperator(left ? SimplePredicate.Operator.LESS_THAN : SimplePredicate.Operator.GREATER_OR_EQUAL)
-			.setValue(ValueUtil.formatValue(split));
-
-		return simplePredicate;
 	}
 
 	private Output encodeOutput(RIntegerVector xrow){

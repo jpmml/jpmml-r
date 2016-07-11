@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FeatureType;
@@ -44,7 +41,6 @@ import org.dmg.pmml.RegressionNormalizationMethodType;
 import org.dmg.pmml.Segment;
 import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.Targets;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.TreeModel.SplitCharacteristic;
@@ -59,18 +55,6 @@ import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
 public class GBMConverter extends ModelConverter<RGenericVector> {
-
-	private LoadingCache<ElementKey, Predicate> predicateCache = CacheBuilder.newBuilder()
-		.build(new CacheLoader<ElementKey, Predicate>(){
-
-			@Override
-			public Predicate load(ElementKey key){
-				Object[] content = key.getContent();
-
-				return encodeCategoricalSplit((ListFeature)content[0], (List<Integer>)content[1], (Boolean)content[2]);
-			}
-		});
-
 
 	@Override
 	public void encodeFeatures(RGenericVector gbm, FeatureMapper featureMapper){
@@ -299,24 +283,30 @@ public class GBMConverter extends ModelConverter<RGenericVector> {
 		if(var != -1){
 			Feature feature = schema.getFeature(var);
 
-			missingPredicate = encodeIsMissingSplit(feature);
+			missingPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
 
 			Double split = splitCodePred.getValue(i);
 
 			if(feature instanceof ListFeature){
+				ListFeature listFeature = (ListFeature)feature;
+
+				List<String> values = listFeature.getValues();
+
 				int index = ValueUtil.asInt(split);
 
 				RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
 
 				List<Integer> splitValues = c_split.getValues();
 
-				leftPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, splitValues, Boolean.TRUE));
-				rightPredicate = this.predicateCache.getUnchecked(new ElementKey(feature, splitValues, Boolean.FALSE));
+				leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, splitValues, true));
+				rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, splitValues, false));
 			} else
 
 			if(feature instanceof ContinuousFeature){
-				leftPredicate = encodeContinuousSplit(feature, split, true);
-				rightPredicate = encodeContinuousSplit(feature, split, false);
+				String value = ValueUtil.formatValue(split);
+
+				leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
+				rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			} else
 
 			{
@@ -365,48 +355,6 @@ public class GBMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Predicate encodeIsMissingSplit(Feature feature){
-		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(feature.getName())
-			.setOperator(SimplePredicate.Operator.IS_MISSING);
-
-		return simplePredicate;
-	}
-
-	static
-	private Predicate encodeCategoricalSplit(ListFeature listFeature, List<Integer> splitValues, boolean left){
-		List<String> values = selectValues(listFeature.getValues(), splitValues, left);
-
-		if(values.size() == 1){
-			String value = values.get(0);
-
-			SimplePredicate simplePredicate = new SimplePredicate()
-				.setField(listFeature.getName())
-				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(value);
-
-			return simplePredicate;
-		}
-
-		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
-			.setField(listFeature.getName())
-			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
-			.setArray(FeatureUtil.createArray(listFeature, values));
-
-		return simpleSetPredicate;
-	}
-
-	static
-	private Predicate encodeContinuousSplit(Feature feature, Double split, boolean left){
-		SimplePredicate simplePredicate = new SimplePredicate()
-			.setField(feature.getName())
-			.setOperator(left ? SimplePredicate.Operator.LESS_THAN : SimplePredicate.Operator.GREATER_OR_EQUAL)
-			.setValue(ValueUtil.formatValue(split));
-
-		return simplePredicate;
-	}
-
-	static
 	private Expression encodeScalingExpression(FieldName name, Double initF){
 		Expression expression = new FieldRef(name);
 
@@ -428,15 +376,16 @@ public class GBMConverter extends ModelConverter<RGenericVector> {
 
 		for(int i = 0; i < values.size(); i++){
 			E value = values.get(i);
+			Integer splitValue = splitValues.get(i);
 
 			boolean append;
 
 			if(left){
-				append = (splitValues.get(i) == -1);
+				append = (splitValue == -1);
 			} else
 
 			{
-				append = (splitValues.get(i) == 1);
+				append = (splitValue == 1);
 			} // End if
 
 			if(append){
