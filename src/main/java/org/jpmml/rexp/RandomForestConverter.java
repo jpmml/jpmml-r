@@ -290,7 +290,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);

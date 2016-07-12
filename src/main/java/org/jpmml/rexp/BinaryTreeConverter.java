@@ -153,7 +153,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		encodeNode(root, tree, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);

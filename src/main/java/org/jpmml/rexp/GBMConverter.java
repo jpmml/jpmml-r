@@ -258,7 +258,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, tree, c_splits, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
 			.setSplitCharacteristic(SplitCharacteristic.MULTI_SPLIT);

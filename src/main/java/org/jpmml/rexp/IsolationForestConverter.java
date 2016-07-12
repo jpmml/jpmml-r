@@ -148,7 +148,7 @@ public class IsolationForestConverter extends TreeModelConverter<RGenericVector>
 			schema
 		);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema, root);
+		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, miningSchema, root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
