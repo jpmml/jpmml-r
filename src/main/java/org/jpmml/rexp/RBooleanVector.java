@@ -20,9 +20,31 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.primitives.Booleans;
+
 public class RBooleanVector extends RVector<Boolean> {
 
-	public RBooleanVector(List<Boolean> values, RPair attributes){
-		super(values, attributes);
+	private boolean[] values = null;
+
+
+	public RBooleanVector(boolean[] values, RPair attributes){
+		super(attributes);
+
+		this.values = values;
+	}
+
+	@Override
+	public int size(){
+		return this.values.length;
+	}
+
+	@Override
+	public Boolean getValue(int index){
+		return this.values[index];
+	}
+
+	@Override
+	public List<Boolean> getValues(){
+		return Booleans.asList(this.values);
 	}
 }

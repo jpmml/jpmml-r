@@ -20,10 +20,33 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.primitives.Ints;
+
+
 public class RIntegerVector extends RNumberVector<Integer> {
 
-	public RIntegerVector(List<Integer> values, RPair attributes){
-		super(values, attributes);
+	private int[] values = null;
+
+
+	public RIntegerVector(int[] values, RPair attributes){
+		super(attributes);
+
+		this.values = values;
+	}
+
+	@Override
+	public int size(){
+		return this.values.length;
+	}
+
+	@Override
+	public Integer getValue(int index){
+		return this.values[index];
+	}
+
+	@Override
+	public List<Integer> getValues(){
+		return Ints.asList(this.values);
 	}
 
 	public RStringVector getFactorLevels(){

@@ -18,12 +18,10 @@
  */
 package org.jpmml.rexp;
 
-import java.util.List;
-
 abstract
 public class RNumberVector<V extends Number> extends RVector<V> {
 
-	public RNumberVector(List<V> values, RPair attributes){
-		super(values, attributes);
+	public RNumberVector(RPair attributes){
+		super(attributes);
 	}
 }

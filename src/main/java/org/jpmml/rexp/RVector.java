@@ -24,20 +24,18 @@ import java.util.Objects;
 abstract
 public class RVector<V> extends RExp {
 
-	private List<V> values = null;
-
-
-	public RVector(List<V> values, RPair attributes){
+	public RVector(RPair attributes){
 		super(attributes);
-
-		setValues(values);
 	}
 
-	public int size(){
-		List<V> values = getValues();
+	abstract
+	public int size();
 
-		return values.size();
-	}
+	abstract
+	public V getValue(int index);
+
+	abstract
+	public List<V> getValues();
 
 	public V asScalar(){
 		List<V> values = getValues();
@@ -46,12 +44,6 @@ public class RVector<V> extends RExp {
 		}
 
 		return values.get(0);
-	}
-
-	public V getValue(int index){
-		List<V> values = getValues();
-
-		return values.get(index);
 	}
 
 	public V getValue(String name){
@@ -77,13 +69,5 @@ public class RVector<V> extends RExp {
 	@Override
 	public String toString(){
 		return String.valueOf(getValues());
-	}
-
-	public List<V> getValues(){
-		return this.values;
-	}
-
-	private void setValues(List<V> values){
-		this.values = values;
 	}
 }

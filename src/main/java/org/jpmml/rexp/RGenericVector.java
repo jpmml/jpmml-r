@@ -22,7 +22,31 @@ import java.util.List;
 
 public class RGenericVector extends RVector<RExp> {
 
+	private List<RExp> values = null;
+
+
 	public RGenericVector(List<RExp> values, RPair attributes){
-		super(values, attributes);
+		super(attributes);
+
+		setValues(values);
+	}
+
+	@Override
+	public int size(){
+		return this.values.size();
+	}
+
+	@Override
+	public RExp getValue(int index){
+		return this.values.get(index);
+	}
+
+	@Override
+	public List<RExp> getValues(){
+		return this.values;
+	}
+
+	private void setValues(List<RExp> values){
+		this.values = values;
 	}
 }

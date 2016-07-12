@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.io.ByteStreams;
 
 public class RExpParser {
@@ -249,12 +247,12 @@ public class RExpParser {
 	private RBooleanVector readLogicalVector(int flags) throws IOException {
 		int length = readInt();
 
-		List<Boolean> values = new ArrayList<>(length);
+		boolean[] values = new boolean[length];
 
 		for(int i = 0; i < length; i++){
 			int value = readInt();
 
-			values.add(value == 1);
+			values[i] = (value == 1);
 		}
 
 		return new RBooleanVector(values, readAttributes(flags));
@@ -263,18 +261,12 @@ public class RExpParser {
 	private RIntegerVector readIntVector(int flags) throws IOException {
 		int length = readInt();
 
-		Interner<Integer> interner = createInterner(length);
-
-		List<Integer> values = new ArrayList<>(length);
+		int[] values = new int[length];
 
 		for(int i = 0; i < length; i++){
-			Integer value = Integer.valueOf(readInt());
+			int value = readInt();
 
-			if(interner != null){
-				value = interner.intern(value);
-			}
-
-			values.add(value);
+			values[i] = value;
 		}
 
 		return new RIntegerVector(values, readAttributes(flags));
@@ -283,18 +275,12 @@ public class RExpParser {
 	private RDoubleVector readRealVector(int flags) throws IOException {
 		int length = readInt();
 
-		Interner<Double> interner = createInterner(length);
-
-		List<Double> values = new ArrayList<>(length);
+		double[] values = new double[length];
 
 		for(int i = 0; i < length; i++){
-			Double value = Double.valueOf(readDouble());
+			double value = readDouble();
 
-			if(interner != null){
-				value = interner.intern(value);
-			}
-
-			values.add(value);
+			values[i] = value;
 		}
 
 		return new RDoubleVector(values, readAttributes(flags));
@@ -445,16 +431,6 @@ public class RExpParser {
 
 	private byte[] readByteArray(int length) throws IOException {
 		return this.input.readByteArray(length);
-	}
-
-	static
-	private <V> Interner<V> createInterner(int length){
-
-		if(length > 128){
-			return Interners.<V>newStrongInterner();
-		}
-
-		return null;
 	}
 
 	static

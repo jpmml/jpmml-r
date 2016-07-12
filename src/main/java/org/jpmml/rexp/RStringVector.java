@@ -22,7 +22,31 @@ import java.util.List;
 
 public class RStringVector extends RVector<String> {
 
+	private List<String> values = null;
+
+
 	public RStringVector(List<String> values, RPair attributes){
-		super(values, attributes);
+		super(attributes);
+
+		setValues(values);
+	}
+
+	@Override
+	public int size(){
+		return this.values.size();
+	}
+
+	@Override
+	public String getValue(int index){
+		return this.values.get(index);
+	}
+
+	@Override
+	public List<String> getValues(){
+		return this.values;
+	}
+
+	private void setValues(List<String> values){
+		this.values = values;
 	}
 }

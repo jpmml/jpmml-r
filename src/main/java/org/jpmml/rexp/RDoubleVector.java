@@ -20,9 +20,31 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.primitives.Doubles;
+
 public class RDoubleVector extends RNumberVector<Double> {
 
-	public RDoubleVector(List<Double> values, RPair attributes){
-		super(values, attributes);
+	private double[] values = null;
+
+
+	public RDoubleVector(double[] values, RPair attributes){
+		super(attributes);
+
+		this.values = values;
+	}
+
+	@Override
+	public int size(){
+		return this.values.length;
+	}
+
+	@Override
+	public Double getValue(int index){
+		return this.values[index];
+	}
+
+	@Override
+	public List<Double> getValues(){
+		return Doubles.asList(this.values);
 	}
 }
