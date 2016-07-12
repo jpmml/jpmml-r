@@ -54,7 +54,7 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class GBMConverter extends ModelConverter<RGenericVector> {
+public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 	@Override
 	public void encodeFeatures(RGenericVector gbm, FeatureMapper featureMapper){
@@ -283,7 +283,7 @@ public class GBMConverter extends ModelConverter<RGenericVector> {
 		if(var != -1){
 			Feature feature = schema.getFeature(var);
 
-			missingPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
+			missingPredicate = createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
 
 			Double split = splitCodePred.getValue(i);
 
@@ -298,15 +298,15 @@ public class GBMConverter extends ModelConverter<RGenericVector> {
 
 				List<Integer> splitValues = c_split.getValues();
 
-				leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, splitValues, true));
-				rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, splitValues, false));
+				leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, splitValues, true));
+				rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, splitValues, false));
 			} else
 
 			if(feature instanceof ContinuousFeature){
 				String value = ValueUtil.formatValue(split);
 
-				leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
-				rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+				leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
+				rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			} else
 
 			{

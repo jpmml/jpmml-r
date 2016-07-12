@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.dmg.pmml.Array;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Predicate;
@@ -28,12 +30,11 @@ import org.dmg.pmml.SimpleSetPredicate;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ValueUtil;
 
-public class PredicateUtil {
+public class PredicateManager {
 
-	private PredicateUtil(){
-	}
+	private Interner<Predicate> interner = Interners.newStrongInterner();
 
-	static
+
 	public Predicate createSimpleSetPredicate(Feature feature, List<String> values){
 
 		if(values.size() == 1){
@@ -42,22 +43,25 @@ public class PredicateUtil {
 			return createSimplePredicate(feature, SimplePredicate.Operator.EQUAL, value);
 		}
 
-		SimpleSetPredicate simpleSetPredicate = new SimpleSetPredicate()
+		Predicate predicate = new InternableSimpleSetPredicate()
 			.setField(feature.getName())
 			.setBooleanOperator(SimpleSetPredicate.BooleanOperator.IS_IN)
 			.setArray(createArray(feature.getDataType(), values));
 
-		return simpleSetPredicate;
+		return intern(predicate);
 	}
 
-	static
 	public Predicate createSimplePredicate(Feature feature, SimplePredicate.Operator operator, String value){
-		SimplePredicate simplePredicate = new SimplePredicate()
+		Predicate predicate = new InternableSimplePredicate()
 			.setField(feature.getName())
 			.setOperator(operator)
 			.setValue(value);
 
-		return simplePredicate;
+		return intern(predicate);
+	}
+
+	public Predicate intern(Predicate predicate){
+		return this.interner.intern(predicate);
 	}
 
 	static

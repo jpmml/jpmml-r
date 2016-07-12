@@ -44,7 +44,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class RandomForestConverter extends ModelConverter<RGenericVector> {
+public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 	@Override
 	public void encodeFeatures(RGenericVector randomForest, FeatureMapper featureMapper){
@@ -313,15 +313,15 @@ public class RandomForestConverter extends ModelConverter<RGenericVector> {
 
 				List<String> values = listFeature.getValues();
 
-				leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, split, true));
-				rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, split, false));
+				leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, split, true));
+				rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, split, false));
 			} else
 
 			if(feature instanceof ContinuousFeature){
 				String value = ValueUtil.formatValue(split);
 
-				leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-				rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
+				leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+				rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
 			} else
 
 			{

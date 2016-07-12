@@ -46,7 +46,7 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class IsolationForestConverter extends ModelConverter<RGenericVector> {
+public class IsolationForestConverter extends TreeModelConverter<RGenericVector> {
 
 	@Override
 	public void encodeFeatures(RGenericVector iForest, FeatureMapper featureMapper){
@@ -170,7 +170,7 @@ public class IsolationForestConverter extends ModelConverter<RGenericVector> {
 
 			String value = ValueUtil.formatValue(splitValue.get(index));
 
-			Predicate leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
+			Predicate leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 
 			Node leftChild = new Node()
 				.setPredicate(leftPredicate);
@@ -179,7 +179,7 @@ public class IsolationForestConverter extends ModelConverter<RGenericVector> {
 
 			encodeNode(leftChild, leftIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
-			Predicate rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+			Predicate rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 
 			Node rightChild = new Node()
 				.setPredicate(rightPredicate);

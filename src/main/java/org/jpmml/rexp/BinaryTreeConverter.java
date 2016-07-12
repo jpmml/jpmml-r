@@ -41,7 +41,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class BinaryTreeConverter extends ModelConverter<S4Object> {
+public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	private MiningFunctionType miningFunction = null;
 
@@ -202,15 +202,15 @@ public class BinaryTreeConverter extends ModelConverter<S4Object> {
 
 			List<String> values = listFeature.getValues();
 
-			leftPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), true));
-			rightPredicate = PredicateUtil.createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), false));
+			leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), true));
+			rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), false));
 		} else
 
 		if(feature instanceof ContinuousFeature){
 			String value = ValueUtil.formatValue((Double)splitpoint.asScalar());
 
-			leftPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = PredicateUtil.createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
 		} else
 
 		{
