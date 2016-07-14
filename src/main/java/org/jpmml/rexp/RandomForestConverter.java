@@ -110,9 +110,10 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			FieldName name = FieldName.create(dataClassNames.getValue(0));
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(0));
 
-			List<String> targetCategories = getFactorLevels(y);
-			if(targetCategories != null){
-				featureMapper.append(name, dataType, targetCategories);
+			if(y instanceof RIntegerVector){
+				RIntegerVector factor = (RIntegerVector)y;
+
+				featureMapper.append(name, dataType, factor.getLevelValues());
 			} else
 
 			{
@@ -151,9 +152,10 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		{
 			FieldName name = FieldName.create("_target");
 
-			List<String> targetCategories = getFactorLevels(y);
-			if(targetCategories != null){
-				featureMapper.append(name, targetCategories);
+			if(y instanceof RIntegerVector){
+				RIntegerVector factor = (RIntegerVector)y;
+
+				featureMapper.append(name, factor.getLevelValues());
 			} else
 
 			{
@@ -190,8 +192,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder<Double> scoreEncoder = new ScoreEncoder<Double>(){
 
 			@Override
-			public String encode(Double key){
-				return ValueUtil.formatValue(key);
+			public String encode(Double value){
+				return ValueUtil.formatValue(value);
 			}
 		};
 
@@ -205,9 +207,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		for(int i = 0; i < columns; i++){
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunctionType.REGRESSION,
+					scoreEncoder,
 					RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, i),
 					RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, i),
-					scoreEncoder,
 					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
 					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
 					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
@@ -241,8 +243,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 
 			@Override
-			public String encode(Integer key){
-				return this.targetCategories.get(key - 1);
+			public String encode(Integer value){
+				return this.targetCategories.get(value - 1);
 			}
 		};
 
@@ -258,9 +260,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunctionType.CLASSIFICATION,
+					scoreEncoder,
 					RExpUtil.getColumn(daughters, rows, columns, 0),
 					RExpUtil.getColumn(daughters, rows, columns, 1),
-					scoreEncoder,
 					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
 					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
 					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
@@ -283,12 +285,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
-	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, ScoreEncoder<P> scoreEncoder, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
+	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
 
-		encodeNode(root, 0, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
+		encodeNode(root, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, schema);
 
 		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
 
@@ -298,9 +300,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private <P extends Number> void encodeNode(Node node, int i, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, ScoreEncoder<P> scoreEncoder, List<P> nodepred, Schema schema){
-		Predicate leftPredicate = null;
-		Predicate rightPredicate = null;
+	private <P extends Number> void encodeNode(Node node, int i, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, List<P> nodepred, Schema schema){
+		Predicate leftPredicate;
+		Predicate rightPredicate;
 
 		int var = ValueUtil.asInt(bestvar.get(i));
 		if(var != 0){
@@ -333,6 +335,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			P prediction = nodepred.get(i);
 
 			node.setScore(scoreEncoder.encode(prediction));
+
+			return;
 		}
 
 		int left = ValueUtil.asInt(leftDaughter.get(i));
@@ -341,7 +345,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				.setId(String.valueOf(left))
 				.setPredicate(leftPredicate);
 
-			encodeNode(leftChild, left - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
+			encodeNode(leftChild, left - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, schema);
 
 			node.addNodes(leftChild);
 		}
@@ -352,7 +356,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				.setId(String.valueOf(right))
 				.setPredicate(rightPredicate);
 
-			encodeNode(rightChild, right - 1, leftDaughter, rightDaughter, bestvar, xbestsplit, scoreEncoder, nodepred, schema);
+			encodeNode(rightChild, right - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, schema);
 
 			node.addNodes(rightChild);
 		}
@@ -402,23 +406,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private List<String> getFactorLevels(RExp rexp){
+	private interface ScoreEncoder<V extends Number> {
 
-		if(rexp instanceof RIntegerVector){
-			RIntegerVector factor = (RIntegerVector)rexp;
-
-			RStringVector levels = factor.getFactorLevels();
-
-			return levels.getValues();
-		}
-
-		return null;
-	}
-
-	static
-	private interface ScoreEncoder<K extends Number> {
-
-		String encode(K key);
+		String encode(V value);
 	}
 
 	private static final UnsignedLong TWO = UnsignedLong.valueOf(2L);

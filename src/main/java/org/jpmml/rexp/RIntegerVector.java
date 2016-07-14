@@ -49,13 +49,19 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		return Ints.asList(this.values);
 	}
 
-	public RStringVector getFactorLevels(){
+	public RStringVector getLevels(){
 		return (RStringVector)getAttributeValue("levels");
 	}
 
-	public String getFactorValue(int index){
-		RStringVector levels = getFactorLevels();
+	public String getLevelValue(int index){
+		RStringVector levels = getLevels();
 
 		return levels.getValue(getValue(index) - 1);
+	}
+
+	public List<String> getLevelValues(){
+		RStringVector levels = getLevels();
+
+		return levels.getValues();
 	}
 }

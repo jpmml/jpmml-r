@@ -56,10 +56,11 @@ public class ConverterFactory {
 	static {
 		converters.put("BinaryTree", BinaryTreeConverter.class);
 		converters.put("gbm", GBMConverter.class);
-		converters.put("kmeans", KMeansConverter.class);
 		converters.put("iForest", IsolationForestConverter.class);
+		converters.put("kmeans", KMeansConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
-		converters.put("xgb.Booster", XGBoostConverter.class);
+		converters.put("ranger", RangerConverter.class);
 		converters.put("train", TrainConverter.class);
+		converters.put("xgb.Booster", XGBoostConverter.class);
 	}
 }

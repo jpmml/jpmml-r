@@ -274,10 +274,10 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
 
-		Predicate missingPredicate = null;
+		Predicate missingPredicate;
 
-		Predicate leftPredicate = null;
-		Predicate rightPredicate = null;
+		Predicate leftPredicate;
+		Predicate rightPredicate;
 
 		Integer var = splitVar.getValue(i);
 		if(var != -1){
@@ -318,6 +318,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			Double value = prediction.getValue(i);
 
 			node.setScore(ValueUtil.formatValue(value));
+
+			return;
 		}
 
 		Integer missing = missingNode.getValue(i);

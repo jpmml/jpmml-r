@@ -141,7 +141,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		FeatureMap featureMap = new FeatureMap();
 
 		for(int i = 0; i < id.size(); i++){
-			featureMap.load(String.valueOf(id.getValue(i)), name.getFactorValue(i), type.getFactorValue(i));
+			featureMap.load(String.valueOf(id.getValue(i)), name.getLevelValue(i), type.getLevelValue(i));
 		}
 
 		return featureMap;

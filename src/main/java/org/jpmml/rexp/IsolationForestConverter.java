@@ -39,7 +39,7 @@ import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
-import org.jpmml.converter.Feature;
+import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
@@ -166,7 +166,7 @@ public class IsolationForestConverter extends TreeModelConverter<RGenericVector>
 		if(status == -3){
 			int att = splitAtt.get(index);
 
-			Feature feature = schema.getFeature(att - 1);
+			ContinuousFeature feature = (ContinuousFeature)schema.getFeature(att - 1);
 
 			String value = ValueUtil.formatValue(splitValue.get(index));
 

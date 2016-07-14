@@ -8,8 +8,9 @@ Java library and command-line application for converting [R] (http://www.r-proje
 * Fast and memory-efficient:
   * Can produce a 5 GB Random Forest PMML file in less than 1 minute on a desktop PC
 * Supported model types:
-  * `stats` package:
-    * `kmeans` - K-Means clustering
+  * [`caret` package] (http://cran.r-project.org/web/packages/caret/):
+    * `train.formula` ("formula interface") - Selected JPMML-R model types
+    * `train` ("matrix interface") - Selected JPMML-R model types
   * [`gbm` package] (http://cran.r-project.org/web/packages/gbm/):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`IsolationForest` package] (https://r-forge.r-project.org/R/?group_id=479):
@@ -19,11 +20,12 @@ Java library and command-line application for converting [R] (http://www.r-proje
   * [`randomForest` package] (http://cran.r-project.org/web/packages/randomForest/):
     * `randomForest.formula` ("formula interface") - Random Forest (RF) regression and classification
     * `randomForest` ("matrix interface") - Random Forest regression and classification
+  * [`ranger` package] (https://cran.r-project.org/web/packages/ranger/):
+    * `ranger` - Random Forest regression and classification
+  * `stats` package:
+    * `kmeans` - K-Means clustering
   * [`xgboost` package] (https://cran.r-project.org/web/packages/xgboost/):
     * `xgb.Booster` - XGBoost (XGB) regression and classification
-  * [`caret` package] (http://cran.r-project.org/web/packages/caret/):
-    * `train.formula` ("formula interface") - Selected JPMML-R model types
-    * `train` ("matrix interface") - Selected JPMML-R model types
 * Production quality:
   * Complete test coverage.
   * Fully compliant with the [JPMML-Evaluator] (https://github.com/jpmml/jpmml-evaluator) library.
