@@ -46,9 +46,9 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class IsolationForestConverter extends TreeModelConverter<RGenericVector> {
+public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
-	public IsolationForestConverter(RGenericVector iForest){
+	public IForestConverter(RGenericVector iForest){
 		super(iForest);
 	}
 

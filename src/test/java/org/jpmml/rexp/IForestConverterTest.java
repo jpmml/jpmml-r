@@ -25,7 +25,7 @@ import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
-public class IsolationForestConverterTest extends ConverterTest {
+public class IForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateIsolationForestAuto() throws Exception {
@@ -39,7 +39,7 @@ public class IsolationForestConverterTest extends ConverterTest {
 
 	private void evaluateIsolationForest(String dataset) throws Exception {
 
-		try(Batch batch = createBatch("IsolationForest", dataset)){
+		try(Batch batch = createBatch("IForest", dataset)){
 			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("rawPathLength"), FieldName.create("normalizedPathLength"));
 
 			evaluate(batch, ignoredFields);

@@ -3,7 +3,7 @@ library("IsolationForest")
 
 source("util.R")
 
-predictIsolationForest = function(iForest, data){
+predictIForest = function(iForest, data){
 	pred = AnomalyScore(data, iForest)
 
 	result = data.frame("pathLength" = pred$pathLength, "anomalyScore" = pred$outF)
@@ -16,28 +16,28 @@ auto = loadAutoCsv("Auto")
 auto_x = auto[, -ncol(auto)]
 auto_x$origin = NULL
 
-generateIsolationForestAuto = function(){
+generateIForestAuto = function(){
 	auto.iForest = IsolationTrees(auto_x, ntree = 7)
 
-	storeRds(auto.iForest, "IsolationForestAuto")
-	storeCsv(predictIsolationForest(auto.iForest, auto_x), "IsolationForestAuto")
+	storeRds(auto.iForest, "IForestAuto")
+	storeCsv(predictIForest(auto.iForest, auto_x), "IForestAuto")
 }
 
 set.seed(42)
 
-generateIsolationForestAuto()
+generateIForestAuto()
 
 iris = loadIrisCsv("Iris")
 
 iris_x = iris[, -ncol(iris)]
 
-generateIsolationForestIris = function(){
+generateIForestIris = function(){
 	iris.iForest = IsolationTrees(iris_x, ntree = 7)
 
-	storeRds(iris.iForest, "IsolationForestIris")
-	storeCsv(predictIsolationForest(iris.iForest, iris_x), "IsolationForestIris")
+	storeRds(iris.iForest, "IForestIris")
+	storeCsv(predictIForest(iris.iForest, iris_x), "IForestIris")
 }
 
 set.seed(42)
 
-generateIsolationForestIris()
+generateIForestIris()
