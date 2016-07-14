@@ -39,8 +39,14 @@ import org.jpmml.xgboost.XGBoostUtil;
 
 public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
+	public XGBoostConverter(RGenericVector booster){
+		super(booster);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector booster, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector booster = getObject();
+
 		RVector<?> fmap;
 
 		try {
@@ -57,25 +63,23 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException(ioe);
 		}
 
+		List<DataField> dataFields = featureMap.getDataFields();
+
 		// Dependent variable
 		{
 			featureMapper.append(FieldName.create("_target"), false);
 		}
 
 		// Independent variables
-		List<DataField> dataFields = featureMap.getDataFields();
 		for(DataField dataField : dataFields){
 			featureMapper.append(dataField);
 		}
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public MiningModel encodeModel(Schema schema){
+		RGenericVector booster = getObject();
 
-	@Override
-	public MiningModel encodeModel(RGenericVector booster, Schema schema){
 		RRaw raw = (RRaw)booster.getValue("raw");
 
 		Learner learner;

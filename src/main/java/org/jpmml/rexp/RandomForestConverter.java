@@ -46,8 +46,14 @@ import org.jpmml.converter.ValueUtil;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
+	public RandomForestConverter(RGenericVector randomForest){
+		super(randomForest);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector randomForest, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector randomForest = getObject();
+
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
 
 		RNumberVector<?> y;
@@ -81,12 +87,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public MiningModel encodeModel(Schema schema){
+		RGenericVector randomForest = getObject();
 
-	@Override
-	public MiningModel encodeModel(RGenericVector randomForest, Schema schema){
 		RStringVector type = (RStringVector)randomForest.getValue("type");
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
 

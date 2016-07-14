@@ -48,8 +48,14 @@ import org.jpmml.converter.ValueUtil;
 
 public class IsolationForestConverter extends TreeModelConverter<RGenericVector> {
 
+	public IsolationForestConverter(RGenericVector iForest){
+		super(iForest);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector iForest, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector iForest = getObject();
+
 		RStringVector xcols = (RStringVector)iForest.getValue("xcols");
 		RBooleanVector colisfactor = (RBooleanVector)iForest.getValue("colisfactor");
 
@@ -81,12 +87,9 @@ public class IsolationForestConverter extends TreeModelConverter<RGenericVector>
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public Model encodeModel(Schema schema){
+		RGenericVector iForest = getObject();
 
-	@Override
-	public Model encodeModel(RGenericVector iForest, Schema schema){
 		RGenericVector trees = (RGenericVector)iForest.getValue("trees");
 		RDoubleVector ntree = (RDoubleVector)iForest.getValue("ntree");
 

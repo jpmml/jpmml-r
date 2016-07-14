@@ -42,8 +42,14 @@ import org.jpmml.converter.ValueUtil;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
+	public RangerConverter(RGenericVector ranger){
+		super(ranger);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector ranger, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector ranger = getObject();
+
 		RGenericVector forest;
 
 		try {
@@ -103,12 +109,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public MiningModel encodeModel(Schema schema){
+		RGenericVector ranger = getObject();
 
-	@Override
-	public MiningModel encodeModel(RGenericVector ranger, Schema schema){
 		RStringVector treetype = (RStringVector)ranger.getValue("treetype");
 
 		switch(treetype.asScalar()){

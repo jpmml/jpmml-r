@@ -146,7 +146,7 @@ public class Main {
 			logger.info("Converting..");
 
 			long start = System.currentTimeMillis();
-			pmml = converter.convert(rexp);
+			pmml = converter.encodePMML();
 			long end = System.currentTimeMillis();
 
 			logger.info("Converted in {} ms.", (end - start));

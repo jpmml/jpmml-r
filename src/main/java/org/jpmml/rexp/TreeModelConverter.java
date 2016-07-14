@@ -30,6 +30,10 @@ public class TreeModelConverter<R extends RExp> extends ModelConverter<R> {
 	private PredicateManager predicateManager = new PredicateManager();
 
 
+	public TreeModelConverter(R object){
+		super(object);
+	}
+
 	public Predicate createSimpleSetPredicate(Feature feature, List<String> values){
 		PredicateManager predicateManager = getPredicateManager();
 

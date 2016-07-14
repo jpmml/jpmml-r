@@ -41,8 +41,19 @@ import org.jpmml.converter.Schema;
 
 public class KMeansConverter extends ModelConverter<RGenericVector> {
 
+	public KMeansConverter(RGenericVector kmeans){
+		super(kmeans);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector kmeans, FeatureMapper featureMapper){
+	public boolean isSupervised(){
+		return false;
+	}
+
+	@Override
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector kmeans = getObject();
+
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
 
 		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
@@ -56,12 +67,9 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createUnsupervisedSchema();
-	}
+	public Model encodeModel(Schema schema){
+		RGenericVector kmeans = getObject();
 
-	@Override
-	public Model encodeModel(RGenericVector kmeans, Schema schema){
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
 		RIntegerVector size = (RIntegerVector)kmeans.getValue("size");
 

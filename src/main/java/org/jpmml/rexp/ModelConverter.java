@@ -26,24 +26,37 @@ import org.jpmml.converter.Schema;
 abstract
 public class ModelConverter<R extends RExp> extends Converter<R> {
 
-	abstract
-	public void encodeFeatures(R rexp, FeatureMapper featureMapper);
+	public ModelConverter(R object){
+		super(object);
+	}
 
 	abstract
-	public Schema createSchema(FeatureMapper featureMapper);
+	public void encodeFeatures(FeatureMapper featureMapper);
 
 	abstract
-	public Model encodeModel(R rexp, Schema schema);
+	public Model encodeModel(Schema schema);
+
+	public boolean isSupervised(){
+		return true;
+	}
 
 	@Override
-	public PMML convert(R rexp){
+	public PMML encodePMML(){
 		FeatureMapper featureMapper = new FeatureMapper();
 
-		encodeFeatures(rexp, featureMapper);
+		encodeFeatures(featureMapper);
 
-		Schema schema = createSchema(featureMapper);
+		Schema schema;
 
-		Model model = encodeModel(rexp, schema);
+		if(isSupervised()){
+			schema = featureMapper.createSupervisedSchema();
+		} else
+
+		{
+			schema = featureMapper.createUnsupervisedSchema();
+		}
+
+		Model model = encodeModel(schema);
 
 		PMML pmml = featureMapper.encodePMML(model)
 			.setHeader(PMMLUtil.createHeader("JPMML-R", "1.1-SNAPSHOT"));

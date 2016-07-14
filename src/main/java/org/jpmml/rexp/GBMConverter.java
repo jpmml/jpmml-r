@@ -56,8 +56,14 @@ import org.jpmml.converter.ValueUtil;
 
 public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
+	public GBMConverter(RGenericVector gbm){
+		super(gbm);
+	}
+
 	@Override
-	public void encodeFeatures(RGenericVector gbm, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		RGenericVector gbm = getObject();
+
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
 		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
 		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
@@ -127,12 +133,9 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public MiningModel encodeModel(Schema schema){
+		RGenericVector gbm = getObject();
 
-	@Override
-	public MiningModel encodeModel(RGenericVector gbm, Schema schema){
 		RDoubleVector initF = (RDoubleVector)gbm.getValue("initF");
 		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
 		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");

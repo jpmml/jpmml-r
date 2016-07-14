@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public class ConverterFactory {
 	protected ConverterFactory(){
 	}
 
-	public Converter<RExp> newConverter(RExp rexp){
+	public <R extends RExp> Converter<R> newConverter(R rexp){
 		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
 
 		for(int i = 0; i < names.size(); i++){
@@ -36,7 +37,9 @@ public class ConverterFactory {
 			if(clazz != null){
 
 				try {
-					return clazz.newInstance();
+					Constructor<?> constructor = clazz.getDeclaredConstructor(rexp.getClass());
+
+					return (Converter<R>)constructor.newInstance(rexp);
 				} catch(Exception e){
 					throw new IllegalArgumentException(e);
 				}

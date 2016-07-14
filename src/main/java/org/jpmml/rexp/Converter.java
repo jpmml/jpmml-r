@@ -23,6 +23,21 @@ import org.dmg.pmml.PMML;
 abstract
 public class Converter<R extends RExp> {
 
+	private R object = null;
+
+
+	public Converter(R object){
+		setObject(object);
+	}
+
 	abstract
-	public PMML convert(R rexp);
+	public PMML encodePMML();
+
+	public R getObject(){
+		return this.object;
+	}
+
+	private void setObject(R object){
+		this.object = object;
+	}
 }

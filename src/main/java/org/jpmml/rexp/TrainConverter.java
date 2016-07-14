@@ -22,14 +22,20 @@ import org.dmg.pmml.PMML;
 
 public class TrainConverter extends Converter<RGenericVector> {
 
+	public TrainConverter(RGenericVector train){
+		super(train);
+	}
+
 	@Override
-	public PMML convert(RGenericVector train){
+	public PMML encodePMML(){
+		RGenericVector train = getObject();
+
 		RExp finalModel = train.getValue("finalModel");
 
 		ConverterFactory converterFactory = ConverterFactory.newInstance();
 
 		ModelConverter<RExp> converter = (ModelConverter<RExp>)converterFactory.newConverter(finalModel);
 
-		return converter.convert(finalModel);
+		return converter.encodePMML();
 	}
 }

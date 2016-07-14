@@ -58,8 +58,8 @@ public class ConverterTest extends IntegrationTest {
 
 		ConverterFactory converterFactory = ConverterFactory.newInstance();
 
-		Converter converter = converterFactory.newConverter(rexp);
+		Converter<RExp> converter = converterFactory.newConverter(rexp);
 
-		return converter.convert(rexp);
+		return converter.encodePMML();
 	}
 }

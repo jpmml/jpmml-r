@@ -48,8 +48,14 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	private Map<FieldName, Integer> featureIndexes = new LinkedHashMap<>();
 
 
+	public BinaryTreeConverter(S4Object binaryTree){
+		super(binaryTree);
+	}
+
 	@Override
-	public void encodeFeatures(S4Object binaryTree, FeatureMapper featureMapper){
+	public void encodeFeatures(FeatureMapper featureMapper){
+		S4Object binaryTree = getObject();
+
 		S4Object responses = (S4Object)binaryTree.getAttributeValue("responses");
 		RGenericVector tree = (RGenericVector)binaryTree.getAttributeValue("tree");
 
@@ -58,12 +64,9 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	@Override
-	public Schema createSchema(FeatureMapper featureMapper){
-		return featureMapper.createSupervisedSchema();
-	}
+	public TreeModel encodeModel(Schema schema){
+		S4Object binaryTree = getObject();
 
-	@Override
-	public TreeModel encodeModel(S4Object binaryTree, Schema schema){
 		RGenericVector tree = (RGenericVector)binaryTree.getAttributeValue("tree");
 
 		Output output = encodeOutput(schema);
