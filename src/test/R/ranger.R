@@ -1,3 +1,4 @@
+library("caret")
 library("ranger")
 
 source("util.R")
@@ -23,22 +24,27 @@ set.seed(42)
 
 generateRangerAudit()
 
-auto = loadAutoCsv("Auto")
+auto.raw = loadAutoCsv("AutoNA")
 
-generateRangerAuto = function(){
+auto.preProc = preProcess(auto.raw, method = c("medianImpute"))
+
+auto = predict(auto.preProc, auto.raw)
+
+generateRangerAutoNA = function(){
 	auto.ranger = ranger(mpg ~ ., data = auto, num.trees = 7, write.forest = TRUE)
 	auto.ranger$variable.levels = getVariableLevels(auto)
+	auto.ranger$preProcess = auto.preProc
 	print(auto.ranger)
 
 	mpg = predict(auto.ranger, data = auto)$prediction
 
-	storeRds(auto.ranger, "RangerAuto")
-	storeCsv(data.frame("_target" = mpg), "RangerAuto")
+	storeRds(auto.ranger, "RangerAutoNA")
+	storeCsv(data.frame("_target" = mpg), "RangerAutoNA")
 }
 
 set.seed(42)
 
-generateRangerAuto()
+generateRangerAutoNA()
 
 iris = loadIrisCsv("Iris")
 

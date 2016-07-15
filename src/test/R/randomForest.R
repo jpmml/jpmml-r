@@ -167,6 +167,27 @@ generateRandomForestFormulaIris()
 generateRandomForestCustFormulaIris()
 generateRandomForestIris()
 
+generateTrainRandomForestIris = function(){
+	iris.train = train(x = iris_x, y = iris_y, method = "rf", preProcess = c("range"), ntree = 7)
+	print(iris.train)
+
+	storeRds(iris.train, "TrainRandomForestIris")
+	storeCsv(predictRandomForestIris(iris.train, iris_x, "_target"), "TrainRandomForestIris")
+}
+
+generateTrainRandomForestFormulaIris = function(){
+	iris.train = train(Species ~ ., data = iris, method = "rf", preProcess = c("center", "scale"), ntree = 7)
+	print(iris.train)
+
+	storeRds(iris.train, "TrainRandomForestFormulaIris")
+	storeCsv(predictRandomForestIris(iris.train, iris, "_target"), "TrainRandomForestFormulaIris")
+}
+
+set.seed(42)
+
+generateTrainRandomForestFormulaIris()
+generateTrainRandomForestIris()
+
 wine_quality = loadWineQualityCsv("WineQuality")
 
 wine_quality_x = wine_quality[, -ncol(wine_quality)]

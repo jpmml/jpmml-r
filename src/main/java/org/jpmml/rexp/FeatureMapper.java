@@ -93,13 +93,7 @@ public class FeatureMapper extends PMMLMapper {
 		return createSchema(null, names);
 	}
 
-	private List<FieldName> names(){
-		Map<FieldName, DataField> dataFields = getDataFields();
-
-		return new ArrayList<>(dataFields.keySet());
-	}
-
-	private Schema createSchema(FieldName targetField, List<FieldName> activeFields){
+	public Schema createSchema(FieldName targetField, List<FieldName> activeFields){
 		DataField targetDataField = getDataField(targetField);
 
 		List<String> targetCategories = null;
@@ -131,6 +125,12 @@ public class FeatureMapper extends PMMLMapper {
 		Schema schema = new Schema(targetField, targetCategories, activeFields, features);
 
 		return schema;
+	}
+
+	private List<FieldName> names(){
+		Map<FieldName, DataField> dataFields = getDataFields();
+
+		return new ArrayList<>(dataFields.keySet());
 	}
 
 	static

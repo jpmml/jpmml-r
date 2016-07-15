@@ -106,6 +106,8 @@ public class RExpParser {
 				return null; // XXX
 			case SerializationTypes.NAMESPACESXP:
 				return readNamespace();
+			case SerializationTypes.BASENAMESPACESXP:
+				return null; // XXX
 			case SerializationTypes.MISSINGARGSXP:
 				return null; // XXX
 			case SerializationTypes.UNBOUNDVALUESXP:
@@ -317,9 +319,7 @@ public class RExpParser {
 	private RExp readBytecode(int flags) throws IOException {
 		int length = readInt();
 
-		List<RExp> reps = new ArrayList<>(length);
-
-		readBC1(reps);
+		readBC1();
 
 		return null;
 	}
@@ -345,13 +345,13 @@ public class RExpParser {
 		return new RRaw(value, readAttributes(flags));
 	}
 
-	private void readBC1(List<RExp> reps) throws IOException {
+	private void readBC1() throws IOException {
 		RExp code = readRExp();
 
-		readBytecodeConstants(reps);
+		readBytecodeConstants();
 	}
 
-	private void readBytecodeConstants(List<RExp> reps) throws IOException {
+	private void readBytecodeConstants() throws IOException {
 		int n = readInt();
 
 		for(int i = 0; i < n; i++){
@@ -360,9 +360,10 @@ public class RExpParser {
 			switch(type){
 				case SExpTypes.LISTSXP:
 				case SExpTypes.LANGSXP:
-					throw new UnsupportedOperationException(String.valueOf(type));
+					readBCLang(type);
+					break;
 				case SExpTypes.BCODESXP:
-					readBC1(reps);
+					readBC1();
 					break;
 				case SerializationTypes.ATTRLISTSXP:
 				case SerializationTypes.ATTRLANGSXP:
@@ -373,6 +374,27 @@ public class RExpParser {
 					readRExp();
 					break;
 			}
+		}
+	}
+
+	private void readBCLang(int type) throws IOException {
+
+		switch(type){
+			case SExpTypes.LISTSXP:
+			case SExpTypes.LANGSXP:
+				RExp tag = readRExp();
+
+				readBCLang(readInt());
+				readBCLang(readInt());
+				break;
+			case SerializationTypes.ATTRLISTSXP:
+			case SerializationTypes.ATTRLANGSXP:
+			case SerializationTypes.BCREPREF:
+			case SerializationTypes.BCREPDEF:
+				throw new UnsupportedOperationException(String.valueOf(type));
+			default:
+				readRExp();
+				break;
 		}
 	}
 

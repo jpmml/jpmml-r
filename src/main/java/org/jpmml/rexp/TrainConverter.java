@@ -31,11 +31,22 @@ public class TrainConverter extends Converter<RGenericVector> {
 		RGenericVector train = getObject();
 
 		RExp finalModel = train.getValue("finalModel");
+		RGenericVector preProcess = (RGenericVector)train.getValue("preProcess");
 
 		ConverterFactory converterFactory = ConverterFactory.newInstance();
 
 		ModelConverter<RExp> converter = (ModelConverter<RExp>)converterFactory.newConverter(finalModel);
 
-		return converter.encodePMML();
+		FeatureMapper featureMapper;
+
+		if(preProcess != null){
+			featureMapper = new PreProcessFeatureMapper(preProcess);
+		} else
+
+		{
+			featureMapper = new FeatureMapper();
+		}
+
+		return converter.encodePMML(featureMapper);
 	}
 }

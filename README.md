@@ -7,8 +7,9 @@ Java library and command-line application for converting [R] (http://www.r-proje
 
 * Fast and memory-efficient:
   * Can produce a 5 GB Random Forest PMML file in less than 1 minute on a desktop PC
-* Supported model types:
+* Supported model and transformation types:
   * [`caret` package] (http://cran.r-project.org/web/packages/caret/):
+    * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train.formula` ("formula interface") - Selected JPMML-R model types
     * `train` ("matrix interface") - Selected JPMML-R model types
   * [`gbm` package] (http://cran.r-project.org/web/packages/gbm/):

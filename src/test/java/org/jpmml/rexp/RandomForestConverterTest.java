@@ -112,6 +112,16 @@ public class RandomForestConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateCaretIris() throws Exception {
+		evaluate("TrainRandomForest", "Iris");
+	}
+
+	@Test
+	public void evaluateCaretFormulaIris() throws Exception {
+		evaluate("TrainRandomForestFormula", "Iris");
+	}
+
+	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
 		evaluate("RandomForestFormula", "WineQuality");
 	}

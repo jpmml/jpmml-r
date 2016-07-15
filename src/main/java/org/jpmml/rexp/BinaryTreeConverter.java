@@ -82,9 +82,9 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RBooleanVector is_nominal = (RBooleanVector)responses.getAttributeValue("is_nominal");
 		RGenericVector levels = (RGenericVector)responses.getAttributeValue("levels");
 
-		RStringVector names = variables.names();
+		RStringVector variableNames = variables.names();
 
-		String name = names.asScalar();
+		String name = variableNames.asScalar();
 
 		Boolean categorical = is_nominal.getValue(name);
 

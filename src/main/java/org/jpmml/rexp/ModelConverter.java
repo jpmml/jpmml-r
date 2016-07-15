@@ -42,8 +42,40 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 	@Override
 	public PMML encodePMML(){
-		FeatureMapper featureMapper = new FeatureMapper();
+		RExp object = getObject();
 
+		RGenericVector preProcess = null;
+
+		try {
+			if(object instanceof S4Object){
+				S4Object model = (S4Object)object;
+
+				preProcess = (RGenericVector)model.getAttributeValue("preProcess");
+			} else
+
+			if(object instanceof RGenericVector){
+				RGenericVector model = (RGenericVector)object;
+
+				preProcess = (RGenericVector)model.getValue("preProcess");
+			}
+		} catch(IllegalArgumentException iae){
+			// Ignored
+		}
+
+		FeatureMapper featureMapper;
+
+		if(preProcess != null){
+			featureMapper = new PreProcessFeatureMapper(preProcess);
+		} else
+
+		{
+			featureMapper = new FeatureMapper();
+		}
+
+		return encodePMML(featureMapper);
+	}
+
+	public PMML encodePMML(FeatureMapper featureMapper){
 		encodeFeatures(featureMapper);
 
 		Schema schema;

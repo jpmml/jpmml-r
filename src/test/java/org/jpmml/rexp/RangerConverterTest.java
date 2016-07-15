@@ -28,8 +28,8 @@ public class RangerConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void evaluateAuto() throws Exception {
-		evaluate("Ranger", "Auto");
+	public void evaluateAutoNA() throws Exception {
+		evaluate("Ranger", "AutoNA");
 	}
 
 	@Test
