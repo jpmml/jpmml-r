@@ -116,23 +116,23 @@ public class Main {
 			throw e;
 		}
 
-		Converter converter;
+		ConverterFactory converterFactory = ConverterFactory.newInstance();
+
+		Converter<RExp> converter;
 
 		if(this.converter != null){
 			logger.info("Initializing user-specified Converter {}", this.converter);
 
-			Class<?> clazz = Class.forName(this.converter);
+			Class<? extends Converter> clazz = (Class<? extends Converter>)Class.forName(this.converter);
 
-			converter = (Converter)clazz.newInstance();
+			converter = converterFactory.newConverter(clazz, rexp);
 		} else
 
 		{
 			logger.info("Initializing default Converter");
 
-			ConverterFactory converterFactory = ConverterFactory.newInstance();
-
 			converter = converterFactory.newConverter(rexp);
-		}
+		} // End if
 
 		{
 			Class<?> clazz = converter.getClass();

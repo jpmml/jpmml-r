@@ -35,18 +35,22 @@ public class ConverterFactory {
 
 			Class<? extends Converter> clazz = ConverterFactory.converters.get(name);
 			if(clazz != null){
-
-				try {
-					Constructor<?> constructor = clazz.getDeclaredConstructor(rexp.getClass());
-
-					return (Converter<R>)constructor.newInstance(rexp);
-				} catch(Exception e){
-					throw new IllegalArgumentException(e);
-				}
+				return newConverter(clazz, rexp);
 			}
 		}
 
 		throw new IllegalArgumentException("No built-in converter for class " + names.getValues());
+	}
+
+	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter> clazz, R rexp){
+
+		try {
+			Constructor<?> constructor = clazz.getDeclaredConstructor(rexp.getClass());
+
+			return (Converter<R>)constructor.newInstance(rexp);
+		} catch(Exception e){
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	static
