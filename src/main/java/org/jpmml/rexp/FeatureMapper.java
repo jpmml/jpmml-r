@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
@@ -35,7 +33,6 @@ import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.PMMLMapper;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.ValueUtil;
 
 public class FeatureMapper extends PMMLMapper {
 
@@ -60,11 +57,11 @@ public class FeatureMapper extends PMMLMapper {
 				throw new IllegalArgumentException();
 		}
 
-		DataField dataField = createDataField(name, opType, dataType);
+		createDataField(name, opType, dataType);
 	}
 
 	public void append(FieldName name, List<String> categories){
-		append(name, ValueUtil.getDataType(categories), categories);
+		append(name, TypeUtil.getDataType(categories), categories);
 	}
 
 	public void append(FieldName name, DataType dataType, List<String> categories){
@@ -99,7 +96,7 @@ public class FeatureMapper extends PMMLMapper {
 		List<String> targetCategories = null;
 
 		if(targetDataField != null && targetDataField.hasValues()){
-			targetCategories = getValues(targetDataField);
+			targetCategories = PMMLUtil.getValues(targetDataField);
 		}
 
 		List<Feature> features = new ArrayList<>();
@@ -110,7 +107,7 @@ public class FeatureMapper extends PMMLMapper {
 			Feature feature;
 
 			if(activeDataField.hasValues()){
-				List<String> categories = getValues(activeDataField);
+				List<String> categories = PMMLUtil.getValues(activeDataField);
 
 				feature = new ListFeature(activeDataField, categories);
 			} else
@@ -131,27 +128,5 @@ public class FeatureMapper extends PMMLMapper {
 		Map<FieldName, DataField> dataFields = getDataFields();
 
 		return new ArrayList<>(dataFields.keySet());
-	}
-
-	static
-	private List<String> getValues(DataField dataField){
-		Function<Value, String> function = new Function<Value, String>(){
-
-			@Override
-			public String apply(Value value){
-				Value.Property property = value.getProperty();
-
-				switch(property){
-					case VALID:
-						return value.getValue();
-					default:
-						throw new IllegalArgumentException();
-				}
-			}
-		};
-
-		List<Value> values = dataField.getValues();
-
-		return new ArrayList<>(Lists.transform(values, function));
 	}
 }

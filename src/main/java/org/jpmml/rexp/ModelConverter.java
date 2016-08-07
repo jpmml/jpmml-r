@@ -20,7 +20,6 @@ package org.jpmml.rexp;
 
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
 abstract
@@ -90,8 +89,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 		Model model = encodeModel(schema);
 
-		PMML pmml = featureMapper.encodePMML(model)
-			.setHeader(PMMLUtil.createHeader("JPMML-R", "1.1-SNAPSHOT"));
+		PMML pmml = featureMapper.encodePMML(model);
 
 		return pmml;
 	}

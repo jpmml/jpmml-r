@@ -18,32 +18,19 @@
  */
 package org.jpmml.rexp;
 
-import java.util.Objects;
+import java.util.Arrays;
 
-import org.dmg.pmml.SimplePredicate;
+import org.dmg.pmml.DataType;
+import org.junit.Test;
 
-public class InternableSimplePredicate extends SimplePredicate {
+import static org.junit.Assert.assertEquals;
 
-	@Override
-	public int hashCode(){
-		int result = 0;
+public class TypeUtilTest {
 
-		result = (31 * result) + Objects.hashCode(this.getField());
-		result = (31 * result) + Objects.hashCode(this.getOperator());
-		result = (31 * result) + Objects.hashCode(this.getValue());
-
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object object){
-
-		if(object instanceof InternableSimplePredicate){
-			InternableSimplePredicate that = (InternableSimplePredicate)object;
-
-			return Objects.equals(this.getField(), that.getField()) && Objects.equals(this.getOperator(), that.getOperator()) && Objects.equals(this.getValue(), that.getValue());
-		}
-
-		return false;
+	@Test
+	public void getDataType(){
+		assertEquals(DataType.INTEGER, TypeUtil.getDataType(Arrays.asList("1", "2", "3")));
+		assertEquals(DataType.DOUBLE, TypeUtil.getDataType(Arrays.asList("1", "2.0", "3")));
+		assertEquals(DataType.STRING, TypeUtil.getDataType(Arrays.asList("1", "two", "3")));
 	}
 }

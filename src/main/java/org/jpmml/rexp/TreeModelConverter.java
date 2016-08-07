@@ -23,6 +23,7 @@ import java.util.List;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.PredicateManager;
 
 abstract
 public class TreeModelConverter<R extends RExp> extends ModelConverter<R> {
