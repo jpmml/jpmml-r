@@ -24,11 +24,9 @@ import java.util.List;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunctionType;
 import org.dmg.pmml.MiningModel;
-import org.dmg.pmml.MiningSchema;
 import org.dmg.pmml.MultipleModelMethodType;
 import org.dmg.pmml.Node;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
@@ -137,12 +135,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunctionType.REGRESSION, scoreEncoder, schema);
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
-			.setSegmentation(segmentation);
+		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels));
 
 		return miningModel;
 	}
@@ -165,12 +159,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunctionType.CLASSIFICATION, scoreEncoder, schema);
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels);
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, miningSchema)
-			.setSegmentation(segmentation);
+		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels));
 
 		return miningModel;
 	}
@@ -203,9 +193,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

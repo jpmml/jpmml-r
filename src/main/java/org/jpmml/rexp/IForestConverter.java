@@ -27,7 +27,6 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunctionType;
 import org.dmg.pmml.MiningModel;
-import org.dmg.pmml.MiningSchema;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.MultipleModelMethodType;
 import org.dmg.pmml.Node;
@@ -35,7 +34,6 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
@@ -109,14 +107,10 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
 		Output output = encodeOutput(xrow);
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
-			.setSegmentation(segmentation)
+		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels))
 			.setOutput(output);
 
 		return miningModel;
@@ -151,9 +145,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			schema
 		);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, miningSchema, root)
+		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

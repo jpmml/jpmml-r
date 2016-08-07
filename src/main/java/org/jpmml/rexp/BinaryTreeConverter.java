@@ -26,7 +26,6 @@ import java.util.Map;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunctionType;
-import org.dmg.pmml.MiningSchema;
 import org.dmg.pmml.Node;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
@@ -156,9 +155,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		encodeNode(root, tree, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		TreeModel treeModel = new TreeModel(this.miningFunction, miningSchema, root)
+		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

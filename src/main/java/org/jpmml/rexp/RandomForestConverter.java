@@ -27,12 +27,9 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunctionType;
 import org.dmg.pmml.MiningModel;
-import org.dmg.pmml.MiningSchema;
 import org.dmg.pmml.MultipleModelMethodType;
 import org.dmg.pmml.Node;
-import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.Segmentation;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
@@ -222,12 +219,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels);
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, miningSchema)
-			.setSegmentation(segmentation);
+		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels));
 
 		return miningModel;
 	}
@@ -275,15 +268,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		Segmentation segmentation = MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels);
-
-		Output output = ModelUtil.createProbabilityOutput(schema);
-
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, miningSchema)
-			.setSegmentation(segmentation)
-			.setOutput(output);
+		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels))
+			.setOutput(ModelUtil.createProbabilityOutput(schema));
 
 		return miningModel;
 	}
@@ -295,9 +282,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, schema);
 
-		MiningSchema miningSchema = ModelUtil.createMiningSchema(schema);
-
-		TreeModel treeModel = new TreeModel(miningFunction, miningSchema, root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;
