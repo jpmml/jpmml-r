@@ -22,21 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningFunctionType;
-import org.dmg.pmml.MiningModel;
-import org.dmg.pmml.MultipleModelMethodType;
-import org.dmg.pmml.Node;
+import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.dmg.pmml.mining.MiningModel;
+import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.Node;
+import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
-import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.mining.MiningModelUtil;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
@@ -133,10 +133,10 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		List<TreeModel> treeModels = encodeForest(forest, MiningFunctionType.REGRESSION, scoreEncoder, schema);
+		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.REGRESSION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels));
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels));
 
 		return miningModel;
 	}
@@ -157,15 +157,15 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		List<TreeModel> treeModels = encodeForest(forest, MiningFunctionType.CLASSIFICATION, scoreEncoder, schema);
+		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.CLASSIFICATION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels));
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels));
 
 		return miningModel;
 	}
 
-	private List<TreeModel> encodeForest(RGenericVector forest, MiningFunctionType miningFunction, ScoreEncoder scoreEncoder, Schema schema){
+	private List<TreeModel> encodeForest(RGenericVector forest, MiningFunction miningFunction, ScoreEncoder scoreEncoder, Schema schema){
 		RNumberVector<?> numTrees = (RNumberVector<?>)forest.getValue("num.trees");
 		RGenericVector childNodeIDs = (RGenericVector)forest.getValue("child.nodeIDs");
 		RGenericVector splitVarIDs = (RGenericVector)forest.getValue("split.varIDs");
@@ -184,7 +184,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		return treeModels;
 	}
 
-	private TreeModel encodeTreeModel(MiningFunctionType miningFunction, ScoreEncoder scoreEncoder, RGenericVector childNodeIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, Schema schema){
+	private TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder scoreEncoder, RGenericVector childNodeIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, Schema schema){
 		RNumberVector<?> leftChildIDs = (RNumberVector<?>)childNodeIDs.getValue(0);
 		RNumberVector<?> rightChildIDs = (RNumberVector<?>)childNodeIDs.getValue(1);
 

@@ -25,21 +25,21 @@ import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningFunctionType;
-import org.dmg.pmml.MiningModel;
-import org.dmg.pmml.MultipleModelMethodType;
-import org.dmg.pmml.Node;
+import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.dmg.pmml.mining.MiningModel;
+import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.Node;
+import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
-import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.mining.MiningModelUtil;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
@@ -206,7 +206,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		for(int i = 0; i < columns; i++){
 			TreeModel treeModel = encodeTreeModel(
-					MiningFunctionType.REGRESSION,
+					MiningFunction.REGRESSION,
 					scoreEncoder,
 					RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, i),
 					RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, i),
@@ -219,8 +219,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels));
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels));
 
 		return miningModel;
 	}
@@ -255,7 +255,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			List<? extends Number> daughters = RExpUtil.getColumn(treemap.getValues(), 2 * rows, columns, i);
 
 			TreeModel treeModel = encodeTreeModel(
-					MiningFunctionType.CLASSIFICATION,
+					MiningFunction.CLASSIFICATION,
 					scoreEncoder,
 					RExpUtil.getColumn(daughters, rows, columns, 0),
 					RExpUtil.getColumn(daughters, rows, columns, 1),
@@ -268,14 +268,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.MAJORITY_VOTE, treeModels))
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels))
 			.setOutput(ModelUtil.createProbabilityOutput(schema));
 
 		return miningModel;
 	}
 
-	private <P extends Number> TreeModel encodeTreeModel(MiningFunctionType miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
+	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());

@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningModel;
+import org.dmg.pmml.mining.MiningModel;
 import org.jpmml.converter.Schema;
 import org.jpmml.xgboost.Classification;
 import org.jpmml.xgboost.FeatureMap;

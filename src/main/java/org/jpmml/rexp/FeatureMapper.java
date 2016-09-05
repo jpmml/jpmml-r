@@ -25,7 +25,9 @@ import java.util.Map;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMML;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
@@ -35,6 +37,14 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
 public class FeatureMapper extends PMMLMapper {
+
+	@Override
+	public PMML encodePMML(Model model){
+		PMML pmml = super.encodePMML(model)
+			.setVersion("4.3");
+
+		return pmml;
+	}
 
 	public void append(FieldName name, boolean categorical){
 		append(name, categorical ? DataType.STRING : DataType.DOUBLE);

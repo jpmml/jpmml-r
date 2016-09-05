@@ -22,27 +22,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FeatureType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
-import org.dmg.pmml.MiningFunctionType;
-import org.dmg.pmml.MiningModel;
+import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.MultipleModelMethodType;
-import org.dmg.pmml.Node;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.Predicate;
+import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.dmg.pmml.mining.MiningModel;
+import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.Node;
+import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.ContinuousFeature;
-import org.jpmml.converter.MiningModelUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.mining.MiningModelUtil;
 
 public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
@@ -109,8 +109,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 		Output output = encodeOutput(xrow);
 
-		MiningModel miningModel = new MiningModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(MultipleModelMethodType.AVERAGE, treeModels))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels))
 			.setOutput(output);
 
 		return miningModel;
@@ -145,7 +145,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			schema
 		);
 
-		TreeModel treeModel = new TreeModel(MiningFunctionType.REGRESSION, ModelUtil.createMiningSchema(schema), root)
+		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;
@@ -197,20 +197,18 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private Output encodeOutput(RIntegerVector xrow){
-		OutputField rawPathLength = ModelUtil.createPredictedField(FieldName.create("rawPathLength"));
+		OutputField rawPathLength = ModelUtil.createPredictedField(FieldName.create("rawPathLength"), DataType.DOUBLE);
 
 		// "rawPathLength / avgPathLength(xrow)"
-		OutputField normalizedPathLength = new OutputField(FieldName.create("normalizedPathLength"))
-			.setFeature(FeatureType.TRANSFORMED_VALUE)
-			.setDataType(DataType.DOUBLE)
+		OutputField normalizedPathLength = new OutputField(FieldName.create("normalizedPathLength"), DataType.DOUBLE)
 			.setOpType(OpType.CONTINUOUS)
+			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
 			.setExpression(PMMLUtil.createApply("/", new FieldRef(rawPathLength.getName()), PMMLUtil.createConstant(avgPathLength(xrow.asScalar()))));
 
 		// "2 ^ (-1 * normalizedPathLength)"
-		OutputField score = new OutputField(FieldName.create("anomalyScore"))
-			.setFeature(FeatureType.TRANSFORMED_VALUE)
-			.setDataType(DataType.DOUBLE)
+		OutputField score = new OutputField(FieldName.create("anomalyScore"), DataType.DOUBLE)
 			.setOpType(OpType.CONTINUOUS)
+			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
 			.setExpression(PMMLUtil.createApply("pow", PMMLUtil.createConstant(2d), PMMLUtil.createApply("*", PMMLUtil.createConstant(-1d), new FieldRef(normalizedPathLength.getName()))));
 
 		Output output = new Output()

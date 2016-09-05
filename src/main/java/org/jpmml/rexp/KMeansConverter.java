@@ -22,21 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.Array;
-import org.dmg.pmml.Cluster;
-import org.dmg.pmml.ClusteringField;
-import org.dmg.pmml.ClusteringModel;
-import org.dmg.pmml.CompareFunctionType;
+import org.dmg.pmml.CompareFunction;
 import org.dmg.pmml.ComparisonMeasure;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningFunctionType;
+import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.SquaredEuclidean;
-import org.jpmml.converter.ClusteringModelUtil;
+import org.dmg.pmml.clustering.Cluster;
+import org.dmg.pmml.clustering.ClusteringField;
+import org.dmg.pmml.clustering.ClusteringModel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.clustering.ClusteringModelUtil;
 
 public class KMeansConverter extends ModelConverter<RGenericVector> {
 
@@ -99,12 +99,12 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		List<ClusteringField> clusteringFields = ClusteringModelUtil.createClusteringFields(features);
 
 		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE)
-			.setCompareFunction(CompareFunctionType.ABS_DIFF)
+			.setCompareFunction(CompareFunction.ABS_DIFF)
 			.setMeasure(new SquaredEuclidean());
 
 		Output output = ClusteringModelUtil.createOutput(FieldName.create("cluster"), clusters);
 
-		ClusteringModel clusteringModel = new ClusteringModel(MiningFunctionType.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema), comparisonMeasure, clusteringFields, clusters)
+		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema), comparisonMeasure, clusteringFields, clusters)
 			.setOutput(output);
 
 		return clusteringModel;

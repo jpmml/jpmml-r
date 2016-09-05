@@ -25,14 +25,14 @@ import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningFunctionType;
-import org.dmg.pmml.Node;
+import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.TreeModel;
 import org.dmg.pmml.True;
+import org.dmg.pmml.tree.Node;
+import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
@@ -42,7 +42,7 @@ import org.jpmml.converter.ValueUtil;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
-	private MiningFunctionType miningFunction = null;
+	private MiningFunction miningFunction = null;
 
 	private Map<FieldName, Integer> featureIndexes = new LinkedHashMap<>();
 
@@ -88,7 +88,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		Boolean categorical = is_nominal.getValue(name);
 
 		if((Boolean.TRUE).equals(categorical)){
-			this.miningFunction = MiningFunctionType.CLASSIFICATION;
+			this.miningFunction = MiningFunction.CLASSIFICATION;
 
 			RExp targetVariable = variables.getValue(name);
 
@@ -100,7 +100,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		} else
 
 		if((Boolean.FALSE).equals(categorical)){
-			this.miningFunction = MiningFunctionType.REGRESSION;
+			this.miningFunction = MiningFunction.REGRESSION;
 
 			featureMapper.append(FieldName.create(name), false);
 		} else
