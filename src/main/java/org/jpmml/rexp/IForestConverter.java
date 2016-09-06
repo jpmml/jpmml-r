@@ -197,7 +197,9 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private Output encodeOutput(RIntegerVector xrow){
-		OutputField rawPathLength = ModelUtil.createPredictedField(FieldName.create("rawPathLength"), DataType.DOUBLE);
+		OutputField rawPathLength = new OutputField(FieldName.create("rawPathLength"), DataType.DOUBLE)
+			.setOpType(OpType.CONTINUOUS)
+			.setResultFeature(ResultFeature.PREDICTED_VALUE);
 
 		// "rawPathLength / avgPathLength(xrow)"
 		OutputField normalizedPathLength = new OutputField(FieldName.create("normalizedPathLength"), DataType.DOUBLE)
