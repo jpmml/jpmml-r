@@ -23,9 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -34,6 +32,7 @@ import org.dmg.pmml.OutputField;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.SimplePredicate;
+import org.dmg.pmml.Target;
 import org.dmg.pmml.Targets;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
@@ -45,7 +44,6 @@ import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
@@ -175,14 +173,9 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeRegression(List<TreeModel> treeModels, Double initF, Schema schema){
-		FieldName targetField = schema.getTargetField();
-
-		Targets targets = new Targets()
-			.addTargets(ModelUtil.createRescaleTarget(targetField, null, initF));
-
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
-			.setTargets(targets);
+			.setTargets(createTargets(initF, schema));
 
 		return miningModel;
 	}
@@ -190,19 +183,10 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	private MiningModel encodeBinaryClassification(List<TreeModel> treeModels, Double initF, double coefficient, Schema schema){
 		Schema segmentSchema = schema.toAnonymousSchema();
 
-		OutputField rawGbmValue = ModelUtil.createPredictedField(FieldName.create("rawGbmValue"), DataType.DOUBLE);
-
-		OutputField scaledGbmValue = new OutputField(FieldName.create("scaledGbmValue"), DataType.DOUBLE)
-			.setOpType(OpType.CONTINUOUS)
-			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
-			.setExpression(encodeScalingExpression(rawGbmValue.getName(), initF));
-
-		Output output = new Output()
-			.addOutputFields(rawGbmValue, scaledGbmValue);
-
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(segmentSchema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
-			.setOutput(output);
+			.setTargets(createTargets(initF, segmentSchema))
+			.setOutput(createOutput(null));
 
 		return MiningModelUtil.createBinaryLogisticClassification(schema, miningModel, coefficient, true);
 	}
@@ -216,21 +200,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		for(int i = 0; i < targetCategories.size(); i++){
 			String targetCategory = targetCategories.get(i);
 
-			OutputField rawGbmValue = ModelUtil.createPredictedField(FieldName.create("rawGbmValue_" + targetCategory), DataType.DOUBLE);
-
-			OutputField transformedGbmValue = new OutputField(FieldName.create("transformedGbmValue_" + targetCategory), DataType.DOUBLE)
-				.setOpType(OpType.CONTINUOUS)
-				.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
-				.setExpression(encodeScalingExpression(rawGbmValue.getName(), initF));
-
 			List<TreeModel> segmentTreeModels = getColumn(treeModels, i, (treeModels.size() / targetCategories.size()), targetCategories.size());
-
-			Output output = new Output()
-				.addOutputFields(rawGbmValue, transformedGbmValue);
 
 			MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(segmentSchema))
 				.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, segmentTreeModels))
-				.setOutput(output);
+				.setTargets(createTargets(initF, segmentSchema))
+				.setOutput(createOutput(targetCategory));
 
 			miningModels.add(miningModel);
 		}
@@ -342,14 +317,31 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private Expression encodeScalingExpression(FieldName name, Double initF){
-		Expression expression = new FieldRef(name);
+	private Targets createTargets(Double initF, Schema schema){
 
 		if(!ValueUtil.isZero(initF)){
-			expression = PMMLUtil.createApply("+", expression, PMMLUtil.createConstant(initF));
+			Target target = ModelUtil.createRescaleTarget(schema.getTargetField(), null, initF);
+
+			Targets targets = new Targets()
+				.addTargets(target);
+
+			return targets;
 		}
 
-		return expression;
+		return null;
+	}
+
+	static
+	private Output createOutput(String targetCategory){
+		OutputField gbmField = new OutputField(FieldName.create("gbmValue" + (targetCategory != null ? ("_" + targetCategory) : "")), DataType.DOUBLE)
+			.setOpType(OpType.CONTINUOUS)
+			.setResultFeature(ResultFeature.PREDICTED_VALUE)
+			.setFinalResult(false);
+
+		Output output = new Output()
+			.addOutputFields(gbmField);
+
+		return output;
 	}
 
 	static
