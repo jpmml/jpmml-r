@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,9 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
 public class FeatureMapper extends PMMLMapper {
+
+	private Map<FieldName, Feature> features = new LinkedHashMap<>();
+
 
 	public void append(FieldName name, boolean categorical){
 		append(name, categorical ? DataType.STRING : DataType.DOUBLE);
@@ -57,7 +61,9 @@ public class FeatureMapper extends PMMLMapper {
 				throw new IllegalArgumentException();
 		}
 
-		createDataField(name, opType, dataType);
+		DataField dataField = createDataField(name, opType, dataType);
+
+		this.features.put(dataField.getName(), null);
 	}
 
 	public void append(FieldName name, List<String> categories){
@@ -72,10 +78,18 @@ public class FeatureMapper extends PMMLMapper {
 
 			values.addAll(PMMLUtil.createValues(categories));
 		}
+
+		this.features.put(dataField.getName(), null);
 	}
 
 	public void append(DataField dataField){
 		addDataField(dataField);
+
+		this.features.put(dataField.getName(), null);
+	}
+
+	public void append(Feature feature){
+		this.features.put(feature.getName(), feature);
 	}
 
 	public Schema createSupervisedSchema(){
@@ -102,18 +116,20 @@ public class FeatureMapper extends PMMLMapper {
 		List<Feature> features = new ArrayList<>();
 
 		for(FieldName activeField : activeFields){
-			DataField activeDataField = getDataField(activeField);
+			Feature feature = getFeature(activeField);
 
-			Feature feature;
+			if(feature == null){
+				DataField activeDataField = getDataField(activeField);
 
-			if(activeDataField.hasValues()){
-				List<String> categories = PMMLUtil.getValues(activeDataField);
+				if(activeDataField.hasValues()){
+					List<String> categories = PMMLUtil.getValues(activeDataField);
 
-				feature = new ListFeature(activeDataField, categories);
-			} else
+					feature = new ListFeature(activeDataField, categories);
+				} else
 
-			{
-				feature = new ContinuousFeature(activeDataField);
+				{
+					feature = new ContinuousFeature(activeDataField);
+				}
 			}
 
 			features.add(feature);
@@ -125,8 +141,16 @@ public class FeatureMapper extends PMMLMapper {
 	}
 
 	private List<FieldName> names(){
-		Map<FieldName, DataField> dataFields = getDataFields();
+		Map<FieldName, Feature> features = getFeatures();
 
-		return new ArrayList<>(dataFields.keySet());
+		return new ArrayList<>(features.keySet());
+	}
+
+	private Feature getFeature(FieldName name){
+		return this.features.get(name);
+	}
+
+	private Map<FieldName, Feature> getFeatures(){
+		return this.features;
 	}
 }
