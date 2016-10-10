@@ -65,6 +65,7 @@ public class ConverterFactory {
 		converters.put("gbm", GBMConverter.class);
 		converters.put("iForest", IForestConverter.class);
 		converters.put("kmeans", KMeansConverter.class);
+		converters.put("lm", LMConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("ranger", RangerConverter.class);
 		converters.put("train", TrainConverter.class);
