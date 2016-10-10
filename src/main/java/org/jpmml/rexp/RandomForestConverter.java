@@ -52,33 +52,25 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector randomForest = getObject();
 
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
-
-		RNumberVector<?> y;
-
-		try {
-			y = (RNumberVector<?>)randomForest.getValue("y");
-		} catch(IllegalArgumentException iae){
-			y = null;
-		}
+		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y", true);
+		RExp terms = randomForest.getValue("terms", true);
 
 		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
 
-		try {
-			RExp terms = randomForest.getValue("terms");
-
-			// The RF model was trained using the formula interface
+		// The RF model was trained using the formula interface
+		if(terms != null){
 			encodeFormula(terms, y, xlevels, ncat, featureMapper);
-		} catch(IllegalArgumentException iae){
-			RStringVector xNames;
+		} else
 
-			try {
-				xNames = (RStringVector)randomForest.getValue("xNames");
-			} catch(IllegalArgumentException iaeChild){
+		// The RF model was trained using the matrix (ie. non-formula) interface
+		{
+			RStringVector xNames = (RStringVector)randomForest.getValue("xNames", true);
+
+			if(xNames == null){
 				xNames = xlevels.names();
 			}
 
-			// The RF model was trained using the matrix (ie. non-formula) interface
 			encodeNonFormula(xNames, y, xlevels, ncat, featureMapper);
 		}
 	}
@@ -125,7 +117,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		// Independent variables
 		for(int i = 0; i < ncat.size(); i++){
-			int index = (dataClassNames.getValues()).indexOf(xlevelNames.getValue(i));
+			int index = dataClassNames.indexOf(xlevelNames.getValue(i));
 			if(index < 1){
 				throw new IllegalArgumentException();
 			}

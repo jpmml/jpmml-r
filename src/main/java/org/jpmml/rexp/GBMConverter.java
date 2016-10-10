@@ -59,27 +59,11 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector gbm = getObject();
 
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
+		RStringVector response_name = (RStringVector)gbm.getValue("response.name", true);
 		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
 		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
 		RNumberVector<?> var_type = (RNumberVector<?>)gbm.getValue("var.type");
-
-		RStringVector response_name;
-
-		try {
-			response_name = (RStringVector)gbm.getValue("response.name");
-		} catch(IllegalArgumentException iae){
-			response_name = null;
-		}
-
-		RStringVector classes;
-
-		try {
-			classes = (RStringVector)gbm.getValue("classes");
-		} catch(IllegalArgumentException iae){
-			classes = null;
-		}
-
-		RStringVector name = (RStringVector)distribution.getValue("name");
+		RStringVector classes = (RStringVector)gbm.getValue("classes", true);
 
 		// Dependent variable
 		{
@@ -93,7 +77,9 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				responseName = FieldName.create("y");
 			}
 
-			switch(name.asScalar()){
+			RStringVector distributionName = (RStringVector)distribution.getValue("name");
+
+			switch(distributionName.asScalar()){
 				case "gaussian":
 					featureMapper.append(responseName, false);
 					break;
@@ -135,7 +121,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
 
-		RStringVector name = (RStringVector)distribution.getValue("name");
+		RStringVector distributionName = (RStringVector)distribution.getValue("name");
 
 		Schema segmentSchema = schema.toAnonymousSchema();
 
@@ -149,14 +135,14 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = encodeMiningModel(name, treeModels, initF.asScalar(), schema);
+		MiningModel miningModel = encodeMiningModel(distributionName, treeModels, initF.asScalar(), schema);
 
 		return miningModel;
 	}
 
-	private MiningModel encodeMiningModel(RStringVector name, List<TreeModel> treeModels, Double initF, Schema schema){
+	private MiningModel encodeMiningModel(RStringVector distributionName, List<TreeModel> treeModels, Double initF, Schema schema){
 
-		switch(name.asScalar()){
+		switch(distributionName.asScalar()){
 			case "gaussian":
 				return encodeRegression(treeModels, initF, schema);
 			case "adaboost":

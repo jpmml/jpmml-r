@@ -46,7 +46,28 @@ public class RVector<V> extends RExp {
 		return values.get(0);
 	}
 
+	public int indexOf(V value){
+		List<V> values = getValues();
+
+		return values.indexOf(value);
+	}
+
+	public boolean hasValue(String name){
+		RPair names = getAttribute("names");
+		if(names == null){
+			throw new IllegalStateException();
+		}
+
+		RStringVector vector = (RStringVector)names.getValue();
+
+		return (vector.indexOf(name) > -1);
+	}
+
 	public V getValue(String name){
+		return getValue(name, false);
+	}
+
+	public V getValue(String name, boolean optional){
 		RPair names = getAttribute("names");
 		if(names == null){
 			throw new IllegalStateException();
@@ -61,6 +82,10 @@ public class RVector<V> extends RExp {
 			if(Objects.equals(name, value)){
 				return getValue(i);
 			}
+		}
+
+		if(optional){
+			return null;
 		}
 
 		throw new IllegalArgumentException(name);

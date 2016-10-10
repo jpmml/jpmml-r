@@ -43,22 +43,22 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	public PMML encodePMML(){
 		RExp object = getObject();
 
-		RGenericVector preProcess = null;
+		RGenericVector preProcess;
 
-		try {
-			if(object instanceof S4Object){
-				S4Object model = (S4Object)object;
+		if(object instanceof S4Object){
+			S4Object model = (S4Object)object;
 
-				preProcess = (RGenericVector)model.getAttributeValue("preProcess");
-			} else
+			preProcess = (RGenericVector)model.getAttributeValue("preProcess", true);
+		} else
 
-			if(object instanceof RGenericVector){
-				RGenericVector model = (RGenericVector)object;
+		if(object instanceof RGenericVector){
+			RGenericVector model = (RGenericVector)object;
 
-				preProcess = (RGenericVector)model.getValue("preProcess");
-			}
-		} catch(IllegalArgumentException iae){
-			// Ignored
+			preProcess = (RGenericVector)model.getValue("preProcess", true);
+		} else
+
+		{
+			preProcess = null;
 		}
 
 		FeatureMapper featureMapper;

@@ -37,9 +37,17 @@ public class RExp {
 	}
 
 	public RExp getAttributeValue(String name){
+		return getAttributeValue(name, false);
+	}
+
+	public RExp getAttributeValue(String name, boolean optional){
 		RPair attribute = getAttribute(name);
 		if(attribute != null){
 			return attribute.getValue();
+		}
+
+		if(optional){
+			return null;
 		}
 
 		throw new IllegalArgumentException(name);
