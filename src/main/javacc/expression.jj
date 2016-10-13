@@ -109,6 +109,20 @@ TOKEN:
 
 TOKEN:
 {
+	< IF: "if" >
+	|
+	< ELSE: "else" >
+}
+
+TOKEN:
+{
+	< FALSE: "FALSE" >
+	|
+	< TRUE: "TRUE" >
+}
+
+TOKEN:
+{
 	< INT: (<DIGIT>)+ (["l", "L"])? >
 	|
 	< FLOAT:
@@ -153,10 +167,33 @@ Expression Expression():
 	Expression expression;
 }
 {
-	expression = AdditiveExpression()
+	(
+		LOOKAHEAD(<IF>)
+		expression = IfExpression()
+		|
+		expression = AdditiveExpression()
+	)
 
 	{
 		return expression;
+	}
+}
+
+Expression IfExpression():
+{
+	Expression condition;
+	Expression first;
+	Expression second = null;
+}
+{
+	<IF> <LPAREN> condition = Expression() <RPAREN> first = Expression() (LOOKAHEAD(<ELSE>) <ELSE> second = Expression())?
+
+	{
+		if(second != null){
+			return createApply("if", condition, first, second);
+		}
+
+		return createApply("if", condition, first);
 	}
 }
 
@@ -285,6 +322,8 @@ Constant Constant():
 		value = <INT>
 		|
 		value = <FLOAT> { dataType = DataType.DOUBLE; }
+		|
+		(value = <FALSE> | value = <TRUE>) { value.image = value.image.toLowerCase(); dataType = DataType.BOOLEAN; }
 		|
 		value = <STRING>
 	)

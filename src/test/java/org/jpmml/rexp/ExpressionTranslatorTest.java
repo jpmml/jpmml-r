@@ -66,6 +66,23 @@ public class ExpressionTranslatorTest {
 		}
 	}
 
+	@Test
+	public void translateIfExpression(){
+		Apply apply = (Apply)ExpressionTranslator.translate("if(TRUE) 1 else 0");
+
+		List<Expression> expressions = checkApply(apply, "if", Constant.class, Constant.class, Constant.class);
+
+		Expression condition = expressions.get(0);
+
+		checkConstant((Constant)condition, "true", DataType.BOOLEAN);
+
+		Expression first = expressions.get(1);
+		Expression second = expressions.get(2);
+
+		checkConstant((Constant)first, "1", null);
+		checkConstant((Constant)second, "0", null);
+	}
+
 	static
 	private List<Expression> checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 		assertEquals(function, apply.getFunction());
