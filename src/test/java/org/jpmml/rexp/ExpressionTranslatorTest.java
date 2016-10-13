@@ -83,6 +83,34 @@ public class ExpressionTranslatorTest {
 		checkConstant((Constant)second, "0", null);
 	}
 
+	@Test
+	public void translateRelationalExpression(){
+		Apply apply = (Apply)ExpressionTranslator.translate("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
+
+		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Apply.class);
+
+		Expression condition = expressions.get(0);
+
+		checkApply((Apply)condition, "lessThan", FieldRef.class, Constant.class);
+
+		Expression first = expressions.get(1);
+		Expression second = expressions.get(2);
+
+		checkConstant((Constant)first, "negative", null);
+
+		expressions = checkApply((Apply)second, "if", Apply.class, Constant.class, Constant.class);
+
+		condition = expressions.get(0);
+
+		checkApply((Apply)condition, "greaterThan", FieldRef.class, Constant.class);
+
+		first = expressions.get(1);
+		second = expressions.get(2);
+
+		checkConstant((Constant)first, "positive", null);
+		checkConstant((Constant)second, "zero", null);
+	}
+
 	static
 	private List<Expression> checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 		assertEquals(function, apply.getFunction());

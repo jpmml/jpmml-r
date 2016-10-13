@@ -69,13 +69,34 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private String translateRelationalOperator(String operator){
+
+		switch(operator){
+			case "==":
+				return "equal";
+			case "!=":
+				return "notEqual";
+			case "<":
+				return "lessThan";
+			case "<=":
+				return "lessOrEqual";
+			case ">":
+				return "greaterThan";
+			case ">=":
+				return "greaterOrEqual";
+			default:
+				throw new IllegalArgumentException(operator);
+		}
+	}
+
+	static
 	private Apply createApply(String function, Expression... expressions){
 		Apply apply = new Apply(function);
-
+		
 		for(Expression expression : expressions){
 			apply.addExpressions(expression);
 		}
-
+		
 		return apply;
 	}
 }
@@ -109,6 +130,21 @@ TOKEN:
 
 TOKEN:
 {
+	< EQUAL: "==" >
+	|
+	< NOT_EQUAL: "!=" >
+	|
+	< LESS_THAN: "<" >
+	|
+	< LESS_OR_EQUAL: "<=" >
+	|
+	< GREATER_THAN: ">" >
+	|
+	< GREATER_OR_EQUAL: ">=" >
+}
+
+TOKEN:
+{
 	< IF: "if" >
 	|
 	< ELSE: "else" >
@@ -136,9 +172,9 @@ TOKEN:
 	< IDENTIFIER: <LETTER> (<LETTER> | <DIGIT> | "." | "_")* >
 	|
 	< STRING:
-		"\"" (~["\""]) "\""
+		"\"" (~["\""])* "\""
 		|
-		"\'" (~["\'"]) "\'"
+		"\'" (~["\'"])* "\'"
 	>
 	|
 	< #DIGIT: ["0" - "9"] >
@@ -171,7 +207,7 @@ Expression Expression():
 		LOOKAHEAD(<IF>)
 		expression = IfExpression()
 		|
-		expression = AdditiveExpression()
+		expression = RelationalExpression()
 	)
 
 	{
@@ -194,6 +230,24 @@ Expression IfExpression():
 		}
 
 		return createApply("if", condition, first);
+	}
+}
+
+Expression RelationalExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression())?
+
+	{
+		if(operator != null){
+			return createApply(translateRelationalOperator(operator.image), left, right);
+		}
+
+		return left;
 	}
 }
 
@@ -325,7 +379,7 @@ Constant Constant():
 		|
 		(value = <FALSE> | value = <TRUE>) { value.image = value.image.toLowerCase(); dataType = DataType.BOOLEAN; }
 		|
-		value = <STRING>
+		value = <STRING> { value.image = value.image.substring(1, value.image.length() - 1); }
 	)
 
 	{
