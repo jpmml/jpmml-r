@@ -1,0 +1,301 @@
+/*
+ * Copyright (c) 2016 Villu Ruusmann
+ *
+ * This file is part of JPMML-R
+ *
+ * JPMML-R is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * JPMML-R is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
+ */
+options {
+	JAVA_TEMPLATE_TYPE = "modern";
+	JDK_VERSION = "1.5";
+	STATIC = false;
+}
+
+PARSER_BEGIN(ExpressionTranslator)
+package org.jpmml.rexp;
+
+import org.dmg.pmml.Apply;
+import org.dmg.pmml.Constant;
+import org.dmg.pmml.DataType;
+import org.dmg.pmml.Expression;
+import org.dmg.pmml.FieldName;
+import org.dmg.pmml.FieldRef;
+
+public class ExpressionTranslator {
+
+	static
+	public Expression translate(String string){
+
+		try {
+			ExpressionTranslator translator = new ExpressionTranslator(string);
+
+			return translator.translateInternal();
+		} catch(ParseException pe){
+			throw new IllegalArgumentException(pe);
+		}
+	}
+
+	static
+	private String translateFunctionName(String name){
+
+		switch(name){
+			case "abs":
+				return name;
+			case "ceiling":
+				return "ceil";
+			case "exp":
+			case "floor":
+				return name;
+			case "log":
+				return "ln";
+			case "log10":
+			case "round":
+			case "sqrt":
+				return name;
+			default:
+				throw new IllegalArgumentException(name);
+		}
+	}
+
+	static
+	private Apply createApply(String function, Expression... expressions){
+		Apply apply = new Apply(function);
+
+		for(Expression expression : expressions){
+			apply.addExpressions(expression);
+		}
+
+		return apply;
+	}
+}
+PARSER_END(ExpressionTranslator)
+
+SKIP:
+{
+	" "
+	|
+	"\t"
+}
+
+TOKEN:
+{
+	< MULTIPLY: "*" >
+	|
+	< DIVIDE: "/" >
+	|
+	< LPAREN: "(" >
+	|
+	< RPAREN: ")" >
+	|
+	< PLUS: "+" >
+	|
+	< MINUS: "-" >
+	|
+	< POWER: "^" >
+	|
+	< POWER_MULTIPLY: "**" >
+}
+
+TOKEN:
+{
+	< INT: (<DIGIT>)+ (["l", "L"])? >
+	|
+	< FLOAT:
+		(<DIGIT>)+ "." (<DIGIT>)* (<EXP>)?
+		|
+		"." (<DIGIT>)+ (<EXP>)?
+		|
+		(<DIGIT>)+ (<EXP>)?
+	>
+	|
+	< IDENTIFIER: <LETTER> (<LETTER> | <DIGIT> | "." | "_")* >
+	|
+	< STRING:
+		"\"" (~["\""]) "\""
+		|
+		"\'" (~["\'"]) "\'"
+	>
+	|
+	< #DIGIT: ["0" - "9"] >
+	|
+	< #LETTER: ["a" - "z", "A" - "Z"]>
+	|
+	< #EXP: ["e", "E"] (["+", "-"])? <INT> >
+	|
+	< #ESC: "\\" ["\"", "\'", "\\"] >
+}
+
+private Expression translateInternal():
+{
+	Expression expression;
+}
+{
+	expression = Expression() <EOF>
+
+	{
+		return expression;
+	}
+}
+
+Expression Expression():
+{
+	Expression expression;
+}
+{
+	expression = AdditiveExpression()
+
+	{
+		return expression;
+	}
+}
+
+Expression AdditiveExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression())?
+
+	{
+		if(operator != null){
+			return createApply(operator.image, left, right);
+		}
+
+		return left;
+	}
+}
+
+Expression MultiplicativeExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = PowerExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = PowerExpression())?
+
+	{
+		if(operator != null){
+			return createApply(operator.image, left, right);
+		}
+
+		return left;
+	}
+}
+
+Expression PowerExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = PrimaryExpression())?
+
+	{
+		if(operator != null){
+			return createApply("pow", left, right);
+		}
+
+		return left;
+	}
+}
+
+Expression PrimaryExpression():
+{
+	Expression expression;
+}
+{
+	(
+		LOOKAHEAD(<IDENTIFIER> <LPAREN>)
+		expression = FunctionInvocationExpression()
+		|
+		expression = FieldInvocationExpression()
+		|
+		expression = ParenthesizedExpression()
+		|
+		expression = Constant()
+	)
+
+	{
+		return expression;
+	}
+}
+
+Apply FunctionInvocationExpression():
+{
+	Token name;
+	Expression expression;
+}
+{
+	name = <IDENTIFIER> <LPAREN> expression = Expression() <RPAREN>
+
+	{
+		return createApply(translateFunctionName(name.image), expression);
+	}
+}
+
+FieldRef FieldInvocationExpression():
+{
+	Token name;
+}
+{
+	name = <IDENTIFIER>
+
+	{
+		FieldRef fieldRef = new FieldRef()
+			.setField(FieldName.create(name.image));
+
+		return fieldRef;
+	}
+}
+
+Expression ParenthesizedExpression():
+{
+	Expression expression;
+}
+{
+	<LPAREN> expression = Expression() <RPAREN>
+
+	{
+		return expression;
+	}
+}
+
+Constant Constant():
+{
+	Token value;
+	DataType dataType = null;
+}
+{
+	(
+		value = <INT>
+		|
+		value = <FLOAT> { dataType = DataType.DOUBLE; }
+		|
+		value = <STRING>
+	)
+
+	{
+		Constant constant = new Constant()
+			.setValue(value.image)
+			.setDataType(dataType);
+
+		{
+			return constant;
+		}
+	}
+}

@@ -26,6 +26,7 @@ import java.util.Map;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
+import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
@@ -73,20 +74,31 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		RStringVector variableRows = (RStringVector)dimnames.getValue(0);
 		RStringVector termColumns = (RStringVector)dimnames.getValue(1);
 
-		List<DataField> dataFields = new ArrayList<>();
+		List<TypeDefinitionField> fields = new ArrayList<>();
 
+		fields:
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getValue(i);
 
 			FieldName name = FieldName.create(variable);
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
 
-			DataField dataField;
+			if(variable.startsWith("I(") && variable.endsWith(")")){
+				String string = variable.substring("I(".length(), variable.length() - ")".length());
+
+				Expression expression = ExpressionTranslator.translate(string);
+
+				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression);
+
+				fields.add(derivedField);
+
+				continue;
+			} // End if
 
 			if(xlevels != null && xlevels.hasValue(variable)){
 				RStringVector levels = (RStringVector)xlevels.getValue(variable);
 
-				dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
+				DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
 
 				List<String> categories = levels.getValues();
 				for(String category : categories){
@@ -104,19 +116,21 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					values.addAll(PMMLUtil.createValues(categories));
 				}
+
+				fields.add(dataField);
 			} else
 
 			{
-				dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
-			}
+				DataField dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
 
-			dataFields.add(dataField);
+				fields.add(dataField);
+			}
 		}
 
 		// Dependent variable
 		int responseIndex = response.asScalar();
 		if(responseIndex != 0){
-			DataField dataField = dataFields.get(responseIndex - 1);
+			DataField dataField = (DataField)fields.get(responseIndex - 1);
 
 			Feature feature = new ContinuousFeature(dataField);
 

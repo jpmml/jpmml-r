@@ -13,7 +13,7 @@ generateLinearRegressionFormulaAuto = function(){
 }
 
 generateLinearRegressionRichFormulaAuto = function(){
-	auto.lm = lm(mpg ~ (.) ^ 2, data = auto)
+	auto.lm = lm(mpg ~ I(displacement / cylinders) + (.) ^ 2 + I(log(weight)), data = auto)
 	print(auto.lm)
 
 	mpg = predict(auto.lm, newdata = auto)
