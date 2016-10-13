@@ -68,19 +68,19 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateIfExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translate("if(TRUE) 1 else 0");
+		Apply apply = (Apply)ExpressionTranslator.translate("if(is.na(x)) TRUE else FALSE");
 
-		List<Expression> expressions = checkApply(apply, "if", Constant.class, Constant.class, Constant.class);
+		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Constant.class);
 
 		Expression condition = expressions.get(0);
 
-		checkConstant((Constant)condition, "true", DataType.BOOLEAN);
+		checkApply((Apply)condition, "isMissing", FieldRef.class);
 
 		Expression first = expressions.get(1);
 		Expression second = expressions.get(2);
 
-		checkConstant((Constant)first, "1", null);
-		checkConstant((Constant)second, "0", null);
+		checkConstant((Constant)first, "true", DataType.BOOLEAN);
+		checkConstant((Constant)second, "false", DataType.BOOLEAN);
 	}
 
 	@Test

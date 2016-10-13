@@ -64,6 +64,13 @@ public class ExpressionTranslator {
 			case "sqrt":
 				return name;
 			default:
+				break;
+		}
+
+		switch(name){
+			case "is.na":
+				return "isMissing";
+			default:
 				throw new IllegalArgumentException(name);
 		}
 	}
@@ -174,6 +181,8 @@ TOKEN:
 	< FALSE: "FALSE" >
 	|
 	< TRUE: "TRUE" >
+	|
+	< NA: "NA" >
 }
 
 TOKEN:
