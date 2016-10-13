@@ -84,6 +84,25 @@ public class ExpressionTranslatorTest {
 	}
 
 	@Test
+	public void translateLogicalExpression(){
+		Apply apply = (Apply)ExpressionTranslator.translate("((a >= 0.0 & b >= 0.0) | c <= 0.0)");
+
+		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
+
+		Expression left = expressions.get(0);
+		Expression right = expressions.get(1);
+
+		expressions = checkApply((Apply)left, "and", Apply.class, Apply.class);
+		checkApply((Apply)right, "lessOrEqual", FieldRef.class, Constant.class);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkApply((Apply)left, "greaterOrEqual", FieldRef.class, Constant.class);
+		checkApply((Apply)right, "greaterOrEqual", FieldRef.class, Constant.class);
+	}
+
+	@Test
 	public void translateRelationalExpression(){
 		Apply apply = (Apply)ExpressionTranslator.translate("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
 

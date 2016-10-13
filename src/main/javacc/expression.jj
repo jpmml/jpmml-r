@@ -69,6 +69,19 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private String translateLogicalOperator(String operator){
+
+		switch(operator){
+			case "&":
+				return "and";
+			case "|":
+				return "or";
+			default:
+				throw new IllegalArgumentException(operator);
+		}
+	}
+
+	static
 	private String translateRelationalOperator(String operator){
 
 		switch(operator){
@@ -92,11 +105,11 @@ public class ExpressionTranslator {
 	static
 	private Apply createApply(String function, Expression... expressions){
 		Apply apply = new Apply(function);
-		
+
 		for(Expression expression : expressions){
 			apply.addExpressions(expression);
 		}
-		
+
 		return apply;
 	}
 }
@@ -130,6 +143,12 @@ TOKEN:
 
 TOKEN:
 {
+	< AND: "&" >
+	|
+	< OR: "|" >
+	|
+	< NOT: "!" >
+	|
 	< EQUAL: "==" >
 	|
 	< NOT_EQUAL: "!=" >
@@ -207,7 +226,7 @@ Expression Expression():
 		LOOKAHEAD(<IF>)
 		expression = IfExpression()
 		|
-		expression = RelationalExpression()
+		expression = LogicalExpression()
 	)
 
 	{
@@ -233,6 +252,24 @@ Expression IfExpression():
 	}
 }
 
+Expression LogicalExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = RelationalExpression() ((operator = <AND> | operator = <OR>) right = RelationalExpression())?
+
+	{
+		if(operator != null){
+			return createApply(translateLogicalOperator(operator.image), left, right);
+		}
+
+		return left;
+	}
+}
+
 Expression RelationalExpression():
 {
 	Expression left;
@@ -240,7 +277,7 @@ Expression RelationalExpression():
 	Expression right = null;
 }
 {
-	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression())?
+	left = NegationExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = NegationExpression())?
 
 	{
 		if(operator != null){
@@ -248,6 +285,23 @@ Expression RelationalExpression():
 		}
 
 		return left;
+	}
+}
+
+Expression NegationExpression():
+{
+	Token operator = null;
+	Expression expression;
+}
+{
+	(operator = <NOT>)? expression = AdditiveExpression()
+
+	{
+		if(operator != null){
+			return createApply("not", expression);
+		}
+
+		return expression;
 	}
 }
 
@@ -276,7 +330,7 @@ Expression MultiplicativeExpression():
 	Expression right = null;
 }
 {
-	left = PowerExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = PowerExpression())?
+	left = ExponentiationExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = ExponentiationExpression())?
 
 	{
 		if(operator != null){
@@ -287,7 +341,7 @@ Expression MultiplicativeExpression():
 	}
 }
 
-Expression PowerExpression():
+Expression ExponentiationExpression():
 {
 	Expression left;
 	Token operator = null;
