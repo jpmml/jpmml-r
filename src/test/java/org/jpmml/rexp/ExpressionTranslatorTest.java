@@ -29,7 +29,6 @@ import org.dmg.pmml.FieldRef;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class ExpressionTranslatorTest {
 
@@ -55,15 +54,13 @@ public class ExpressionTranslatorTest {
 
 		left = expressions.get(0);
 
-		{
-			expressions = checkApply((Apply)left, "/", FieldRef.class, FieldRef.class);
+		expressions = checkApply((Apply)left, "/", FieldRef.class, FieldRef.class);
 
-			left = expressions.get(0);
-			right = expressions.get(1);
+		left = expressions.get(0);
+		right = expressions.get(1);
 
-			checkFieldRef((FieldRef)left, FieldName.create("A"));
-			checkFieldRef((FieldRef)right, FieldName.create("B"));
-		}
+		checkFieldRef((FieldRef)left, FieldName.create("A"));
+		checkFieldRef((FieldRef)right, FieldName.create("B"));
 	}
 
 	@Test
@@ -103,6 +100,25 @@ public class ExpressionTranslatorTest {
 	}
 
 	@Test
+	public void translateLogicalExpressionChain(){
+		String string = "(x == 0) | ((x == 1) | (x == 2)) | x == 3";
+
+		Apply apply = (Apply)ExpressionTranslator.translate(string, false);
+
+		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
+
+		Expression left = expressions.get(0);
+		Expression right = expressions.get(1);
+
+		checkApply((Apply)left, "or", Apply.class, Apply.class);
+		checkApply((Apply)right, "equal", FieldRef.class, Constant.class);
+
+		apply = (Apply)ExpressionTranslator.translate(string, true);
+
+		checkApply(apply, "or", Apply.class, Apply.class, Apply.class, Apply.class);
+	}
+
+	@Test
 	public void translateRelationalExpression(){
 		Apply apply = (Apply)ExpressionTranslator.translate("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
 
@@ -130,6 +146,31 @@ public class ExpressionTranslatorTest {
 		checkConstant((Constant)second, "zero", null);
 	}
 
+	@Test
+	public void translateArithmeticExpressionChain(){
+		Apply apply = (Apply)ExpressionTranslator.translate("A + B - X + C");
+
+		List<Expression> expressions = checkApply(apply, "+", Apply.class, FieldRef.class);
+
+		Expression left = expressions.get(0);
+		Expression right = expressions.get(1);
+
+		expressions = checkApply((Apply)left, "-", Apply.class, FieldRef.class);
+		checkFieldRef((FieldRef)right, FieldName.create("C"));
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		expressions = checkApply((Apply)left, "+", FieldRef.class, FieldRef.class);
+		checkFieldRef((FieldRef)right, FieldName.create("X"));
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkFieldRef((FieldRef)left, FieldName.create("A"));
+		checkFieldRef((FieldRef)right, FieldName.create("B"));
+	}
+
 	static
 	private List<Expression> checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 		assertEquals(function, apply.getFunction());
@@ -141,7 +182,7 @@ public class ExpressionTranslatorTest {
 			Class<? extends Expression> expressionClazz = expressionClazzes[i];
 			Expression expression = expressions.get(i);
 
-			assertTrue(expressionClazz.isInstance(expression));
+			assertEquals(expressionClazz, expression.getClass());
 		}
 
 		return expressions;

@@ -277,17 +277,13 @@ Expression IfExpression():
 Expression LogicalExpression():
 {
 	Expression left;
-	Token operator = null;
-	Expression right = null;
+	Token operator;
+	Expression right;
 }
 {
-	left = RelationalExpression() ((operator = <AND> | operator = <OR>) right = RelationalExpression())?
+	left = RelationalExpression() ((operator = <AND> | operator = <OR>) right = RelationalExpression() { left = createApply(translateLogicalOperator(operator.image), left, right); })*
 
 	{
-		if(operator != null){
-			return createApply(translateLogicalOperator(operator.image), left, right);
-		}
-
 		return left;
 	}
 }
@@ -295,17 +291,13 @@ Expression LogicalExpression():
 Expression RelationalExpression():
 {
 	Expression left;
-	Token operator = null;
-	Expression right = null;
+	Token operator;
+	Expression right;
 }
 {
-	left = NegationExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = NegationExpression())?
+	left = NegationExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = NegationExpression() { left = createApply(translateRelationalOperator(operator.image), left, right); })?
 
 	{
-		if(operator != null){
-			return createApply(translateRelationalOperator(operator.image), left, right);
-		}
-
 		return left;
 	}
 }
@@ -330,17 +322,13 @@ Expression NegationExpression():
 Expression AdditiveExpression():
 {
 	Expression left;
-	Token operator = null;
-	Expression right = null;
+	Token operator;
+	Expression right;
 }
 {
-	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression())?
+	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression() { left = createApply(operator.image, left, right); })*
 
 	{
-		if(operator != null){
-			return createApply(operator.image, left, right);
-		}
-
 		return left;
 	}
 }
@@ -348,17 +336,13 @@ Expression AdditiveExpression():
 Expression MultiplicativeExpression():
 {
 	Expression left;
-	Token operator = null;
-	Expression right = null;
+	Token operator;
+	Expression right;
 }
 {
-	left = ExponentiationExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = ExponentiationExpression())?
+	left = ExponentiationExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = ExponentiationExpression() { left = createApply(operator.image, left, right); })*
 
 	{
-		if(operator != null){
-			return createApply(operator.image, left, right);
-		}
-
 		return left;
 	}
 }
@@ -370,13 +354,9 @@ Expression ExponentiationExpression():
 	Expression right = null;
 }
 {
-	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = PrimaryExpression())?
+	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = PrimaryExpression() { left = createApply("pow", left, right); })*
 
 	{
-		if(operator != null){
-			return createApply("pow", left, right);
-		}
-
 		return left;
 	}
 }
