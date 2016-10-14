@@ -36,14 +36,27 @@ public class ExpressionTranslator {
 
 	static
 	public Expression translate(String string){
+		return translate(string, true);
+	}
+
+	static
+	public Expression translate(String string, boolean compact){
+		Expression expression;
 
 		try {
 			ExpressionTranslator translator = new ExpressionTranslator(string);
-
-			return translator.translateInternal();
+			
+			expression = translator.translateInternal();
 		} catch(ParseException pe){
 			throw new IllegalArgumentException(pe);
 		}
+
+		if(compact){
+			ExpressionCompactor compactor = new ExpressionCompactor();
+			compactor.applyTo(expression);
+		}
+
+		return expression;
 	}
 
 	static
