@@ -91,6 +91,7 @@ public class RExpParser {
 			case SExpTypes.STRSXP:
 				return readStringVector(flags);
 			case SExpTypes.VECSXP:
+			case SExpTypes.EXPRSXP:
 				return readVector(flags);
 			case SExpTypes.BCODESXP:
 				return readBytecode(flags);
@@ -348,10 +349,10 @@ public class RExpParser {
 	private void readBC1() throws IOException {
 		RExp code = readRExp();
 
-		readBytecodeConstants();
+		readBCConsts();
 	}
 
-	private void readBytecodeConstants() throws IOException {
+	private void readBCConsts() throws IOException {
 		int n = readInt();
 
 		for(int i = 0; i < n; i++){
@@ -369,7 +370,8 @@ public class RExpParser {
 				case SerializationTypes.ATTRLANGSXP:
 				case SerializationTypes.BCREPREF:
 				case SerializationTypes.BCREPDEF:
-					throw new UnsupportedOperationException(String.valueOf(type));
+					readBCLang(type);
+					break;
 				default:
 					readRExp();
 					break;
@@ -382,16 +384,32 @@ public class RExpParser {
 		switch(type){
 			case SExpTypes.LISTSXP:
 			case SExpTypes.LANGSXP:
+			case SerializationTypes.ATTRLISTSXP:
+			case SerializationTypes.ATTRLANGSXP:
+			case SerializationTypes.BCREPDEF:
+				int pos = -1;
+				if(type == SerializationTypes.BCREPDEF){
+					pos = readInt();
+					type = readInt();
+				}
+
+				switch(type){
+					case SerializationTypes.ATTRLISTSXP:
+					case SerializationTypes.ATTRLANGSXP:
+						readAttributes();
+						break;
+					default:
+						break;
+				}
+
 				RExp tag = readRExp();
 
 				readBCLang(readInt());
 				readBCLang(readInt());
 				break;
-			case SerializationTypes.ATTRLISTSXP:
-			case SerializationTypes.ATTRLANGSXP:
 			case SerializationTypes.BCREPREF:
-			case SerializationTypes.BCREPDEF:
-				throw new UnsupportedOperationException(String.valueOf(type));
+				readInt();
+				break;
 			default:
 				readRExp();
 				break;
@@ -437,10 +455,14 @@ public class RExpParser {
 	private RPair readAttributes(int flags) throws IOException {
 
 		if(SerializationUtil.hasAttributes(flags)){
-			return (RPair)readRExp();
+			return readAttributes();
 		}
 
 		return null;
+	}
+
+	private RPair readAttributes() throws IOException {
+		return (RPair)readRExp();
 	}
 
 	private int readInt() throws IOException {
