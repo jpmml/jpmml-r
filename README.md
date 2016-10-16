@@ -24,8 +24,9 @@ Java library and command-line application for converting [R] (http://www.r-proje
   * [`ranger` package] (https://cran.r-project.org/web/packages/ranger/):
     * `ranger` - Random Forest regression and classification
   * `stats` package:
+    * `glm` - Generalized linear (GLM) regression and classification
     * `kmeans` - K-Means clustering
-    * `lm` - Linear regression
+    * `lm` - Linear (LM) regression
   * [`xgboost` package] (https://cran.r-project.org/web/packages/xgboost/):
     * `xgb.Booster` - XGBoost (XGB) regression and classification
 * Production quality:

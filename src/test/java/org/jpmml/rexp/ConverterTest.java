@@ -29,6 +29,10 @@ public class ConverterTest extends IntegrationTest {
 
 	@Override
 	protected ArchiveBatch createBatch(String name, String dataset){
+		return createBatch(name, dataset, null);
+	}
+
+	protected ArchiveBatch createBatch(String name, String dataset, final Class<? extends Converter<? extends RExp>> clazz){
 		ArchiveBatch result = new ArchiveBatch(name, dataset){
 
 			@Override
@@ -42,7 +46,11 @@ public class ConverterTest extends IntegrationTest {
 			public PMML getPMML() throws Exception {
 
 				try(InputStream is = open("/rds/" + getName() + getDataset() + ".rds")){
-					return convert(is);
+					RExpParser parser = new RExpParser(is);
+
+					RExp rexp = parser.parse();
+
+					return convert(rexp, clazz);
 				}
 			}
 		};
@@ -51,14 +59,18 @@ public class ConverterTest extends IntegrationTest {
 	}
 
 	static
-	private PMML convert(InputStream is) throws Exception {
-		RExpParser parser = new RExpParser(is);
-
-		RExp rexp = parser.parse();
-
+	private PMML convert(RExp rexp, Class<? extends Converter<? extends RExp>> clazz) throws Exception {
 		ConverterFactory converterFactory = ConverterFactory.newInstance();
 
-		Converter<RExp> converter = converterFactory.newConverter(rexp);
+		Converter<RExp> converter;
+
+		if(clazz != null){
+			converter = converterFactory.newConverter(clazz, rexp);
+		} else
+
+		{
+			converter = converterFactory.newConverter(rexp);
+		}
 
 		return converter.encodePMML();
 	}

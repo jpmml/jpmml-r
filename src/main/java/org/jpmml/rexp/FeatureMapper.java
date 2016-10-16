@@ -140,6 +140,16 @@ public class FeatureMapper extends PMMLMapper {
 		return schema;
 	}
 
+	public DataField getTargetField(){
+		List<FieldName> names = names();
+
+		if(names.size() < 1){
+			throw new IllegalArgumentException();
+		}
+
+		return getDataField(names.get(0));
+	}
+
 	private List<FieldName> names(){
 		Map<FieldName, Feature> features = getFeatures();
 

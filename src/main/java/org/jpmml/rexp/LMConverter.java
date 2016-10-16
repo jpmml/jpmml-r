@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.NormDiscrete;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.TypeDefinitionField;
@@ -45,6 +47,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.WildcardFeature;
 
 public class LMConverter extends ModelConverter<RGenericVector> {
 
@@ -92,7 +95,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 				fields.add(derivedField);
 
-				continue;
+				continue fields;
 			} // End if
 
 			if(xlevels != null && xlevels.hasValue(variable)){
@@ -100,22 +103,15 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 				DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
 
-				List<String> categories = levels.getValues();
-				for(String category : categories){
-					NormDiscrete normDiscrete = new NormDiscrete(name, category);
+				deriveBinaryFields(dataField, levels.getValues(), featureMapper);
 
-					DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(variable + category), OpType.CONTINUOUS, DataType.DOUBLE, normDiscrete);
+				fields.add(dataField);
+			} else
 
-					BinaryFeature binaryFeature = new BinaryFeature(dataField, category);
+			if((DataType.BOOLEAN).equals(dataType)){
+				DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
 
-					this.binaryFeatures.put(derivedField.getName(), binaryFeature);
-				}
-
-				if(categories.size() > 0){
-					List<Value> values = dataField.getValues();
-
-					values.addAll(PMMLUtil.createValues(categories));
-				}
+				deriveBinaryFields(dataField, Arrays.asList("TRUE", "FALSE"), Arrays.asList("true", "false"), featureMapper);
 
 				fields.add(dataField);
 			} else
@@ -132,7 +128,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		if(responseIndex != 0){
 			DataField dataField = (DataField)fields.get(responseIndex - 1);
 
-			Feature feature = new ContinuousFeature(dataField);
+			Feature feature = new WildcardFeature(dataField);
 
 			featureMapper.append(feature);
 		} else
@@ -146,7 +142,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < coefficientNames.size(); i++){
 			String coefficientName = coefficientNames.getValue(i);
 
-			if(("(Intercept)").equals(coefficientName)){
+			if((LMConverter.INTERCEPT).equals(coefficientName)){
 				continue;
 			}
 
@@ -178,12 +174,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public RegressionModel encodeModel(Schema schema){
+	public Model encodeModel(Schema schema){
 		RGenericVector lm = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
 
-		Double intercept = coefficients.getValue("(Intercept)", true);
+		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);
 
 		List<Feature> features = schema.getFeatures();
 
@@ -198,18 +194,9 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		RegressionTable regressionTable = new RegressionTable(intercept);
 
 		for(Feature feature : features){
-			double coefficient;
+			double coefficient = coefficients.getValue((feature.getName()).getValue());
 
-			{
-				FieldName name = feature.getName();
-
-				BinaryFeature binaryFeature = this.binaryFeatures.get(name);
-				if(binaryFeature != null){
-					feature = binaryFeature;
-				}
-
-				coefficient = coefficients.getValue(name.getValue());
-			}
+			feature = refine(feature);
 
 			if(feature instanceof InteractionFeature){
 				InteractionFeature interactionFeature = (InteractionFeature)feature;
@@ -259,4 +246,47 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		return regressionModel;
 	}
+
+	public Feature refine(Feature feature){
+		BinaryFeature binaryFeature = this.binaryFeatures.get(feature.getName());
+
+		if(binaryFeature != null){
+			return binaryFeature;
+		}
+
+		return feature;
+	}
+
+	private void deriveBinaryFields(DataField dataField, List<String> categories, FeatureMapper featureMapper){
+		deriveBinaryFields(dataField, categories, categories, featureMapper);
+	}
+
+	private void deriveBinaryFields(DataField dataField, List<String> categoryNames, List<String> categoryValues, FeatureMapper featureMapper){
+		FieldName name = dataField.getName();
+
+		if(categoryNames.size() != categoryValues.size()){
+			throw new IllegalArgumentException();
+		}
+
+		for(int i = 0; i < categoryNames.size(); i++){
+			String categoryName = categoryNames.get(i);
+			String categoryValue = categoryValues.get(i);
+
+			NormDiscrete normDiscrete = new NormDiscrete(name, categoryValue);
+
+			DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(name.getValue() + categoryName), OpType.CONTINUOUS, DataType.DOUBLE, normDiscrete);
+
+			BinaryFeature binaryFeature = new BinaryFeature(dataField, categoryValue);
+
+			this.binaryFeatures.put(derivedField.getName(), binaryFeature);
+		}
+
+		if(categoryValues.size() > 0){
+			List<Value> values = dataField.getValues();
+
+			values.addAll(PMMLUtil.createValues(categoryValues));
+		}
+	}
+
+	public static final String INTERCEPT = "(Intercept)";
 }

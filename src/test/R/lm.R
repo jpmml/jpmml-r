@@ -12,7 +12,7 @@ generateLinearRegressionFormulaAuto = function(){
 	storeCsv(data.frame("mpg" = mpg), "LinearRegressionFormulaAuto")
 }
 
-generateLinearRegressionRichFormulaAuto = function(){
+generateLinearRegressionCustFormulaAuto = function(){
 	auto.lm = lm(mpg ~ I(displacement / cylinders) + (.) ^ 2 + I(log(weight)), data = auto)
 	print(auto.lm)
 
@@ -23,7 +23,7 @@ generateLinearRegressionRichFormulaAuto = function(){
 }
 
 generateLinearRegressionFormulaAuto()
-generateLinearRegressionRichFormulaAuto()
+generateLinearRegressionCustFormulaAuto()
 
 wine_quality = loadWineQualityCsv("WineQuality")
 
