@@ -35,9 +35,13 @@ import org.jpmml.xgboost.FeatureMap;
 import org.jpmml.xgboost.GBTree;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
+import org.jpmml.xgboost.Regression;
 import org.jpmml.xgboost.XGBoostUtil;
 
 public class XGBoostConverter extends ModelConverter<RGenericVector> {
+
+	private Learner learner = null;
+
 
 	public XGBoostConverter(RGenericVector booster){
 		super(booster);
@@ -63,11 +67,33 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException(ioe);
 		}
 
+		Learner learner = ensureLearner();
+
 		List<DataField> dataFields = featureMap.getDataFields();
 
 		// Dependent variable
 		{
-			featureMapper.append(FieldName.create("_target"), false);
+			ObjFunction obj = learner.getObj();
+
+			if(obj instanceof Classification){
+				Classification classification = (Classification)obj;
+
+				List<String> targetCategories = new ArrayList<>();
+
+				for(int i = 0; i < classification.getNumClass(); i++){
+					targetCategories.add(String.valueOf(i));
+				}
+
+				featureMapper.append(FieldName.create("_target"), targetCategories);
+			} else
+
+			if(obj instanceof Regression){
+				featureMapper.append(FieldName.create("_target"), false);
+			} else
+
+			{
+				throw new IllegalArgumentException();
+			}
 		}
 
 		// Independent variables
@@ -78,39 +104,36 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	@Override
 	public MiningModel encodeModel(Schema schema){
-		RGenericVector booster = getObject();
-
-		RRaw raw = (RRaw)booster.getValue("raw");
-
-		Learner learner;
-
-		try {
-			learner = loadLearner(raw);
-		} catch(IOException ioe){
-			throw new IllegalArgumentException(ioe);
-		}
+		Learner learner = ensureLearner();
 
 		ObjFunction obj = learner.getObj();
-
 		float baseScore = learner.getBaseScore();
-
-		if(obj instanceof Classification){
-			Classification classification = (Classification)obj;
-
-			List<String> targetCategories = new ArrayList<>();
-
-			for(int i = 0; i < classification.getNumClass(); i++){
-				targetCategories.add(String.valueOf(i + 1));
-			}
-
-			schema = new Schema(schema.getTargetField(), targetCategories, schema.getActiveFields(), schema.getFeatures());
-		}
-
 		GBTree gbt = learner.getGBTree();
 
 		MiningModel miningModel = gbt.encodeMiningModel(obj, baseScore, schema);
 
 		return miningModel;
+	}
+
+	private Learner ensureLearner(){
+
+		if(this.learner == null){
+			this.learner = loadLearner();
+		}
+
+		return this.learner;
+	}
+
+	private Learner loadLearner(){
+		RGenericVector booster = getObject();
+
+		RRaw raw = (RRaw)booster.getValue("raw");
+
+		try {
+			return loadLearner(raw);
+		} catch(IOException ioe){
+			throw new IllegalArgumentException(ioe);
+		}
 	}
 
 	static

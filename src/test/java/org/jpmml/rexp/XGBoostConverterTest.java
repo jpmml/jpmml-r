@@ -31,6 +31,11 @@ public class XGBoostConverterTest extends ConverterTest {
 		evaluate("XGBoost", "AutoNA");
 	}
 
+	@Test
+	public void evaluateXGBoostIris() throws Exception {
+		evaluate("XGBoost", "Iris");
+	}
+
 	@Override
 	public void evaluate(Batch batch, Set<FieldName> ignoredFields) throws Exception {
 		evaluate(batch, ignoredFields, 1e-6, 1e-6);
