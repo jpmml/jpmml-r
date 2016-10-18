@@ -94,20 +94,50 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		{
 			ObjFunction obj = learner.getObj();
 
+			FieldName targetField = FieldName.create("_target");
+			List<String> targetCategories = null;
+
+			if(schema != null){
+				RStringVector responseName = (RStringVector)schema.getValue("response_name", true);
+				RStringVector responseLevels = (RStringVector)schema.getValue("response_levels", true);
+
+				if(responseName != null){
+					targetField = FieldName.create(responseName.asScalar());
+				} // End if
+
+				if(responseLevels != null){
+					targetCategories = responseLevels.getValues();
+				}
+			} // End if
+
 			if(obj instanceof Classification){
 				Classification classification = (Classification)obj;
 
-				List<String> targetCategories = new ArrayList<>();
+				if(targetCategories != null){
 
-				for(int i = 0; i < classification.getNumClass(); i++){
-					targetCategories.add(String.valueOf(i));
+					if(targetCategories.size() != classification.getNumClass()){
+						throw new IllegalArgumentException();
+					}
+				} else
+
+				{
+					targetCategories = new ArrayList<>();
+
+					for(int i = 0; i < classification.getNumClass(); i++){
+						targetCategories.add(String.valueOf(i));
+					}
 				}
 
-				featureMapper.append(FieldName.create("_target"), targetCategories);
+				featureMapper.append(targetField, targetCategories);
 			} else
 
 			if(obj instanceof Regression){
-				featureMapper.append(FieldName.create("_target"), false);
+
+				if(targetCategories != null){
+					throw new IllegalArgumentException();
+				}
+
+				featureMapper.append(targetField, false);
 			} else
 
 			{

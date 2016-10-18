@@ -18,6 +18,7 @@ auto_fmap = data.frame(
 
 generateXGBoostAutoNA = function(){
 	schema = list()
+	schema$response_name = "mpg"
 	schema$missing = -999
 
 	auto.xgboost = xgboost(data = as.matrix(auto_x), label = auto_y, missing = -999, objective = "reg:linear", nrounds = 15)
@@ -27,7 +28,7 @@ generateXGBoostAutoNA = function(){
 	mpg = predict(auto.xgboost, newdata = as.matrix(auto_x), missing = -999)
 
 	storeRds(auto.xgboost, "XGBoostAutoNA")
-	storeCsv(data.frame("_target" = mpg), "XGBoostAutoNA")
+	storeCsv(data.frame("mpg" = mpg), "XGBoostAutoNA")
 }
 
 set.seed(42)
@@ -49,15 +50,21 @@ iris_fmap = data.frame(
 )
 
 generateXGBoostIris = function(){
+	schema = list()
+	schema$response_name = "Species"
+	schema$response_levels = c("setosa", "versicolor", "virginica")
+
 	iris.xgboost = xgboost(data = as.matrix(iris_x), label = iris_y, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
 	iris.xgboost$fmap = iris_fmap
+	iris.xgboost$schema = schema
 
 	prob = predict(iris.xgboost, newdata = as.matrix(iris_x))
 	prob = matrix(prob, ncol = 3, byrow = TRUE)
-	species = max.col(prob) - 1
+	species = max.col(prob)
+	species = schema$response_levels[species]
 
 	storeRds(iris.xgboost, "XGBoostIris")
-	storeCsv(data.frame("_target" = species, "probability_0" = prob[, 1], "probability_1" = prob[, 2], "probability_2" = prob[, 3]), "XGBoostIris")
+	storeCsv(data.frame("Species" = species, "probability_setosa" = prob[, 1], "probability_versicolor" = prob[, 2], "probability_virginica" = prob[, 3]), "XGBoostIris")
 }
 
 set.seed(42)
