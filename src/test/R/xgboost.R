@@ -5,6 +5,8 @@ source("util.R")
 auto = loadAutoCsv("AutoNA")
 auto$origin = NULL
 
+auto[is.na(auto)] = -999
+
 auto_x = auto[, -ncol(auto)]
 auto_y = auto[, ncol(auto)]
 
@@ -15,10 +17,14 @@ auto_fmap = data.frame(
 )
 
 generateXGBoostAutoNA = function(){
-	auto.xgboost = xgboost(data = as.matrix(auto_x), label = auto_y, missing = NA, objective = "reg:linear", nrounds = 15)
-	auto.xgboost$fmap = auto_fmap
+	schema = list()
+	schema$missing = -999
 
-	mpg = predict(auto.xgboost, newdata = as.matrix(auto_x), missing = NA)
+	auto.xgboost = xgboost(data = as.matrix(auto_x), label = auto_y, missing = -999, objective = "reg:linear", nrounds = 15)
+	auto.xgboost$fmap = auto_fmap
+	auto.xgboost$schema = schema
+
+	mpg = predict(auto.xgboost, newdata = as.matrix(auto_x), missing = -999)
 
 	storeRds(auto.xgboost, "XGBoostAutoNA")
 	storeCsv(data.frame("_target" = mpg), "XGBoostAutoNA")
@@ -43,7 +49,7 @@ iris_fmap = data.frame(
 )
 
 generateXGBoostIris = function(){
-	iris.xgboost = xgboost(data = as.matrix(iris_x), label = iris_y, objective = "multi:softprob", num_class = 3, nrounds = 15)
+	iris.xgboost = xgboost(data = as.matrix(iris_x), label = iris_y, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
 	iris.xgboost$fmap = iris_fmap
 
 	prob = predict(iris.xgboost, newdata = as.matrix(iris_x))
