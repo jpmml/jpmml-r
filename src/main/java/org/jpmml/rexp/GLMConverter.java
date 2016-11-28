@@ -192,7 +192,8 @@ public class GLMConverter extends LMConverter {
 
 		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(schema), parameterList, ppMatrix, paramMatrix)
 			.setDistribution(parseFamily(familyFamily.asScalar()))
-			.setLinkFunction(parseLink(familyLink.asScalar()))
+			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
+			.setLinkParameter(parseLinkParameter(familyLink.asScalar()))
 			.setCovariateList(createPredictorList(new CovariateList(), covariates))
 			.setFactorList(createPredictorList(new FactorList(), factors));
 
@@ -249,21 +250,38 @@ public class GLMConverter extends LMConverter {
 	}
 
 	static
-	private GeneralRegressionModel.LinkFunction parseLink(String link){
+	private GeneralRegressionModel.LinkFunction parseLinkFunction(String link){
 
 		switch(link){
 			case "cloglog":
 				return GeneralRegressionModel.LinkFunction.CLOGLOG;
 			case "identity":
 				return GeneralRegressionModel.LinkFunction.IDENTITY;
+			case "inverse":
+				return GeneralRegressionModel.LinkFunction.POWER;
 			case "log":
 				return GeneralRegressionModel.LinkFunction.LOG;
 			case "logit":
 				return GeneralRegressionModel.LinkFunction.LOGIT;
 			case "probit":
 				return GeneralRegressionModel.LinkFunction.PROBIT;
+			case "sqrt":
+				return GeneralRegressionModel.LinkFunction.POWER;
 			default:
 				throw new IllegalArgumentException(link);
+		}
+	}
+
+	static
+	private Double parseLinkParameter(String link){
+
+		switch(link){
+			case "inverse":
+				return -1d;
+			case "sqrt":
+				return (1d / 2d);
+			default:
+				return null;
 		}
 	}
 

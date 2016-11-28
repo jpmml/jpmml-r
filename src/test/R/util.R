@@ -30,6 +30,17 @@ loadIrisCsv = function(name){
 	return (iris)
 }
 
+loadVisitCsv = function(name){
+	visit = loadCsv(name)
+	visit$outwork = as.logical(visit$outwork)
+	visit$female = as.logical(visit$female)
+	visit$married = as.logical(visit$married)
+	visit$kids = as.logical(visit$kids)
+	visit$self = as.logical(visit$self)
+
+	return (visit)
+}
+
 loadWineColorCsv = function(name){
 	wine_color = loadCsv(name)
 	wine_color$color = as.factor(wine_color$color)

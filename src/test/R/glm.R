@@ -54,6 +54,20 @@ generateGeneralRegressionCustFormulaAuto = function(){
 generateGeneralRegressionFormulaAuto()
 generateGeneralRegressionCustFormulaAuto()
 
+visit = loadVisitCsv("Visit")
+
+generateGeneralRegressionFormulaVisit = function(){
+	visit.glm = glm(docvis ~ ., data = visit, family = poisson(link = "sqrt"))
+	print(visit.glm)
+
+	docvis = predict(visit.glm, newdata = visit, type = "response")
+
+	storeRds(visit.glm, "GeneralRegressionFormulaVisit")
+	storeCsv(data.frame("docvis" = docvis), "GeneralRegressionFormulaVisit")
+}
+
+generateGeneralRegressionFormulaVisit()
+
 wine_quality = loadWineQualityCsv("WineQuality")
 
 generateGeneralRegressionFormulaWineQuality = function(){

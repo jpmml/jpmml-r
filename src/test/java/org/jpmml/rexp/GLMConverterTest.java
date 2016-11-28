@@ -52,6 +52,11 @@ public class GLMConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void generalRegressionFormulaVisit() throws Exception {
+		evaluate("GeneralRegressionFormula", "Visit");
+	}
+
+	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
 		evaluate("GeneralRegressionFormula", "WineQuality");
 	}
