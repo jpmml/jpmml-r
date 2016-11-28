@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import com.google.common.primitives.Ints;
+import org.dmg.pmml.DataType;
 
 
 public class RIntegerVector extends RNumberVector<Integer> {
@@ -32,6 +33,11 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	public DataType getDataType(){
+		return DataType.INTEGER;
 	}
 
 	@Override
@@ -50,7 +56,12 @@ public class RIntegerVector extends RNumberVector<Integer> {
 	}
 
 	public RStringVector getLevels(){
-		return (RStringVector)getAttributeValue("levels");
+		RPair levels = getAttribute("levels");
+		if(levels == null){
+			throw new IllegalStateException();
+		}
+
+		return (RStringVector)levels.getValue();
 	}
 
 	public String getLevelValue(int index){

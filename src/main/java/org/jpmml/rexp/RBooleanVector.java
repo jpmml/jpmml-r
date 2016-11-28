@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import com.google.common.primitives.Booleans;
+import org.dmg.pmml.DataType;
 
 public class RBooleanVector extends RVector<Boolean> {
 
@@ -31,6 +32,11 @@ public class RBooleanVector extends RVector<Boolean> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	public DataType getDataType(){
+		return DataType.BOOLEAN;
 	}
 
 	@Override

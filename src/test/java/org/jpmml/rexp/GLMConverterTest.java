@@ -50,4 +50,14 @@ public class GLMConverterTest extends ConverterTest {
 			evaluate(batch);
 		}
 	}
+
+	@Test
+	public void evaluateFormulaWineQuality() throws Exception {
+		evaluate("GeneralRegressionFormula", "WineQuality");
+	}
+
+	@Test
+	public void evaluateCustFormulaWineQuality() throws Exception {
+		evaluate("GeneralRegressionCustFormula", "WineQuality");
+	}
 }

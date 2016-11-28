@@ -21,8 +21,10 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
@@ -48,6 +50,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.WildcardFeature;
+import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class LMConverter extends ModelConverter<RGenericVector> {
 
@@ -65,6 +68,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
 		RGenericVector xlevels = (RGenericVector)lm.getValue("xlevels", true);
 		RGenericVector model = (RGenericVector)lm.getValue("model");
+		RGenericVector data = (RGenericVector)lm.getValue("data", true);
 
 		RExp terms = model.getAttributeValue("terms");
 
@@ -79,6 +83,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<TypeDefinitionField> fields = new ArrayList<>();
 
+		Set<FieldName> expressionFieldNames = new LinkedHashSet<>();
+
 		fields:
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getValue(i);
@@ -90,6 +96,11 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 				String string = variable.substring("I(".length(), variable.length() - ")".length());
 
 				Expression expression = ExpressionTranslator.translate(string);
+
+				FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+				fieldReferenceFinder.applyTo(expression);
+
+				expressionFieldNames.addAll(fieldReferenceFinder.getFieldNames());
 
 				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression);
 
@@ -120,6 +131,22 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 				DataField dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
 
 				fields.add(dataField);
+			}
+		}
+
+		for(FieldName expressionFieldName : expressionFieldNames){
+			DataField dataField = featureMapper.getDataField(expressionFieldName);
+
+			if(dataField == null){
+				DataType dataType = DataType.DOUBLE;
+
+				if(data != null){
+					RVector<?> column = (RVector<?>)data.getValue(expressionFieldName.getValue());
+
+					dataType = column.getDataType();
+				}
+
+				dataField = featureMapper.createDataField(expressionFieldName, OpType.CONTINUOUS, dataType);
 			}
 		}
 

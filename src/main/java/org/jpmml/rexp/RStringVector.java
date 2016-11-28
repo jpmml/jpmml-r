@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import org.dmg.pmml.DataType;
+
 public class RStringVector extends RVector<String> {
 
 	private List<String> values = null;
@@ -29,6 +31,11 @@ public class RStringVector extends RVector<String> {
 		super(attributes);
 
 		setValues(values);
+	}
+
+	@Override
+	public DataType getDataType(){
+		return DataType.STRING;
 	}
 
 	@Override

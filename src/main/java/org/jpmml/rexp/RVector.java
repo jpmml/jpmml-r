@@ -21,12 +21,17 @@ package org.jpmml.rexp;
 import java.util.List;
 import java.util.Objects;
 
+import org.dmg.pmml.DataType;
+
 abstract
 public class RVector<V> extends RExp {
 
 	public RVector(RPair attributes){
 		super(attributes);
 	}
+
+	abstract
+	public DataType getDataType();
 
 	abstract
 	public int size();

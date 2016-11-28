@@ -53,3 +53,28 @@ generateGeneralRegressionCustFormulaAuto = function(){
 
 generateGeneralRegressionFormulaAuto()
 generateGeneralRegressionCustFormulaAuto()
+
+wine_quality = loadWineQualityCsv("WineQuality")
+
+generateGeneralRegressionFormulaWineQuality = function(){
+	wine_quality.glm = glm(quality ~ ., data = wine_quality)
+	print(wine_quality.glm)
+
+	quality = predict(wine_quality.glm, newdata = wine_quality)
+
+	storeRds(wine_quality.glm, "GeneralRegressionFormulaWineQuality")
+	storeCsv(data.frame("quality" = quality), "GeneralRegressionFormulaWineQuality")
+}
+
+generateGeneralRegressionCustFormulaWineQuality = function(){
+	wine_quality.glm = glm(quality ~ I(fixed.acidity) + I(volatile.acidity) + I(citric.acid) + I(residual.sugar) + I(chlorides) + I(free.sulfur.dioxide) + I(total.sulfur.dioxide) + I(density) + I(pH) + I(sulphates) + I(alcohol), data = wine_quality)
+	print(wine_quality.glm)
+
+	quality = predict(wine_quality.glm, newdata = wine_quality)
+
+	storeRds(wine_quality.glm, "GeneralRegressionCustFormulaWineQuality")
+	storeCsv(data.frame("quality" = quality), "GeneralRegressionCustFormulaWineQuality")
+}
+
+generateGeneralRegressionFormulaWineQuality()
+generateGeneralRegressionCustFormulaWineQuality()

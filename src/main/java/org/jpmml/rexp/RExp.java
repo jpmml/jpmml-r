@@ -55,9 +55,6 @@ public class RExp {
 
 	public RPair getAttribute(String tag){
 		RPair attribute = getAttributes();
-		if(attribute == null){
-			throw new IllegalArgumentException();
-		}
 
 		while(attribute != null){
 

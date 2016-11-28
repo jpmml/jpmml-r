@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import com.google.common.primitives.Doubles;
+import org.dmg.pmml.DataType;
 
 public class RDoubleVector extends RNumberVector<Double> {
 
@@ -31,6 +32,11 @@ public class RDoubleVector extends RNumberVector<Double> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	public DataType getDataType(){
+		return DataType.DOUBLE;
 	}
 
 	@Override

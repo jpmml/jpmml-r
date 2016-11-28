@@ -73,14 +73,19 @@ public class GLMConverter extends LMConverter {
 
 				dataField.setOpType(OpType.CATEGORICAL);
 
-				RIntegerVector variable = (RIntegerVector)model.getValue((dataField.getName()).getValue());
+				RNumberVector<?> variable = (RNumberVector<?>)model.getValue((dataField.getName()).getValue());
+				if(!(variable instanceof RIntegerVector)){
+					throw new IllegalArgumentException();
+				}
+
+				RIntegerVector factor = (RIntegerVector)variable;
 
 				List<Value> values = dataField.getValues();
 				if(values.size() > 0){
 					throw new IllegalArgumentException();
 				}
 
-				values.addAll(PMMLUtil.createValues(variable.getLevelValues()));
+				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
 				break;
 			default:
 				break;

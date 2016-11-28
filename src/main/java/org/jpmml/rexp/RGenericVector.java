@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import org.dmg.pmml.DataType;
+
 public class RGenericVector extends RVector<RExp> {
 
 	private List<RExp> values = null;
@@ -29,6 +31,11 @@ public class RGenericVector extends RVector<RExp> {
 		super(attributes);
 
 		setValues(values);
+	}
+
+	@Override
+	public DataType getDataType(){
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
