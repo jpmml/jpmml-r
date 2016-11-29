@@ -92,10 +92,15 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			FieldName name = FieldName.create(variable);
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
 
-			if(variable.startsWith("I(") && variable.endsWith(")")){
-				String string = variable.substring("I(".length(), variable.length() - ")".length());
+			if(variable.startsWith("I(")){
+				FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translate(variable);
 
-				Expression expression = ExpressionTranslator.translate(string);
+				List<FunctionExpression.Argument> arguments = functionExpression.getArguments();
+				if(arguments.size() != 1){
+					throw new IllegalArgumentException();
+				}
+
+				Expression expression = functionExpression.getExpression(0);
 
 				FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
 				fieldReferenceFinder.applyTo(expression);

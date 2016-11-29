@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.Apply;
@@ -29,6 +30,7 @@ import org.dmg.pmml.FieldRef;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class ExpressionTranslatorTest {
 
@@ -171,6 +173,50 @@ public class ExpressionTranslatorTest {
 		checkFieldRef((FieldRef)right, FieldName.create("B"));
 	}
 
+	@Test
+	public void translateFunctionExpression(){
+		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translate("parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))");
+
+		checkFunctionExpression(functionExpression, "parent", "first", null, "third");
+
+		Expression first = functionExpression.getExpression("first");
+		Expression second;
+
+		try {
+			second = functionExpression.getExpression("second");
+
+			fail();
+		} catch(IllegalArgumentException iae){
+			second = functionExpression.getExpression(1);
+		}
+
+		Expression third = functionExpression.getExpression("third");
+
+		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first, "child", null, null);
+
+		Expression left = expressions.get(0);
+		Expression right = expressions.get(1);
+
+		checkFieldRef((FieldRef)left, FieldName.create("A"));
+		checkApply((Apply)right, "ln", FieldRef.class);
+
+		expressions = checkFunctionExpression((FunctionExpression)second, "child", null, "right");
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkApply((Apply)left, "+", Constant.class, FieldRef.class);
+		checkConstant((Constant)right, "0", null);
+
+		expressions = checkFunctionExpression((FunctionExpression)third, "child", "left", null);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkConstant((Constant)left, "0", null);
+		checkFunctionExpression((FunctionExpression)right, "c", null, null, null);
+	}
+
 	static
 	private List<Expression> checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 		assertEquals(function, apply.getFunction());
@@ -183,6 +229,29 @@ public class ExpressionTranslatorTest {
 			Expression expression = expressions.get(i);
 
 			assertEquals(expressionClazz, expression.getClass());
+		}
+
+		return expressions;
+	}
+
+	static
+	private List<Expression> checkFunctionExpression(FunctionExpression functionExpression, String function, String... tags){
+		assertEquals(function, functionExpression.getFunction());
+
+		List<FunctionExpression.Argument> arguments = functionExpression.getArguments();
+		assertEquals(tags.length, arguments.size());
+
+		List<Expression> expressions = new ArrayList<>();
+
+		for(int i = 0; i < arguments.size(); i++){
+			FunctionExpression.Argument argument = arguments.get(i);
+
+			String tag = argument.getTag();
+			Expression expression = argument.getExpression();
+
+			assertEquals(tag, tags[i]);
+
+			expressions.add(expression);
 		}
 
 		return expressions;

@@ -25,6 +25,9 @@ options {
 PARSER_BEGIN(ExpressionTranslator)
 package org.jpmml.rexp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dmg.pmml.Apply;
 import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataType;
@@ -60,31 +63,31 @@ public class ExpressionTranslator {
 	}
 
 	static
-	private String translateFunctionName(String name){
+	private String translateFunction(String function){
 
-		switch(name){
+		switch(function){
 			case "abs":
-				return name;
+				return function;
 			case "ceiling":
 				return "ceil";
 			case "exp":
 			case "floor":
-				return name;
+				return function;
 			case "log":
 				return "ln";
 			case "log10":
 			case "round":
 			case "sqrt":
-				return name;
+				return function;
 			default:
 				break;
 		}
 
-		switch(name){
+		switch(function){
 			case "is.na":
 				return "isMissing";
 			default:
-				throw new IllegalArgumentException(name);
+				throw new IllegalArgumentException(function);
 		}
 	}
 
@@ -184,6 +187,10 @@ TOKEN:
 
 TOKEN:
 {
+	< ASSIGN: "=" >
+	|
+	< COMMA: "," >
+	|
 	< IF: "if" >
 	|
 	< ELSE: "else" >
@@ -382,16 +389,72 @@ Expression PrimaryExpression():
 	}
 }
 
-Apply FunctionInvocationExpression():
+Expression FunctionInvocationExpression():
 {
 	Token name;
+	List<FunctionExpression.Argument> arguments;
+}
+{
+	name = <IDENTIFIER> <LPAREN> arguments = ArgumentList() <RPAREN>
+
+	{
+		String function = name.image;
+
+		try {
+			String pmmlFunction = translateFunction(function);
+
+			if(arguments.size() == 1){
+				FunctionExpression.Argument argument = arguments.get(0);
+
+				if(!argument.hasTag() && !(argument.getExpression() instanceof FunctionExpression)){
+					return createApply(pmmlFunction, argument.getExpression());
+				}
+			}
+		} catch(IllegalArgumentException iae){
+			// Ignored
+		}
+
+		FunctionExpression functionExpression = new FunctionExpression(function, arguments);
+
+		return functionExpression;
+	}
+}
+
+private List<FunctionExpression.Argument> ArgumentList():
+{
+	FunctionExpression.Argument argument;
+	List<FunctionExpression.Argument> arguments = new ArrayList<FunctionExpression.Argument>();
+}
+{
+	(
+		argument = Argument() { arguments.add(argument); } (<COMMA> argument = Argument() { arguments.add(argument); })*
+	)
+
+	{
+		return arguments;
+	}
+}
+
+private FunctionExpression.Argument Argument():
+{
+	Token tag = null;
 	Expression expression;
 }
 {
-	name = <IDENTIFIER> <LPAREN> expression = Expression() <RPAREN>
+	(
+		LOOKAHEAD(<STRING> <ASSIGN>)
+		tag = <STRING> { tag.image = tag.image.substring(1, tag.image.length() - 1); } <ASSIGN> expression = Expression()
+		|
+		LOOKAHEAD(<IDENTIFIER> <ASSIGN>)
+		tag = <IDENTIFIER> <ASSIGN> expression = Expression()
+		|
+		expression = Expression()
+	)
 
 	{
-		return createApply(translateFunctionName(name.image), expression);
+		FunctionExpression.Argument argument = (tag != null ? new FunctionExpression.Argument(tag.image, expression) : new FunctionExpression.Argument(expression));
+
+		return argument;
 	}
 }
 
@@ -443,8 +506,6 @@ Constant Constant():
 			.setValue(value.image)
 			.setDataType(dataType);
 
-		{
-			return constant;
-		}
+		return constant;
 	}
 }
