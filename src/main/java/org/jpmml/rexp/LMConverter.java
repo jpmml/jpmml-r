@@ -26,12 +26,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.dmg.pmml.Apply;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
+import org.dmg.pmml.Discretize;
+import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.Interval;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.NormDiscrete;
@@ -93,7 +97,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
 
 			if(variable.startsWith("I(")){
-				FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translate(variable);
+				FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
 				List<FunctionExpression.Argument> arguments = functionExpression.getArguments();
 				if(arguments.size() != 1){
@@ -117,11 +121,69 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			if(xlevels != null && xlevels.hasValue(variable)){
 				RStringVector levels = (RStringVector)xlevels.getValue(variable);
 
-				DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
+				if(variable.startsWith("cut(")){
+					FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-				deriveBinaryFields(dataField, levels.getValues(), featureMapper);
+					Expression expression = functionExpression.getExpression(0);
 
-				fields.add(dataField);
+					FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+					fieldReferenceFinder.applyTo(expression);
+
+					expressionFieldNames.addAll(fieldReferenceFinder.getFieldNames());
+
+					FieldName fieldName;
+
+					if(expression instanceof FieldRef){
+						FieldRef fieldRef = (FieldRef)expression;
+
+						fieldName = fieldRef.getField();
+					} else
+
+					if(expression instanceof Apply){
+						Apply apply = (Apply)expression;
+
+						int begin = "cut(".length();
+						int end = variable.indexOf(", breaks = ", begin); // XXX
+						if(end < 0){
+							throw new IllegalArgumentException(variable);
+						}
+
+						String function = variable.substring(begin, end).trim();
+
+						DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(function), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+
+						fieldName = derivedField.getName();
+					} else
+
+					{
+						throw new IllegalArgumentException();
+					}
+
+					Discretize discretize = new Discretize(fieldName);
+
+					List<String> values = levels.getValues();
+					for(String value : values){
+						Interval interval = ExpressionTranslator.translateInterval(value);
+
+						DiscretizeBin discretizeBin = new DiscretizeBin(value, interval);
+
+						discretize.addDiscretizeBins(discretizeBin);
+					}
+
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize);
+
+					deriveBinaryFields(derivedField, values, featureMapper);
+
+					fields.add(derivedField);
+				} else
+
+				{
+					DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
+
+					deriveBinaryFields(dataField, levels.getValues(), featureMapper);
+
+					fields.add(dataField);
+				}
 			} else
 
 			if((DataType.BOOLEAN).equals(dataType)){
@@ -289,12 +351,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		return feature;
 	}
 
-	private void deriveBinaryFields(DataField dataField, List<String> categories, FeatureMapper featureMapper){
-		deriveBinaryFields(dataField, categories, categories, featureMapper);
+	private void deriveBinaryFields(TypeDefinitionField field, List<String> categories, FeatureMapper featureMapper){
+		deriveBinaryFields(field, categories, categories, featureMapper);
 	}
 
-	private void deriveBinaryFields(DataField dataField, List<String> categoryNames, List<String> categoryValues, FeatureMapper featureMapper){
-		FieldName name = dataField.getName();
+	private void deriveBinaryFields(TypeDefinitionField field, List<String> categoryNames, List<String> categoryValues, FeatureMapper featureMapper){
+		FieldName name = field.getName();
 
 		if(categoryNames.size() != categoryValues.size()){
 			throw new IllegalArgumentException();
@@ -308,13 +370,13 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 			DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(name.getValue() + categoryName), OpType.CONTINUOUS, DataType.DOUBLE, normDiscrete);
 
-			BinaryFeature binaryFeature = new BinaryFeature(dataField, categoryValue);
+			BinaryFeature binaryFeature = new BinaryFeature(field, categoryValue);
 
 			this.binaryFeatures.put(derivedField.getName(), binaryFeature);
 		}
 
-		if(categoryValues.size() > 0){
-			List<Value> values = dataField.getValues();
+		if(categoryValues.size() > 0 && (field instanceof DataField)){
+			List<Value> values = field.getValues();
 
 			values.addAll(PMMLUtil.createValues(categoryValues));
 		}

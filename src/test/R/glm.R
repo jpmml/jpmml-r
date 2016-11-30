@@ -19,7 +19,7 @@ generateGeneralRegressionFormulaAudit = function(){
 }
 
 generateGeneralRegressionCustFormulaAudit = function(){
-	audit.glm = glm(Adjusted ~ . + Gender:Age + Gender:Marital, data = audit, family = binomial)
+	audit.glm = glm(Adjusted ~ . - Income + cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)) + Gender:Age + Gender:Marital, data = audit, family = binomial)
 	print(audit.glm)
 
 	storeRds(audit.glm, "GeneralRegressionCustFormulaAudit")
@@ -42,7 +42,7 @@ generateGeneralRegressionFormulaAuto = function(){
 }
 
 generateGeneralRegressionCustFormulaAuto = function(){
-	auto.glm = glm(mpg ~ (.) ^ 2 + I(log(weight)), data = auto)
+	auto.glm = glm(mpg ~ (. - horsepower - weight) ^ 2 + cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)), data = auto)
 	print(auto.glm)
 
 	mpg = predict(auto.glm, newdata = auto)
@@ -81,7 +81,7 @@ generateGeneralRegressionFormulaWineQuality = function(){
 }
 
 generateGeneralRegressionCustFormulaWineQuality = function(){
-	wine_quality.glm = glm(quality ~ I(fixed.acidity) + I(volatile.acidity) + I(citric.acid) + I(residual.sugar) + I(chlorides) + I(free.sulfur.dioxide) + I(total.sulfur.dioxide) + I(density) + I(pH) + I(sulphates) + I(alcohol), data = wine_quality)
+	wine_quality.glm = glm(quality ~ cut(fixed.acidity, breaks = 10, dig.lab = 6) + cut(volatile.acidity, breaks = c(0, 0.5, 1.0, 1.5, 2.0)) + I(citric.acid) + I(residual.sugar) + I(chlorides) + cut(free.sulfur.dioxide / total.sulfur.dioxide, "breaks" = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) + + I(density) + I(pH) + I(sulphates) + I(alcohol), data = wine_quality)
 	print(wine_quality.glm)
 
 	quality = predict(wine_quality.glm, newdata = wine_quality)

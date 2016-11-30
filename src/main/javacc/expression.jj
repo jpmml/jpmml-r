@@ -34,24 +34,25 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.Interval;
 
 public class ExpressionTranslator {
 
 	static
-	public Expression translate(String string){
-		return translate(string, true);
+	public Expression translateExpression(String string){
+		return translateExpression(string, true);
 	}
 
 	static
-	public Expression translate(String string, boolean compact){
+	public Expression translateExpression(String string, boolean compact){
 		Expression expression;
 
 		try {
 			ExpressionTranslator translator = new ExpressionTranslator(string);
 			
-			expression = translator.translateInternal();
+			expression = translator.translateExpressionInternal();
 		} catch(ParseException pe){
-			throw new IllegalArgumentException(pe);
+			throw new IllegalArgumentException(string, pe);
 		}
 
 		if(compact){
@@ -60,6 +61,21 @@ public class ExpressionTranslator {
 		}
 
 		return expression;
+	}
+
+	static
+	public Interval translateInterval(String string){
+		Interval interval;
+
+		try {
+			ExpressionTranslator translator = new ExpressionTranslator(string);
+
+			interval = translator.translateIntervalInternal();
+		} catch(ParseException pe){
+			throw new IllegalArgumentException(string, pe);
+		}
+
+		return interval;
 	}
 
 	static
@@ -126,6 +142,24 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private Interval.Closure translateClosure(String leftBound, String rightBound){
+		String closure = (leftBound + rightBound);
+
+		switch(closure){
+			case "()":
+				return Interval.Closure.OPEN_OPEN;
+			case "(]":
+				return Interval.Closure.OPEN_CLOSED;
+			case "[)":
+				return Interval.Closure.CLOSED_OPEN;
+			case "[]":
+				return Interval.Closure.CLOSED_CLOSED;
+			default:
+				throw new IllegalArgumentException(closure);
+		}
+	}
+
+	static
 	private Apply createApply(String function, Expression... expressions){
 		Apply apply = new Apply(function);
 
@@ -154,6 +188,10 @@ TOKEN:
 	< LPAREN: "(" >
 	|
 	< RPAREN: ")" >
+	|
+	< LBRACKET: "[" >
+	|
+	< RBRACKET: "]" >
 	|
 	< PLUS: "+" >
 	|
@@ -234,7 +272,7 @@ TOKEN:
 	< #ESC: "\\" ["\"", "\'", "\\"] >
 }
 
-private Expression translateInternal():
+private Expression translateExpressionInternal():
 {
 	Expression expression;
 }
@@ -507,5 +545,36 @@ Constant Constant():
 			.setDataType(dataType);
 
 		return constant;
+	}
+}
+
+private Interval translateIntervalInternal():
+{
+	Interval interval;
+}
+{
+	interval = Interval() <EOF>
+	
+	{
+		return interval;
+	}
+}
+
+Interval Interval():
+{
+	Token leftBound;
+	Token leftMargin;
+	Token rightBound;
+	Token rightMargin;
+}
+{
+	(leftBound = <LPAREN> | leftBound = <LBRACKET>) (leftMargin = <INT> | leftMargin = <FLOAT>) <COMMA> (rightMargin = <INT> | rightMargin = <FLOAT>) (rightBound = <RPAREN> | rightBound = <RBRACKET>)
+	
+	{
+		Interval interval = new Interval(translateClosure(leftBound.image, rightBound.image))
+		.setLeftMargin(new Double(leftMargin.image))
+		.setRightMargin(new Double(rightMargin.image));
+		
+		return interval;
 	}
 }

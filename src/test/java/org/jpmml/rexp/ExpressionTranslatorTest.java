@@ -27,6 +27,7 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.Interval;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -36,7 +37,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translate(){
-		Apply apply = (Apply)ExpressionTranslator.translate("(1.0 + log(A / B)) ^ 2");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("(1.0 + log(A / B)) ^ 2");
 
 		List<Expression> expressions = checkApply(apply, "pow", Apply.class, Constant.class);
 
@@ -67,7 +68,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateIfExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translate("if(is.na(x)) TRUE else FALSE");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("if(is.na(x)) TRUE else FALSE");
 
 		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Constant.class);
 
@@ -84,7 +85,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateLogicalExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translate("((a >= 0.0 & b >= 0.0) | c <= 0.0)");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("((a >= 0.0 & b >= 0.0) | c <= 0.0)");
 
 		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
 
@@ -105,7 +106,7 @@ public class ExpressionTranslatorTest {
 	public void translateLogicalExpressionChain(){
 		String string = "(x == 0) | ((x == 1) | (x == 2)) | x == 3";
 
-		Apply apply = (Apply)ExpressionTranslator.translate(string, false);
+		Apply apply = (Apply)ExpressionTranslator.translateExpression(string, false);
 
 		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
 
@@ -115,14 +116,14 @@ public class ExpressionTranslatorTest {
 		checkApply((Apply)left, "or", Apply.class, Apply.class);
 		checkApply((Apply)right, "equal", FieldRef.class, Constant.class);
 
-		apply = (Apply)ExpressionTranslator.translate(string, true);
+		apply = (Apply)ExpressionTranslator.translateExpression(string, true);
 
 		checkApply(apply, "or", Apply.class, Apply.class, Apply.class, Apply.class);
 	}
 
 	@Test
 	public void translateRelationalExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translate("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
 
 		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Apply.class);
 
@@ -150,7 +151,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateArithmeticExpressionChain(){
-		Apply apply = (Apply)ExpressionTranslator.translate("A + B - X + C");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("A + B - X + C");
 
 		List<Expression> expressions = checkApply(apply, "+", Apply.class, FieldRef.class);
 
@@ -175,7 +176,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateFunctionExpression(){
-		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translate("parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))");
+		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression("parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))");
 
 		checkFunctionExpression(functionExpression, "parent", "first", null, "third");
 
@@ -215,6 +216,15 @@ public class ExpressionTranslatorTest {
 
 		checkConstant((Constant)left, "0", null);
 		checkFunctionExpression((FunctionExpression)right, "c", null, null, null);
+	}
+
+	@Test
+	public void translateInterval(){
+		Interval interval = ExpressionTranslator.translateInterval("(10, 100]");
+
+		assertEquals(Interval.Closure.OPEN_CLOSED, interval.getClosure());
+		assertEquals(new Double("10"), interval.getLeftMargin());
+		assertEquals(new Double("100"), interval.getRightMargin());
 	}
 
 	static
