@@ -89,7 +89,11 @@ public class FeatureMapper extends PMMLMapper {
 	}
 
 	public void append(Feature feature){
-		this.features.put(feature.getName(), feature);
+		append(feature.getName(), feature);
+	}
+
+	public void append(FieldName name, Feature feature){
+		this.features.put(name, feature);
 	}
 
 	public Schema createSupervisedSchema(){

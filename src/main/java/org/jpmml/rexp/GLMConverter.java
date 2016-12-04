@@ -18,36 +18,19 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.dmg.pmml.DataField;
-import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Value;
-import org.dmg.pmml.general_regression.CovariateList;
-import org.dmg.pmml.general_regression.FactorList;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
-import org.dmg.pmml.general_regression.PCell;
-import org.dmg.pmml.general_regression.PPCell;
-import org.dmg.pmml.general_regression.PPMatrix;
-import org.dmg.pmml.general_regression.ParamMatrix;
-import org.dmg.pmml.general_regression.Parameter;
-import org.dmg.pmml.general_regression.ParameterList;
-import org.dmg.pmml.general_regression.Predictor;
-import org.dmg.pmml.general_regression.PredictorList;
-import org.jpmml.converter.BinaryFeature;
-import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
 public class GLMConverter extends LMConverter {
 
@@ -110,6 +93,8 @@ public class GLMConverter extends LMConverter {
 			throw new IllegalArgumentException();
 		}
 
+		List<Double> featureCoefficients = prepareFeatureCoefficients(features, coefficients);
+
 		String targetCategory = null;
 
 		List<String> targetCategories = schema.getTargetCategories();
@@ -122,80 +107,14 @@ public class GLMConverter extends LMConverter {
 			targetCategory = targetCategories.get(1);
 		}
 
-		ParameterList parameterList = new ParameterList();
-
-		PPMatrix ppMatrix = new PPMatrix();
-
-		ParamMatrix paramMatrix = new ParamMatrix();
-
-		if(intercept != null){
-			Parameter parameter = new Parameter("p0")
-				.setLabel("(intercept)");
-
-			parameterList.addParameters(parameter);
-
-			PCell pCell = new PCell(parameter.getName(), intercept)
-				.setTargetCategory(targetCategory);
-
-			paramMatrix.addPCells(pCell);
-		}
-
-		Set<FieldName> covariates = new LinkedHashSet<>();
-
-		Set<FieldName> factors = new LinkedHashSet<>();
-
-		for(int i = 0; i < features.size(); i++){
-			Feature feature = features.get(i);
-
-			double coefficient = coefficients.getValue((feature.getName()).getValue());
-
-			feature = refine(feature);
-
-			Parameter parameter = new Parameter("p" + String.valueOf(i + 1));
-
-			parameterList.addParameters(parameter);
-
-			List<Feature> simpleFeatures = expandInteractionFeatures(feature);
-			for(Feature simpleFeature : simpleFeatures){
-				PPCell ppCell;
-
-				if(simpleFeature instanceof ContinuousFeature){
-					ContinuousFeature continuousFeature = (ContinuousFeature)simpleFeature;
-
-					covariates.add(continuousFeature.getName());
-
-					ppCell = new PPCell("1", continuousFeature.getName(), parameter.getName());
-				} else
-
-				if(simpleFeature instanceof BinaryFeature){
-					BinaryFeature binaryFeature = (BinaryFeature)simpleFeature;
-
-					factors.add(binaryFeature.getName());
-
-					ppCell = new PPCell(binaryFeature.getValue(), binaryFeature.getName(), parameter.getName());
-				} else
-
-				{
-					throw new IllegalArgumentException();
-				}
-
-				ppMatrix.addPPCells(ppCell);
-			}
-
-			PCell pCell = new PCell(parameter.getName(), coefficient)
-				.setTargetCategory(targetCategory);
-
-			paramMatrix.addPCells(pCell);
-		}
-
 		MiningFunction miningFunction = (targetCategory != null ? MiningFunction.CLASSIFICATION : MiningFunction.REGRESSION);
 
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(schema), parameterList, ppMatrix, paramMatrix)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(schema), null, null, null)
 			.setDistribution(parseFamily(familyFamily.asScalar()))
 			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
-			.setLinkParameter(parseLinkParameter(familyLink.asScalar()))
-			.setCovariateList(createPredictorList(new CovariateList(), covariates))
-			.setFactorList(createPredictorList(new FactorList(), factors));
+			.setLinkParameter(parseLinkParameter(familyLink.asScalar()));
+
+		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, targetCategory);
 
 		switch(miningFunction){
 			case CLASSIFICATION:
@@ -206,28 +125,6 @@ public class GLMConverter extends LMConverter {
 		}
 
 		return generalRegressionModel;
-	}
-
-	private List<Feature> expandInteractionFeatures(Feature feature){
-
-		if(feature instanceof InteractionFeature){
-			InteractionFeature interactionFeature = (InteractionFeature)feature;
-
-			List<Feature> result = new ArrayList<>();
-
-			List<FieldName> names = interactionFeature.getNames();
-			for(FieldName name : names){
-				Feature simpleFeature = new ContinuousFeature(name, DataType.DOUBLE); // XXX
-
-				simpleFeature = refine(simpleFeature);
-
-				result.add(simpleFeature);
-			}
-
-			return result;
-		}
-
-		return Collections.singletonList(feature);
 	}
 
 	static
@@ -283,25 +180,5 @@ public class GLMConverter extends LMConverter {
 			default:
 				return null;
 		}
-	}
-
-	static
-	private <L extends PredictorList> L createPredictorList(L predictorList, Set<FieldName> names){
-
-		if(names.isEmpty()){
-			return null;
-		}
-
-		List<Predictor> predictors = predictorList.getPredictors();
-
-		for(FieldName name : names){
-			String value = name.getValue();
-
-			Predictor predictor = new Predictor(name);
-
-			predictors.add(predictor);
-		}
-
-		return predictorList;
 	}
 }

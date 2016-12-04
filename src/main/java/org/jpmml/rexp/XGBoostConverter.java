@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
@@ -34,7 +33,6 @@ import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.xgboost.Classification;
 import org.jpmml.xgboost.FeatureMap;
-import org.jpmml.xgboost.GBTree;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
 import org.jpmml.xgboost.Regression;
@@ -108,35 +106,15 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 				if(responseLevels != null){
 					targetCategories = responseLevels.getValues();
 				}
-			} // End if
+			}
+
+			targetCategories = obj.prepareTargetCategories(targetCategories);
 
 			if(obj instanceof Classification){
-				Classification classification = (Classification)obj;
-
-				if(targetCategories != null){
-
-					if(targetCategories.size() != classification.getNumClass()){
-						throw new IllegalArgumentException();
-					}
-				} else
-
-				{
-					targetCategories = new ArrayList<>();
-
-					for(int i = 0; i < classification.getNumClass(); i++){
-						targetCategories.add(String.valueOf(i));
-					}
-				}
-
 				featureMapper.append(targetField, targetCategories);
 			} else
 
 			if(obj instanceof Regression){
-
-				if(targetCategories != null){
-					throw new IllegalArgumentException();
-				}
-
 				featureMapper.append(targetField, false);
 			} else
 
@@ -155,11 +133,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		Learner learner = ensureLearner();
 
-		ObjFunction obj = learner.getObj();
-		float baseScore = learner.getBaseScore();
-		GBTree gbt = learner.getGBTree();
-
-		MiningModel miningModel = gbt.encodeMiningModel(obj, baseScore, schema);
+		MiningModel miningModel = learner.encodeMiningModel(schema);
 
 		return miningModel;
 	}
