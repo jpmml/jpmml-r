@@ -180,20 +180,29 @@ public class ExpressionTranslatorTest {
 
 		checkFunctionExpression(functionExpression, "parent", "first", null, "third");
 
-		Expression first = functionExpression.getExpression("first");
-		Expression second;
+		FunctionExpression.Argument first = functionExpression.getArgument("first");
+		FunctionExpression.Argument second;
 
 		try {
-			second = functionExpression.getExpression("second");
+			second = functionExpression.getArgument("second");
 
 			fail();
 		} catch(IllegalArgumentException iae){
-			second = functionExpression.getExpression(1);
+			second = functionExpression.getArgument(1);
 		}
 
-		Expression third = functionExpression.getExpression("third");
+		FunctionExpression.Argument third = functionExpression.getArgument("third");
 
-		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first, "child", null, null);
+		assertEquals("first = child(A, log(A))", first.format());
+		assertEquals("child(A, log(A))", first.formatExpression());
+
+		assertEquals("child(1 + B, right = 0)", second.format());
+		assertEquals("child(1 + B, right = 0)", second.formatExpression());
+
+		assertEquals("\"third\" = child(left = 0, c(A, B, C))", third.format());
+		assertEquals("child(left = 0, c(A, B, C))", third.formatExpression());
+
+		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first.getExpression(), "child", null, null);
 
 		Expression left = expressions.get(0);
 		Expression right = expressions.get(1);
@@ -201,7 +210,7 @@ public class ExpressionTranslatorTest {
 		checkFieldRef((FieldRef)left, FieldName.create("A"));
 		checkApply((Apply)right, "ln", FieldRef.class);
 
-		expressions = checkFunctionExpression((FunctionExpression)second, "child", null, "right");
+		expressions = checkFunctionExpression((FunctionExpression)second.getExpression(), "child", null, "right");
 
 		left = expressions.get(0);
 		right = expressions.get(1);
@@ -209,7 +218,7 @@ public class ExpressionTranslatorTest {
 		checkApply((Apply)left, "+", Constant.class, FieldRef.class);
 		checkConstant((Constant)right, "0", null);
 
-		expressions = checkFunctionExpression((FunctionExpression)third, "child", "left", null);
+		expressions = checkFunctionExpression((FunctionExpression)third.getExpression(), "child", "left", null);
 
 		left = expressions.get(0);
 		right = expressions.get(1);

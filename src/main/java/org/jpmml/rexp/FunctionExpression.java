@@ -21,11 +21,14 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.dmg.pmml.Expression;
+import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMMLObject;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.VisitorAction;
+import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class FunctionExpression extends Expression {
 
@@ -39,7 +42,7 @@ public class FunctionExpression extends Expression {
 		this.arguments = arguments;
 	}
 
-	public Expression getExpression(String tag){
+	public Argument getArgument(String tag){
 
 		if(tag == null){
 			throw new NullPointerException();
@@ -53,22 +56,20 @@ public class FunctionExpression extends Expression {
 		for(Argument argument : arguments){
 
 			if((tag).equals(argument.getTag())){
-				return argument.getExpression();
+				return argument;
 			}
 		}
 
 		throw new IllegalArgumentException(tag);
 	}
 
-	public Expression getExpression(int index){
+	public Argument getArgument(int index){
 
 		if(this.arguments == null){
 			throw new ArrayIndexOutOfBoundsException(index);
 		}
 
-		Argument argument = this.arguments.get(index);
-
-		return argument.getExpression();
+		return this.arguments.get(index);
 	}
 
 	public String getFunction(){
@@ -126,18 +127,85 @@ public class FunctionExpression extends Expression {
 	static
 	public class Argument {
 
+		private Token begin = null;
+
+		private Token end = null;
+
 		private String tag = null;
 
 		private Expression expression = null;
 
 
 		public Argument(Expression expression){
-			setExpression(expression);
+			this(null, expression);
 		}
 
 		public Argument(String tag, Expression expression){
 			setTag(tag);
 			setExpression(expression);
+		}
+
+		public String format(){
+			Token begin = getBegin();
+			Token end = getEnd();
+
+			if(begin == null || end == null){
+				throw new IllegalStateException();
+			}
+
+			return format(begin, end);
+		}
+
+		public String formatExpression(){
+			Token begin = getBegin();
+			Token end = getEnd();
+
+			if(begin == null || end == null){
+				throw new IllegalStateException();
+			}
+
+			switch(begin.next.kind){
+				case ExpressionTranslatorConstants.IDENTIFIER:
+				case ExpressionTranslatorConstants.STRING:
+
+					switch(begin.next.next.kind){
+						case ExpressionTranslatorConstants.ASSIGN:
+							begin = begin.next.next;
+							break;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+
+			return format(begin, end);
+		}
+
+		public Set<FieldName> getFieldNames(){
+			Expression expression = getExpression();
+
+			FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
+			fieldReferenceFinder.applyTo(expression);
+
+			return fieldReferenceFinder.getFieldNames();
+		}
+
+		Token getBegin(){
+			return this.begin;
+		}
+
+		void setBegin(Token begin){
+			this.begin = begin;
+		}
+
+		Token getEnd(){
+			return this.end;
+		}
+
+		void setEnd(Token end){
+			this.end = end;
 		}
 
 		public String getTag(){
@@ -158,6 +226,26 @@ public class FunctionExpression extends Expression {
 
 		private void setExpression(Expression expression){
 			this.expression = expression;
+		}
+
+		static
+		private String format(Token begin, Token end){
+			StringBuilder sb = new StringBuilder();
+
+			for(Token token = begin.next; token != end; token = token.next){
+				int pos = sb.length();
+
+				if(token != begin.next){
+
+					for(Token specialToken = token.specialToken; specialToken != null; specialToken = specialToken.specialToken){
+						sb.insert(pos, specialToken.image);
+					}
+				}
+
+				sb.append(token.image);
+			}
+
+			return sb.toString();
 		}
 	}
 }

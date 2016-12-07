@@ -160,6 +160,35 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private String translateValue(Token value){
+		String image = value.image;
+
+		switch(value.kind){
+			case ExpressionTranslatorConstants.TRUE:
+			case ExpressionTranslatorConstants.FALSE:
+				return image.toLowerCase();
+			case ExpressionTranslatorConstants.STRING:
+				return image.substring(1, image.length() - 1);
+			default:
+				return image;
+		}
+	}
+
+	static
+	private String translateTag(Token tag){
+		String image = tag.image;
+
+		switch(tag.kind){
+			case ExpressionTranslatorConstants.IDENTIFIER:
+				return image;
+			case ExpressionTranslatorConstants.STRING:
+				return image.substring(1, image.length() - 1);
+			default:
+				throw new IllegalArgumentException();
+		}
+	}
+
+	static
 	private Apply createApply(String function, Expression... expressions){
 		Apply apply = new Apply(function);
 
@@ -172,7 +201,7 @@ public class ExpressionTranslator {
 }
 PARSER_END(ExpressionTranslator)
 
-SKIP:
+SPECIAL_TOKEN:
 {
 	" "
 	|
@@ -430,12 +459,22 @@ Expression PrimaryExpression():
 Expression FunctionInvocationExpression():
 {
 	Token name;
+	Token begin;
+	Token end;
 	List<FunctionExpression.Argument> arguments;
 }
 {
-	name = <IDENTIFIER> <LPAREN> arguments = ArgumentList() <RPAREN>
+	name = <IDENTIFIER> begin = <LPAREN> arguments = ArgumentList() end = <RPAREN>
 
 	{
+		if(arguments.size() > 0){
+			FunctionExpression.Argument firstArgument = arguments.get(0);
+			firstArgument.setBegin(begin);
+
+			FunctionExpression.Argument lastArgument = arguments.get(arguments.size() - 1);
+			lastArgument.setEnd(end);
+		}
+
 		String function = name.image;
 
 		try {
@@ -460,12 +499,13 @@ Expression FunctionInvocationExpression():
 
 private List<FunctionExpression.Argument> ArgumentList():
 {
+	Token comma;
 	FunctionExpression.Argument argument;
 	List<FunctionExpression.Argument> arguments = new ArrayList<FunctionExpression.Argument>();
 }
 {
 	(
-		argument = Argument() { arguments.add(argument); } (<COMMA> argument = Argument() { arguments.add(argument); })*
+		argument = Argument() { arguments.add(argument); } (comma = <COMMA> { argument.setEnd(comma); } argument = Argument() { argument.setBegin(comma); arguments.add(argument); })*
 	)
 
 	{
@@ -480,17 +520,17 @@ private FunctionExpression.Argument Argument():
 }
 {
 	(
-		LOOKAHEAD(<STRING> <ASSIGN>)
-		tag = <STRING> { tag.image = tag.image.substring(1, tag.image.length() - 1); } <ASSIGN> expression = Expression()
-		|
 		LOOKAHEAD(<IDENTIFIER> <ASSIGN>)
 		tag = <IDENTIFIER> <ASSIGN> expression = Expression()
+		|
+		LOOKAHEAD(<STRING> <ASSIGN>)
+		tag = <STRING> <ASSIGN> expression = Expression()
 		|
 		expression = Expression()
 	)
 
 	{
-		FunctionExpression.Argument argument = (tag != null ? new FunctionExpression.Argument(tag.image, expression) : new FunctionExpression.Argument(expression));
+		FunctionExpression.Argument argument = (tag != null ? new FunctionExpression.Argument(translateTag(tag), expression) : new FunctionExpression.Argument(expression));
 
 		return argument;
 	}
@@ -534,14 +574,14 @@ Constant Constant():
 		|
 		value = <FLOAT> { dataType = DataType.DOUBLE; }
 		|
-		(value = <FALSE> | value = <TRUE>) { value.image = value.image.toLowerCase(); dataType = DataType.BOOLEAN; }
+		(value = <FALSE> | value = <TRUE>) { dataType = DataType.BOOLEAN; }
 		|
-		value = <STRING> { value.image = value.image.substring(1, value.image.length() - 1); }
+		value = <STRING>
 	)
 
 	{
 		Constant constant = new Constant()
-			.setValue(value.image)
+			.setValue(translateValue(value))
 			.setDataType(dataType);
 
 		return constant;
@@ -572,8 +612,8 @@ Interval Interval():
 	
 	{
 		Interval interval = new Interval(translateClosure(leftBound.image, rightBound.image))
-		.setLeftMargin(new Double(leftMargin.image))
-		.setRightMargin(new Double(rightMargin.image));
+			.setLeftMargin(new Double(leftMargin.image))
+			.setRightMargin(new Double(rightMargin.image));
 		
 		return interval;
 	}

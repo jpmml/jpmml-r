@@ -53,7 +53,6 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.WildcardFeature;
 import org.jpmml.converter.regression.RegressionModelUtil;
-import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class LMConverter extends ModelConverter<RGenericVector> {
 
@@ -98,17 +97,11 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			if(variable.startsWith("I(")){
 				FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-				List<FunctionExpression.Argument> arguments = functionExpression.getArguments();
-				if(arguments.size() != 1){
-					throw new IllegalArgumentException();
-				}
+				FunctionExpression.Argument argument = functionExpression.getArgument(0);
 
-				Expression expression = functionExpression.getExpression(0);
+				expressionFieldNames.addAll(argument.getFieldNames());
 
-				FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-				fieldReferenceFinder.applyTo(expression);
-
-				expressionFieldNames.addAll(fieldReferenceFinder.getFieldNames());
+				Expression expression = argument.getExpression();
 
 				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression);
 
@@ -123,12 +116,11 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 				if(variable.startsWith("cut(")){
 					FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-					Expression expression = functionExpression.getExpression(0);
+					FunctionExpression.Argument argument = functionExpression.getArgument(0);
 
-					FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-					fieldReferenceFinder.applyTo(expression);
+					expressionFieldNames.addAll(argument.getFieldNames());
 
-					expressionFieldNames.addAll(fieldReferenceFinder.getFieldNames());
+					Expression expression = argument.getExpression();
 
 					FieldName fieldName;
 
@@ -141,13 +133,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					if(expression instanceof Apply){
 						Apply apply = (Apply)expression;
 
-						int begin = "cut(".length();
-						int end = variable.indexOf(", breaks = ", begin); // XXX
-						if(end < 0){
-							throw new IllegalArgumentException(variable);
-						}
-
-						String function = variable.substring(begin, end).trim();
+						String function = (argument.format()).trim();
 
 						DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(function), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
