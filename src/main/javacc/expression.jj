@@ -164,9 +164,13 @@ public class ExpressionTranslator {
 		String image = value.image;
 
 		switch(value.kind){
-			case ExpressionTranslatorConstants.TRUE:
 			case ExpressionTranslatorConstants.FALSE:
+			case ExpressionTranslatorConstants.TRUE:
 				return image.toLowerCase();
+			case ExpressionTranslatorConstants.INF:
+				return "Infinity";
+			case ExpressionTranslatorConstants.NAN:
+				return "NaN";
 			case ExpressionTranslatorConstants.STRING:
 				return image.substring(1, image.length() - 1);
 			default:
@@ -197,6 +201,20 @@ public class ExpressionTranslator {
 		}
 
 		return apply;
+	}
+
+	static
+	private Double filterMargin(Double value){
+
+		if(value.isNaN()){
+			throw new IllegalArgumentException();
+		} // End if
+
+		if(value.isInfinite()){
+			return null;
+		}
+
+		return value;
 	}
 }
 PARSER_END(ExpressionTranslator)
@@ -257,19 +275,58 @@ TOKEN:
 	< ASSIGN: "=" >
 	|
 	< COMMA: "," >
+}
+
+/*
+ * Reserved words.
+ * See https://stat.ethz.ch/R-manual/R-devel/library/base/html/Reserved.html
+ */
+TOKEN:
+{
+	< BREAK: "break" >
+	|
+	< FOR: "for" >
+	|
+	< FUNCTION: "function" >
+	|
+	< ELSE: "else" >
 	|
 	< IF: "if" >
 	|
-	< ELSE: "else" >
+	< IN: "in" >
+	|
+	< NEXT: "next" >
+	|
+	< REPEAT: "repeat" >
+	|
+	< WHILE: "while" >
 }
 
+/*
+ * Reserved literals.
+ * See https://stat.ethz.ch/R-manual/R-devel/library/base/html/Reserved.html
+ */
 TOKEN:
 {
 	< FALSE: "FALSE" >
 	|
-	< TRUE: "TRUE" >
+	< INF: "Inf" >
 	|
 	< NA: "NA" >
+	|
+	< NA_CHARACTER: "NA_character_" >
+	|
+	< NA_COMPLEX: "NA_complex_" >
+	|
+	< NA_INTEGER: "NA_integer_" >
+	|
+	< NA_REAL: "NA_real" >
+	|
+	< NAN: "NaN" >
+	|
+	< NULL: "NULL" >
+	|
+	< TRUE: "TRUE" >
 }
 
 TOKEN:
@@ -428,10 +485,39 @@ Expression ExponentiationExpression():
 	Expression right = null;
 }
 {
-	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = PrimaryExpression() { left = createApply("pow", left, right); })*
+	left = UnaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = UnaryExpression() { left = createApply("pow", left, right); })*
 
 	{
 		return left;
+	}
+}
+
+Expression UnaryExpression():
+{
+	Token sign = null;
+	Expression expression;
+}
+{
+	(sign = <PLUS> | sign = <MINUS>)? expression = PrimaryExpression()
+
+	{
+		if(sign != null && sign.kind == MINUS){
+
+			if(expression instanceof Constant){
+				Constant constant = (Constant)expression;
+
+				constant.setValue("-" + constant.getValue());
+			} else
+
+			{
+				Constant constant = new Constant()
+					.setValue("-1");
+
+				expression = createApply("*", constant, expression);
+			}
+		}
+
+		return expression;
 	}
 }
 
@@ -572,7 +658,7 @@ Constant Constant():
 	(
 		value = <INT>
 		|
-		value = <FLOAT> { dataType = DataType.DOUBLE; }
+		( value = <FLOAT> | value = <INF> | value = <NAN> ) { dataType = DataType.DOUBLE; }
 		|
 		(value = <FALSE> | value = <TRUE>) { dataType = DataType.BOOLEAN; }
 		|
@@ -594,7 +680,7 @@ private Interval translateIntervalInternal():
 }
 {
 	interval = Interval() <EOF>
-	
+
 	{
 		return interval;
 	}
@@ -603,18 +689,37 @@ private Interval translateIntervalInternal():
 Interval Interval():
 {
 	Token leftBound;
-	Token leftMargin;
+	Double leftMargin;
 	Token rightBound;
-	Token rightMargin;
+	Double rightMargin;
 }
 {
-	(leftBound = <LPAREN> | leftBound = <LBRACKET>) (leftMargin = <INT> | leftMargin = <FLOAT>) <COMMA> (rightMargin = <INT> | rightMargin = <FLOAT>) (rightBound = <RPAREN> | rightBound = <RBRACKET>)
-	
+	(leftBound = <LPAREN> | leftBound = <LBRACKET>) leftMargin = SignedNumber() <COMMA> rightMargin = SignedNumber() (rightBound = <RPAREN> | rightBound = <RBRACKET>)
+
 	{
 		Interval interval = new Interval(translateClosure(leftBound.image, rightBound.image))
-			.setLeftMargin(new Double(leftMargin.image))
-			.setRightMargin(new Double(rightMargin.image));
-		
+			.setLeftMargin(filterMargin(leftMargin))
+			.setRightMargin(filterMargin(rightMargin));
+
 		return interval;
+	}
+}
+
+private Double SignedNumber():
+{
+	Token sign = null;
+	Token value;
+}
+{
+	(sign = <PLUS> | sign = <MINUS>)? (value = <INT> | value = <FLOAT> | value = <INF> | value = <NAN>)
+
+	{
+		String javaValue = translateValue(value);
+
+		if(sign != null && sign.kind == MINUS){
+			javaValue = ("-" + javaValue);
+		}
+
+		return Double.valueOf(javaValue);
 	}
 }

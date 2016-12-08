@@ -229,11 +229,25 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateInterval(){
-		Interval interval = ExpressionTranslator.translateInterval("(10, 100]");
+		Interval interval = ExpressionTranslator.translateInterval("(-10.0E+0, +10.0E-0]");
 
 		assertEquals(Interval.Closure.OPEN_CLOSED, interval.getClosure());
-		assertEquals(new Double("10"), interval.getLeftMargin());
-		assertEquals(new Double("100"), interval.getRightMargin());
+		assertEquals(new Double("-10.0E0"), interval.getLeftMargin());
+		assertEquals(new Double("+10.0E0"), interval.getRightMargin());
+
+		try {
+			interval = ExpressionTranslator.translateInterval("(0, NaN)");
+
+			fail();
+		} catch(IllegalArgumentException iae){
+			// Ignored
+		}
+
+		interval = ExpressionTranslator.translateInterval("[-Inf, +Inf]");
+
+		assertEquals(Interval.Closure.CLOSED_CLOSED, interval.getClosure());
+		assertEquals(null, interval.getLeftMargin());
+		assertEquals(null, interval.getRightMargin());
 	}
 
 	static
