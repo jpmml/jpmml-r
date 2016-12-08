@@ -370,6 +370,9 @@ private Expression translateExpressionInternal():
 	}
 }
 
+/*
+ * See https://stat.ethz.ch/R-manual/R-devel/library/base/html/Syntax.html
+ */
 Expression Expression():
 {
 	Expression expression;
@@ -379,7 +382,7 @@ Expression Expression():
 		LOOKAHEAD(<IF>)
 		expression = IfExpression()
 		|
-		expression = LogicalExpression()
+		expression = OrExpression()
 	)
 
 	{
@@ -405,28 +408,28 @@ Expression IfExpression():
 	}
 }
 
-Expression LogicalExpression():
+Expression OrExpression():
 {
 	Expression left;
 	Token operator;
 	Expression right;
 }
 {
-	left = RelationalExpression() ((operator = <AND> | operator = <OR>) right = RelationalExpression() { left = createApply(translateLogicalOperator(operator.image), left, right); })*
+	left = AndExpression() (operator = <OR> right = AndExpression() { left = createApply(translateLogicalOperator(operator.image), left, right); })*
 
 	{
 		return left;
 	}
 }
 
-Expression RelationalExpression():
+Expression AndExpression():
 {
 	Expression left;
 	Token operator;
 	Expression right;
 }
 {
-	left = NegationExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = NegationExpression() { left = createApply(translateRelationalOperator(operator.image), left, right); })?
+	left = NegationExpression() (operator = <AND> right = NegationExpression() { left = createApply(translateLogicalOperator(operator.image), left, right); })*
 
 	{
 		return left;
@@ -439,14 +442,28 @@ Expression NegationExpression():
 	Expression expression;
 }
 {
-	(operator = <NOT>)? expression = AdditiveExpression()
+	(operator = <NOT>)? expression = RelationalExpression()
 
 	{
 		if(operator != null){
 			return createApply("not", expression);
 		}
-
+		
 		return expression;
+	}
+}
+
+Expression RelationalExpression():
+{
+	Expression left;
+	Token operator;
+	Expression right;
+}
+{
+	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression() { left = createApply(translateRelationalOperator(operator.image), left, right); })?
+
+	{
+		return left;
 	}
 }
 
@@ -471,21 +488,7 @@ Expression MultiplicativeExpression():
 	Expression right;
 }
 {
-	left = ExponentiationExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = ExponentiationExpression() { left = createApply(operator.image, left, right); })*
-
-	{
-		return left;
-	}
-}
-
-Expression ExponentiationExpression():
-{
-	Expression left;
-	Token operator = null;
-	Expression right = null;
-}
-{
-	left = UnaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = UnaryExpression() { left = createApply("pow", left, right); })*
+	left = UnaryExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = UnaryExpression() { left = createApply(operator.image, left, right); })*
 
 	{
 		return left;
@@ -498,7 +501,7 @@ Expression UnaryExpression():
 	Expression expression;
 }
 {
-	(sign = <PLUS> | sign = <MINUS>)? expression = PrimaryExpression()
+	(sign = <PLUS> | sign = <MINUS>)? expression = ExponentiationExpression()
 
 	{
 		if(sign != null && sign.kind == MINUS){
@@ -518,6 +521,20 @@ Expression UnaryExpression():
 		}
 
 		return expression;
+	}
+}
+
+Expression ExponentiationExpression():
+{
+	Expression left;
+	Token operator = null;
+	Expression right = null;
+}
+{
+	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = UnaryExpression() { left = createApply("pow", left, right); })?
+
+	{
+		return left;
 	}
 }
 

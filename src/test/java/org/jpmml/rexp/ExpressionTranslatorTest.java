@@ -85,7 +85,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateLogicalExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("((a >= 0.0 & b >= 0.0) | c <= 0.0)");
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("a >= 0.0 & b >= 0.0 | c <= 0.0");
 
 		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
 
@@ -175,6 +175,48 @@ public class ExpressionTranslatorTest {
 	}
 
 	@Test
+	public void translateExponentiationExpression(){
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("-2^-3");
+
+		List<Expression> expressions = checkApply(apply, "*", Constant.class, Apply.class);
+
+		Expression left = expressions.get(0);
+		Expression right = expressions.get(1);
+
+		checkConstant((Constant)left, "-1", null);
+
+		expressions = checkApply((Apply)right, "pow", Constant.class, Constant.class);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkConstant((Constant)left, "2", null);
+		checkConstant((Constant)right, "-3", null);
+
+		apply = (Apply)ExpressionTranslator.translateExpression("-2^-2*1.5");
+
+		expressions = checkApply(apply, "*", Apply.class, Constant.class);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		expressions = checkApply((Apply)left, "*", Constant.class, Apply.class);
+		checkConstant((Constant)right, "1.5", DataType.DOUBLE);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkConstant((Constant)left, "-1", null);
+		expressions = checkApply((Apply)right, "pow", Constant.class, Constant.class);
+
+		left = expressions.get(0);
+		right = expressions.get(1);
+
+		checkConstant((Constant)left, "2", null);
+		checkConstant((Constant)right, "-2", null);
+	}
+
+	@Test
 	public void translateFunctionExpression(){
 		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression("parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))");
 
@@ -225,6 +267,17 @@ public class ExpressionTranslatorTest {
 
 		checkConstant((Constant)left, "0", null);
 		checkFunctionExpression((FunctionExpression)right, "c", null, null, null);
+	}
+
+	@Test
+	public void translateParenthesizedExpression(){
+		Apply apply = (Apply)ExpressionTranslator.translateExpression("TRUE | TRUE & FALSE");
+
+		checkApply(apply, "or", Constant.class, Apply.class);
+
+		apply = (Apply)ExpressionTranslator.translateExpression("(TRUE | TRUE) & FALSE");
+
+		checkApply(apply, "and", Apply.class, Constant.class);
 	}
 
 	@Test
