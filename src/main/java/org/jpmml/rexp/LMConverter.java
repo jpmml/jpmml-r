@@ -264,7 +264,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		List<Double> featureCoefficients = prepareFeatureCoefficients(features, coefficients);
+		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
 		RegressionTable regressionTable = RegressionModelUtil.createRegressionTable(features, intercept, featureCoefficients);
 
@@ -274,26 +274,30 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		return regressionModel;
 	}
 
-	public List<Double> prepareFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
+	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
 		List<Double> result = new ArrayList<>();
 
-		BiMap<BinaryFeature, FieldName> inverseBinaryFeatures = this.binaryFeatures.inverse();
-
 		for(Feature feature : features){
-			FieldName name = feature.getName();
-
-			if(feature instanceof BinaryFeature){
-				BinaryFeature binaryFeature = (BinaryFeature)feature;
-
-				name = inverseBinaryFeatures.get(binaryFeature);
-			}
-
-			double coefficient = coefficients.getValue(name.getValue());
+			Double coefficient = getFeatureCoefficient(feature, coefficients);
 
 			result.add(coefficient);
 		}
 
 		return result;
+	}
+
+	public Double getFeatureCoefficient(Feature feature, RDoubleVector coefficients){
+		FieldName name = feature.getName();
+
+		if(feature instanceof BinaryFeature){
+			BinaryFeature binaryFeature = (BinaryFeature)feature;
+
+			BiMap<BinaryFeature, FieldName> inverseBinaryFeatures = this.binaryFeatures.inverse();
+
+			name = inverseBinaryFeatures.get(binaryFeature);
+		}
+
+		return coefficients.getValue(name.getValue());
 	}
 
 	private Feature resolveFeature(FieldName name, FeatureMapper featureMapper){

@@ -93,7 +93,7 @@ public class GLMConverter extends LMConverter {
 			throw new IllegalArgumentException();
 		}
 
-		List<Double> featureCoefficients = prepareFeatureCoefficients(features, coefficients);
+		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
 		String targetCategory = null;
 

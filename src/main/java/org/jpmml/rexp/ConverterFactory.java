@@ -69,6 +69,7 @@ public class ConverterFactory {
 		converters.put("lm", LMConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("ranger", RangerConverter.class);
+		converters.put("scorecard", ScorecardConverter.class);
 		converters.put("train", TrainConverter.class);
 		converters.put("xgb.Booster", XGBoostConverter.class);
 	}

@@ -23,6 +23,8 @@ Java library and command-line application for converting [R] (http://www.r-proje
     * `randomForest` ("matrix interface") - Random Forest regression and classification
   * [`ranger` package] (https://cran.r-project.org/web/packages/ranger/):
     * `ranger` - Random Forest regression and classification
+  * [`r2pmml` package] (https://github.com/jpmml/r2pmml):
+    * `scorecard` - Scorecard regression
   * `stats` package:
     * `glm` - Generalized linear (GLM) regression and classification
     * `kmeans` - K-Means clustering
