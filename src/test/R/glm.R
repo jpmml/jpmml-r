@@ -1,3 +1,5 @@
+library("plyr")
+
 source("util.R")
 
 audit = loadAuditCsv("Audit")
@@ -19,7 +21,7 @@ generateGeneralRegressionFormulaAudit = function(){
 }
 
 generateGeneralRegressionCustFormulaAudit = function(){
-	audit.glm = glm(Adjusted ~ . - Income + cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)) + Gender:Age + Gender:Marital, data = audit, family = binomial)
+	audit.glm = glm(Adjusted ~ . - Education + revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)) + Gender:Age + Gender:Marital, data = audit, family = binomial)
 	print(audit.glm)
 
 	storeRds(audit.glm, "GeneralRegressionCustFormulaAudit")
@@ -42,7 +44,7 @@ generateGeneralRegressionFormulaAuto = function(){
 }
 
 generateGeneralRegressionCustFormulaAuto = function(){
-	auto.glm = glm(mpg ~ (. - horsepower - weight) ^ 2 + cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)), data = auto)
+	auto.glm = glm(mpg ~ (. - horsepower - weight - origin) ^ 2 + cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)) + revalue(origin, replace = c("1" = "US", "2" = "Europe", "3" = "Japan")), data = auto)
 	print(auto.glm)
 
 	mpg = predict(auto.glm, newdata = auto)

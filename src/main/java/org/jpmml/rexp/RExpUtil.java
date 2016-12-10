@@ -52,6 +52,7 @@ public class RExpUtil {
 	public DataType getDataType(String type){
 
 		switch(type){
+			case "character":
 			case "factor":
 				return DataType.STRING;
 			case "numeric":

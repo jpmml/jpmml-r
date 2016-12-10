@@ -20,25 +20,34 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.dmg.pmml.Apply;
+import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Discretize;
 import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
+import org.dmg.pmml.FieldColumnPair;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.InlineTable;
 import org.dmg.pmml.Interval;
+import org.dmg.pmml.MapValues;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.Row;
 import org.dmg.pmml.TypeDefinitionField;
 import org.dmg.pmml.Value;
 import org.dmg.pmml.regression.RegressionModel;
@@ -46,6 +55,7 @@ import org.dmg.pmml.regression.RegressionTable;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ConvertibleBinaryFeature;
+import org.jpmml.converter.DOMUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
@@ -87,6 +97,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		Set<FieldName> expressionFieldNames = new LinkedHashSet<>();
 
+		Map<FieldName, List<String>> fieldCategories = new LinkedHashMap<>();
+
 		fields:
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getValue(i);
@@ -113,40 +125,19 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			if(xlevels != null && xlevels.hasValue(variable)){
 				RStringVector levels = (RStringVector)xlevels.getValue(variable);
 
+				List<String> values = levels.getValues();
+
 				if(variable.startsWith("cut(")){
-					FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+					FunctionExpression cutExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-					FunctionExpression.Argument argument = functionExpression.getArgument(0);
+					FunctionExpression.Argument xArgument = cutExpression.getArgument(0);
 
-					expressionFieldNames.addAll(argument.getFieldNames());
+					expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					Expression expression = argument.getExpression();
-
-					FieldName fieldName;
-
-					if(expression instanceof FieldRef){
-						FieldRef fieldRef = (FieldRef)expression;
-
-						fieldName = fieldRef.getField();
-					} else
-
-					if(expression instanceof Apply){
-						Apply apply = (Apply)expression;
-
-						String function = (argument.format()).trim();
-
-						DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(function), OpType.CONTINUOUS, DataType.DOUBLE, apply);
-
-						fieldName = derivedField.getName();
-					} else
-
-					{
-						throw new IllegalArgumentException();
-					}
+					FieldName fieldName = prepareInputField(xArgument, featureMapper);
 
 					Discretize discretize = new Discretize(fieldName);
 
-					List<String> values = levels.getValues();
 					for(String value : values){
 						Interval interval = ExpressionTranslator.translateInterval(value);
 
@@ -162,10 +153,95 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					fields.add(derivedField);
 				} else
 
+				if(variable.startsWith("revalue(")){
+					FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+
+					FunctionExpression.Argument xArgument = revalueExpression.getArgument(0);
+
+					expressionFieldNames.addAll(xArgument.getFieldNames());
+
+					FieldName fieldName = prepareInputField(xArgument, featureMapper);
+
+					FunctionExpression.Argument replaceArgument;
+
+					try {
+						replaceArgument = revalueExpression.getArgument("replace");
+					} catch(IllegalArgumentException iae){
+						replaceArgument = revalueExpression.getArgument(1);
+					}
+
+					FunctionExpression vectorFunction = (FunctionExpression)ExpressionTranslator.translateExpression(replaceArgument.formatExpression());
+					if(!("c").equals(vectorFunction.getFunction())){
+						throw new IllegalArgumentException();
+					}
+
+					DocumentBuilder documentBuilder = DOMUtil.createDocumentBuilder();
+
+					InlineTable inlineTable = new InlineTable();
+
+					List<String> columns = Arrays.asList("input", "output");
+
+					Set<String> inputs = new LinkedHashSet<>();
+					Set<String> outputs = new LinkedHashSet<>();
+
+					List<FunctionExpression.Argument> objectArguments = vectorFunction.getArguments();
+					for(FunctionExpression.Argument objectArgument : objectArguments){
+						String tag = objectArgument.getTag();
+						if(tag == null){
+							throw new IllegalArgumentException();
+						}
+
+						inputs.add(tag);
+
+						Constant constant = (Constant)objectArgument.getExpression();
+						if(constant.getDataType() != null && (DataType.STRING).equals(constant.getDataType())){
+							throw new IllegalArgumentException();
+						}
+
+						String value = constant.getValue();
+
+						outputs.add(value);
+
+						Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(tag, value));
+
+						inlineTable.addRows(row);
+					}
+
+					for(String value : values){
+
+						// Assume disjoint input and output value spaces
+						if(outputs.contains(value)){
+							continue;
+						}
+
+						inputs.add(value);
+						outputs.add(value);
+
+						Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(value, value));
+
+						inlineTable.addRows(row);
+					}
+
+					List<String> categories = new ArrayList<>(inputs);
+
+					fieldCategories.put(fieldName, categories);
+
+					MapValues mapValues = new MapValues()
+						.addFieldColumnPairs(new FieldColumnPair(fieldName, columns.get(0)))
+						.setOutputColumn(columns.get(1))
+						.setInlineTable(inlineTable);
+
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, DataType.STRING, mapValues);
+
+					registerBinaryFields(derivedField, values, featureMapper);
+
+					fields.add(derivedField);
+				} else
+
 				{
 					DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
 
-					registerBinaryFields(dataField, levels.getValues(), featureMapper);
+					registerBinaryFields(dataField, values, featureMapper);
 
 					fields.add(dataField);
 				}
@@ -190,7 +266,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			DataField dataField = featureMapper.getDataField(expressionFieldName);
 
 			if(dataField == null){
+				OpType opType = OpType.CONTINUOUS;
 				DataType dataType = DataType.DOUBLE;
+
+				List<String> categories = fieldCategories.get(expressionFieldName);
+
+				if(categories != null && categories.size() > 0){
+					opType = OpType.CATEGORICAL;
+				} // End if
 
 				if(data != null){
 					RVector<?> column = (RVector<?>)data.getValue(expressionFieldName.getValue());
@@ -198,7 +281,13 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					dataType = column.getDataType();
 				}
 
-				dataField = featureMapper.createDataField(expressionFieldName, OpType.CONTINUOUS, dataType);
+				dataField = featureMapper.createDataField(expressionFieldName, opType, dataType);
+
+				if(categories != null && categories.size() > 0){
+					List<Value> values = dataField.getValues();
+
+					values.addAll(PMMLUtil.createValues(categories));
+				}
 			}
 		}
 
@@ -332,10 +421,38 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			this.binaryFeatures.put(FieldName.create(name.getValue() + categoryName), binaryFeature);
 		}
 
-		if(categoryValues.size() > 0 && (field instanceof DataField)){
-			List<Value> values = field.getValues();
+		if(categoryValues.size() > 0){
 
-			values.addAll(PMMLUtil.createValues(categoryValues));
+			if(field instanceof DataField){
+				List<Value> values = field.getValues();
+
+				values.addAll(PMMLUtil.createValues(categoryValues));
+			}
+		}
+	}
+
+	static
+	private FieldName prepareInputField(FunctionExpression.Argument argument, FeatureMapper featureMapper){
+		Expression expression = argument.getExpression();
+
+		if(expression instanceof FieldRef){
+			FieldRef fieldRef = (FieldRef)expression;
+
+			return fieldRef.getField();
+		} else
+
+		if(expression instanceof Apply){
+			Apply apply = (Apply)expression;
+
+			String function = (argument.formatExpression()).trim();
+
+			DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(function), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+
+			return derivedField.getName();
+		} else
+
+		{
+			throw new IllegalArgumentException();
 		}
 	}
 
