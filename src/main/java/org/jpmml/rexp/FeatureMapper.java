@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,9 @@ import java.util.Map;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMML;
 import org.dmg.pmml.Value;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
@@ -34,11 +37,28 @@ import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.PMMLMapper;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.model.visitors.FieldRenamer;
 
 public class FeatureMapper extends PMMLMapper {
 
 	private Map<FieldName, Feature> features = new LinkedHashMap<>();
 
+	private Map<FieldName, FieldName> renamedFields = new LinkedHashMap<>();
+
+
+	@Override
+	public PMML encodePMML(Model model){
+		PMML pmml = super.encodePMML(model);
+
+		Collection<Map.Entry<FieldName, FieldName>> entries = this.renamedFields.entrySet();
+		for(Map.Entry<FieldName, FieldName> entry : entries){
+			FieldRenamer renamer = new FieldRenamer(entry.getKey(), entry.getValue());
+
+			renamer.applyTo(pmml);
+		}
+
+		return pmml;
+	}
 
 	public void append(FieldName name, boolean categorical){
 		append(name, categorical ? DataType.STRING : DataType.DOUBLE);
@@ -158,6 +178,10 @@ public class FeatureMapper extends PMMLMapper {
 		Map<FieldName, Feature> features = getFeatures();
 
 		return new ArrayList<>(features.keySet());
+	}
+
+	public void renameField(FieldName from, FieldName to){
+		this.renamedFields.put(from, to);
 	}
 
 	private Feature getFeature(FieldName name){

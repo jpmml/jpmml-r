@@ -39,6 +39,7 @@ import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Discretize;
 import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
+import org.dmg.pmml.Extension;
 import org.dmg.pmml.FieldColumnPair;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
@@ -116,9 +117,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 				Expression expression = argument.getExpression();
 
-				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression);
+				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression)
+					.addExtensions(createExtension(variable));
 
 				fields.add(derivedField);
+
+				featureMapper.renameField(name, formatFunction("I", argument));
 
 				continue fields;
 			} // End if
@@ -135,7 +139,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FieldName fieldName = prepareInputField(xArgument, featureMapper);
+					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
 					Discretize discretize = new Discretize(fieldName);
 
@@ -147,9 +151,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 						discretize.addDiscretizeBins(discretizeBin);
 					}
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize);
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
+						.addExtensions(createExtension(variable));
 
 					registerBinaryFields(derivedField, values, featureMapper);
+
+					featureMapper.renameField(name, formatFunction("cut", xArgument));
 
 					fields.add(derivedField);
 				} else
@@ -161,7 +168,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FieldName fieldName = prepareInputField(xArgument, featureMapper);
+					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
 					FunctionExpression.Argument fromArgument = mapValuesExpression.getArgument("from", 1);
 					FunctionExpression.Argument toArgument = mapValuesExpression.getArgument("to", 2);
@@ -174,9 +181,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					fieldCategories.put(fieldName, categories);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues);
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+						.addExtensions(createExtension(variable));
 
 					registerBinaryFields(derivedField, values, featureMapper);
+
+					featureMapper.renameField(name, formatFunction("mapvalues", xArgument));
 
 					fields.add(derivedField);
 				} else
@@ -188,7 +198,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FieldName fieldName = prepareInputField(xArgument, featureMapper);
+					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
 					FunctionExpression.Argument replaceArgument = revalueExpression.getArgument("replace", 1);
 
@@ -200,9 +210,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 					fieldCategories.put(fieldName, categories);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues);
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+						.addExtensions(createExtension(variable));
 
 					registerBinaryFields(derivedField, values, featureMapper);
+
+					featureMapper.renameField(name, formatFunction("revalue", xArgument));
 
 					fields.add(derivedField);
 				} else
@@ -401,7 +414,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private FieldName prepareInputField(FunctionExpression.Argument argument, FeatureMapper featureMapper){
+	private FieldName formatFunction(String function, FunctionExpression.Argument argument){
+		String value = (argument.formatExpression()).trim();
+
+		return FieldName.create(function != null ? (function + "(" + value + ")") : value);
+	}
+
+	static
+	private FieldName prepareInputField(FunctionExpression.Argument argument, OpType opType, DataType dataType, FeatureMapper featureMapper){
 		Expression expression = argument.getExpression();
 
 		if(expression instanceof FieldRef){
@@ -413,9 +433,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		if(expression instanceof Apply){
 			Apply apply = (Apply)expression;
 
-			String function = (argument.formatExpression()).trim();
-
-			DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(function), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+			DerivedField derivedField = featureMapper.createDerivedField(formatFunction(null, argument), opType, dataType, apply)
+				.addExtensions(createExtension((argument.formatExpression()).trim()));
 
 			return derivedField.getName();
 		} else
@@ -423,6 +442,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	static
+	private Extension createExtension(String content){
+		Extension extension = new Extension()
+			.addContent(content);
+
+		return extension;
 	}
 
 	static
@@ -530,7 +557,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 	static
 	private FunctionExpression toVectorExpression(FunctionExpression.Argument argument){
-		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(argument.formatExpression());
+		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression((argument.formatExpression()).trim());
 
 		if(!("c").equals(functionExpression.getFunction())){
 			throw new IllegalArgumentException();
