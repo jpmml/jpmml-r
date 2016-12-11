@@ -1,3 +1,5 @@
+library("plyr")
+
 source("util.R")
 
 auto = loadAutoCsv("Auto")
@@ -13,7 +15,7 @@ generateLinearRegressionFormulaAuto = function(){
 }
 
 generateLinearRegressionCustFormulaAuto = function(){
-	auto.lm = lm(mpg ~ I(displacement / cylinders) + (. - horsepower - weight) ^ 2 + cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) + I(log(weight)), data = auto)
+	auto.lm = lm(mpg ~ I(displacement / cylinders) + (. - horsepower - weight - origin) ^ 2 + cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) + I(log(weight)) + mapvalues(origin, from = c(1, 2, 3), to = c(-1.0, -2.0, -3.0)), data = auto)
 	print(auto.lm)
 
 	mpg = predict(auto.lm, newdata = auto)

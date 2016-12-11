@@ -20,6 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -153,85 +154,53 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					fields.add(derivedField);
 				} else
 
-				if(variable.startsWith("revalue(")){
-					FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+				if(variable.startsWith("mapvalues(")){
+					FunctionExpression mapValuesExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-					FunctionExpression.Argument xArgument = revalueExpression.getArgument(0);
+					FunctionExpression.Argument xArgument = mapValuesExpression.getArgument("x", 0);
 
 					expressionFieldNames.addAll(xArgument.getFieldNames());
 
 					FieldName fieldName = prepareInputField(xArgument, featureMapper);
 
-					FunctionExpression.Argument replaceArgument;
+					FunctionExpression.Argument fromArgument = mapValuesExpression.getArgument("from", 1);
+					FunctionExpression.Argument toArgument = mapValuesExpression.getArgument("to", 2);
 
-					try {
-						replaceArgument = revalueExpression.getArgument("replace");
-					} catch(IllegalArgumentException iae){
-						replaceArgument = revalueExpression.getArgument(1);
-					}
+					Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
 
-					FunctionExpression vectorFunction = (FunctionExpression)ExpressionTranslator.translateExpression(replaceArgument.formatExpression());
-					if(!("c").equals(vectorFunction.getFunction())){
-						throw new IllegalArgumentException();
-					}
+					MapValues mapValues = createMapValues(fieldName, mapping, values);
 
-					DocumentBuilder documentBuilder = DOMUtil.createDocumentBuilder();
-
-					InlineTable inlineTable = new InlineTable();
-
-					List<String> columns = Arrays.asList("input", "output");
-
-					Set<String> inputs = new LinkedHashSet<>();
-					Set<String> outputs = new LinkedHashSet<>();
-
-					List<FunctionExpression.Argument> objectArguments = vectorFunction.getArguments();
-					for(FunctionExpression.Argument objectArgument : objectArguments){
-						String tag = objectArgument.getTag();
-						if(tag == null){
-							throw new IllegalArgumentException();
-						}
-
-						inputs.add(tag);
-
-						Constant constant = (Constant)objectArgument.getExpression();
-						if(constant.getDataType() != null && (DataType.STRING).equals(constant.getDataType())){
-							throw new IllegalArgumentException();
-						}
-
-						String value = constant.getValue();
-
-						outputs.add(value);
-
-						Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(tag, value));
-
-						inlineTable.addRows(row);
-					}
-
-					for(String value : values){
-
-						// Assume disjoint input and output value spaces
-						if(outputs.contains(value)){
-							continue;
-						}
-
-						inputs.add(value);
-						outputs.add(value);
-
-						Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(value, value));
-
-						inlineTable.addRows(row);
-					}
-
-					List<String> categories = new ArrayList<>(inputs);
+					List<String> categories = new ArrayList<>(mapping.keySet());
 
 					fieldCategories.put(fieldName, categories);
 
-					MapValues mapValues = new MapValues()
-						.addFieldColumnPairs(new FieldColumnPair(fieldName, columns.get(0)))
-						.setOutputColumn(columns.get(1))
-						.setInlineTable(inlineTable);
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, DataType.STRING, mapValues);
+					registerBinaryFields(derivedField, values, featureMapper);
+
+					fields.add(derivedField);
+				} else
+
+				if(variable.startsWith("revalue(")){
+					FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+
+					FunctionExpression.Argument xArgument = revalueExpression.getArgument("x", 0);
+
+					expressionFieldNames.addAll(xArgument.getFieldNames());
+
+					FieldName fieldName = prepareInputField(xArgument, featureMapper);
+
+					FunctionExpression.Argument replaceArgument = revalueExpression.getArgument("replace", 1);
+
+					Map<String, String> mapping = parseRevalue(replaceArgument);
+
+					MapValues mapValues = createMapValues(fieldName, mapping, values);
+
+					List<String> categories = new ArrayList<>(mapping.keySet());
+
+					fieldCategories.put(fieldName, categories);
+
+					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues);
 
 					registerBinaryFields(derivedField, values, featureMapper);
 
@@ -454,6 +423,120 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	static
+	private MapValues createMapValues(FieldName fieldName, Map<String, String> mapping, List<String> values){
+		Set<String> inputs = new LinkedHashSet<>(mapping.keySet());
+		Set<String> outputs = new LinkedHashSet<>(mapping.values());
+
+		for(String value : values){
+
+			// Assume disjoint input and output value spaces
+			if(outputs.contains(value)){
+				continue;
+			}
+
+			mapping.put(value, value);
+		}
+
+		List<String> columns = Arrays.asList("from", "to");
+
+		InlineTable inlineTable = new InlineTable();
+
+		DocumentBuilder documentBuilder = DOMUtil.createDocumentBuilder();
+
+		Collection<Map.Entry<String, String>> entries = mapping.entrySet();
+		for(Map.Entry<String, String> entry : entries){
+			Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(entry.getKey(), entry.getValue()));
+
+			inlineTable.addRows(row);
+		}
+
+		MapValues mapValues = new MapValues()
+			.addFieldColumnPairs(new FieldColumnPair(fieldName, columns.get(0)))
+			.setOutputColumn(columns.get(1))
+			.setInlineTable(inlineTable);
+
+		return mapValues;
+	}
+
+	static
+	private Map<String, String> parseMapValues(FunctionExpression.Argument fromArgument, FunctionExpression.Argument toArgument){
+		Map<String, String> result = new LinkedHashMap<>();
+
+		List<String> fromValues = parseVector(fromArgument);
+		List<String> toValues = parseVector(toArgument);
+
+		if(fromValues.size() != toValues.size()){
+			throw new IllegalArgumentException();
+		}
+
+		for(int i = 0; i < fromValues.size(); i++){
+			String from = fromValues.get(i);
+			String to = toValues.get(i);
+
+			if(from == null || to == null){
+				throw new IllegalArgumentException();
+			}
+
+			result.put(from, to);
+		}
+
+		return result;
+	}
+
+	static
+	private Map<String, String> parseRevalue(FunctionExpression.Argument replaceArgument){
+		Map<String, String> result = new LinkedHashMap<>();
+
+		FunctionExpression vectorExpression = toVectorExpression(replaceArgument);
+
+		List<FunctionExpression.Argument> objectArguments = vectorExpression.getArguments();
+		for(FunctionExpression.Argument objectArgument : objectArguments){
+			String from = objectArgument.getTag();
+			if(from == null){
+				throw new IllegalArgumentException();
+			}
+
+			Constant constant = (Constant)objectArgument.getExpression();
+			if(constant.getDataType() != null && (DataType.STRING).equals(constant.getDataType())){
+				throw new IllegalArgumentException();
+			}
+
+			String to = constant.getValue();
+
+			result.put(from, to);
+		}
+
+		return result;
+	}
+
+	static
+	private List<String> parseVector(FunctionExpression.Argument argument){
+		List<String> result = new ArrayList<>();
+
+		FunctionExpression vectorExpression = toVectorExpression(argument);
+
+		List<FunctionExpression.Argument> objectArguments = vectorExpression.getArguments();
+		for(FunctionExpression.Argument objectArgument : objectArguments){
+			Constant constant = (Constant)objectArgument.getExpression();
+
+			result.add(constant.getValue());
+		}
+
+		return result;
+	}
+
+	static
+	private FunctionExpression toVectorExpression(FunctionExpression.Argument argument){
+		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(argument.formatExpression());
+
+		if(!("c").equals(functionExpression.getFunction())){
+			throw new IllegalArgumentException();
+		}
+
+		return functionExpression;
 	}
 
 	public static final String INTERCEPT = "(Intercept)";

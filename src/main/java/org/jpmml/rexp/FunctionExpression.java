@@ -42,6 +42,20 @@ public class FunctionExpression extends Expression {
 		this.arguments = arguments;
 	}
 
+	public Argument getArgument(String tag, int index){
+
+		if(tag != null){
+
+			try {
+				return getArgument(tag);
+			} catch(IllegalArgumentException iae){
+				// Ignored
+			}
+		}
+
+		return getArgument(index);
+	}
+
 	public Argument getArgument(String tag){
 
 		if(tag == null){
