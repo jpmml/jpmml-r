@@ -19,16 +19,21 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.BinaryFeature;
+import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ConvertibleBinaryFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.PMMLMapper;
 
 public class Formula {
@@ -36,6 +41,8 @@ public class Formula {
 	private PMMLMapper mapper = null;
 
 	private List<TypeDefinitionField> fields = new ArrayList<>();
+
+	private Map<FieldName, ListFeature> listFeatures = new LinkedHashMap<>();
 
 	private BiMap<FieldName, BinaryFeature> binaryFeatures = HashBiMap.create();
 
@@ -47,12 +54,19 @@ public class Formula {
 	public Feature resolveFeature(FieldName name){
 		PMMLMapper mapper = getMapper();
 
-		Feature feature = this.binaryFeatures.get(name);
-		if(feature == null){
-			TypeDefinitionField field = mapper.getField(name);
-
-			feature = new ContinuousFeature(field);
+		ListFeature listFeature = this.listFeatures.get(name);
+		if(listFeature != null){
+			return listFeature;
 		}
+
+		BinaryFeature binaryFeature = this.binaryFeatures.get(name);
+		if(binaryFeature != null){
+			return binaryFeature;
+		}
+
+		TypeDefinitionField field = mapper.getField(name);
+
+		Feature feature = new ContinuousFeature(field);
 
 		return feature;
 	}
@@ -91,6 +105,18 @@ public class Formula {
 		}
 
 		FieldName name = field.getName();
+
+		ListFeature listFeature;
+
+		if((DataType.BOOLEAN).equals(field.getDataType()) && (categoryValues.size() == 2) && ("false").equals(categoryValues.get(0)) && ("true").equals(categoryValues.get(1))){
+			listFeature = new BooleanFeature(field);
+		} else
+
+		{
+			listFeature = new ListFeature(field, categoryValues);
+		}
+
+		this.listFeatures.put(name, listFeature);
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);

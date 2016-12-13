@@ -1,4 +1,5 @@
 library("caret")
+library("plyr")
 library("randomForest")
 
 source("util.R")
@@ -26,6 +27,14 @@ generateRandomForestFormulaAudit = function(){
 	storeCsv(predictRandomForestAudit(audit.randomForest, audit, "Adjusted"), "RandomForestFormulaAudit")
 }
 
+generateRandomForestCustFormulaAudit = function(){
+	audit.randomForest = randomForest(Adjusted ~ . - Education + revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)), data = audit, ntree = 7)
+	print(audit.randomForest)
+
+	storeRds(audit.randomForest, "RandomForestCustFormulaAudit")
+	storeCsv(predictRandomForestAudit(audit.randomForest, audit, "Adjusted"), "RandomForestCustFormulaAudit")
+}
+
 generateRandomForestAudit = function(){
 	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 7)
 	print(audit.randomForest)
@@ -37,6 +46,7 @@ generateRandomForestAudit = function(){
 set.seed(42)
 
 generateRandomForestFormulaAudit()
+generateRandomForestCustFormulaAudit()
 generateRandomForestAudit()
 
 generateTrainRandomForestFormulaAuditMatrix = function(){
@@ -79,6 +89,16 @@ generateRandomForestFormulaAuto = function(){
 	storeCsv(data.frame("mpg" = mpg), "RandomForestFormulaAuto")
 }
 
+generateRandomForestCustFormulaAuto = function(){
+	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - horsepower + cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + mapvalues(origin, from = c(1, 2, 3), to = c("US", "Europe", "Japan")), data = auto, ntree = 7)
+	print(auto.randomForest)
+
+	mpg = predict(auto.randomForest, newdata = auto)
+
+	storeRds(auto.randomForest, "RandomForestCustFormulaAuto")
+	storeCsv(data.frame("mpg" = mpg), "RandomForestCustFormulaAuto")
+}
+
 generateRandomForestAuto = function(){
 	auto.randomForest = randomForest(x = auto_x, y = auto_y, ntree = 7)
 	print(auto.randomForest)
@@ -92,6 +112,7 @@ generateRandomForestAuto = function(){
 set.seed(42)
 
 generateRandomForestFormulaAuto()
+generateRandomForestCustFormulaAuto()
 generateRandomForestAuto()
 
 auto.caret = auto
@@ -146,7 +167,7 @@ generateRandomForestFormulaIris = function(){
 }
 
 generateRandomForestCustFormulaIris = function(){
-	iris.randomForest = randomForest(Species ~ . - Sepal.Length, data = iris, ntree = 7)
+	iris.randomForest = randomForest(Species ~ . - Sepal.Length + I(Sepal.Length / Sepal.Width) - Petal.Length + I(Petal.Length / Petal.Width), data = iris, ntree = 7)
 	print(iris.randomForest)
 
 	storeRds(iris.randomForest, "RandomForestCustFormulaIris")

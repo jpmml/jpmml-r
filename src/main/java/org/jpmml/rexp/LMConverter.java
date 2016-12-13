@@ -49,15 +49,37 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		RGenericVector lm = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
+		final
 		RGenericVector xlevels = (RGenericVector)lm.getValue("xlevels", true);
 		RGenericVector model = (RGenericVector)lm.getValue("model");
+		final
 		RGenericVector data = (RGenericVector)lm.getValue("data", true);
 
 		RExp terms = model.getAttributeValue("terms");
 
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		this.formula = FormulaUtil.encodeFeatures(terms, xlevels, data, featureMapper);
+		FormulaContext context = new FormulaContext(){
+
+			@Override
+			public List<String> getCategories(String variable){
+
+				if(xlevels != null && xlevels.hasValue(variable)){
+					RStringVector levels = (RStringVector)xlevels.getValue(variable);
+
+					return levels.getValues();
+				}
+
+				return null;
+			}
+
+			@Override
+			public RGenericVector getData(){
+				return data;
+			}
+		};
+
+		this.formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();

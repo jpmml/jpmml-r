@@ -56,7 +56,7 @@ public class FormulaUtil {
 	}
 
 	static
-	public Formula encodeFeatures(RExp terms, RGenericVector xlevels, RGenericVector data, FeatureMapper featureMapper){
+	public Formula encodeFeatures(FormulaContext context, RExp terms, FeatureMapper featureMapper){
 		Formula formula = new Formula(featureMapper);
 
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
@@ -74,6 +74,8 @@ public class FormulaUtil {
 		fields:
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getValue(i);
+
+			List<String> categories = context.getCategories(variable);
 
 			FieldName name = FieldName.create(variable);
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
@@ -95,114 +97,120 @@ public class FormulaUtil {
 				featureMapper.renameField(name, formatFunction("I", argument));
 
 				continue fields;
-			} // End if
+			} else
 
-			if(xlevels != null && xlevels.hasValue(variable)){
-				RStringVector levels = (RStringVector)xlevels.getValue(variable);
+			if(variable.startsWith("cut(")){
+				FunctionExpression cutExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-				List<String> categories = levels.getValues();
+				FunctionExpression.Argument xArgument = cutExpression.getArgument(0);
 
-				if(variable.startsWith("cut(")){
-					FunctionExpression cutExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FunctionExpression.Argument xArgument = cutExpression.getArgument(0);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-					expressionFieldNames.addAll(xArgument.getFieldNames());
+				Discretize discretize = new Discretize(fieldName);
 
-					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				for(String category : categories){
+					Interval interval = ExpressionTranslator.translateInterval(category);
 
-					Discretize discretize = new Discretize(fieldName);
+					DiscretizeBin discretizeBin = new DiscretizeBin(category, interval);
 
-					for(String category : categories){
-						Interval interval = ExpressionTranslator.translateInterval(category);
+					discretize.addDiscretizeBins(discretizeBin);
+				}
 
-						DiscretizeBin discretizeBin = new DiscretizeBin(category, interval);
+				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
+					.addExtensions(createExtension(variable));
 
-						discretize.addDiscretizeBins(discretizeBin);
-					}
+				formula.addField(derivedField, categories);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
-						.addExtensions(createExtension(variable));
+				featureMapper.renameField(name, formatFunction("cut", xArgument));
+			} else
 
-					formula.addField(derivedField, categories);
+			if(variable.startsWith("mapvalues(")){
+				FunctionExpression mapValuesExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-					featureMapper.renameField(name, formatFunction("cut", xArgument));
-				} else
+				FunctionExpression.Argument xArgument = mapValuesExpression.getArgument("x", 0);
 
-				if(variable.startsWith("mapvalues(")){
-					FunctionExpression mapValuesExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FunctionExpression.Argument xArgument = mapValuesExpression.getArgument("x", 0);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-					expressionFieldNames.addAll(xArgument.getFieldNames());
+				FunctionExpression.Argument fromArgument = mapValuesExpression.getArgument("from", 1);
+				FunctionExpression.Argument toArgument = mapValuesExpression.getArgument("to", 2);
 
-					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
 
-					FunctionExpression.Argument fromArgument = mapValuesExpression.getArgument("from", 1);
-					FunctionExpression.Argument toArgument = mapValuesExpression.getArgument("to", 2);
+				MapValues mapValues = createMapValues(fieldName, mapping, categories);
 
-					Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
+				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
 
-					MapValues mapValues = createMapValues(fieldName, mapping, categories);
+				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+					.addExtensions(createExtension(variable));
 
-					fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
+				formula.addField(derivedField, categories);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
-						.addExtensions(createExtension(variable));
+				featureMapper.renameField(name, formatFunction("mapvalues", xArgument));
+			} else
 
-					formula.addField(derivedField, categories);
+			if(variable.startsWith("revalue(")){
+				FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 
-					featureMapper.renameField(name, formatFunction("mapvalues", xArgument));
-				} else
+				FunctionExpression.Argument xArgument = revalueExpression.getArgument("x", 0);
 
-				if(variable.startsWith("revalue(")){
-					FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-					FunctionExpression.Argument xArgument = revalueExpression.getArgument("x", 0);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-					expressionFieldNames.addAll(xArgument.getFieldNames());
+				FunctionExpression.Argument replaceArgument = revalueExpression.getArgument("replace", 1);
 
-					FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				Map<String, String> mapping = parseRevalue(replaceArgument);
 
-					FunctionExpression.Argument replaceArgument = revalueExpression.getArgument("replace", 1);
+				MapValues mapValues = createMapValues(fieldName, mapping, categories);
 
-					Map<String, String> mapping = parseRevalue(replaceArgument);
+				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
 
-					MapValues mapValues = createMapValues(fieldName, mapping, categories);
+				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+					.addExtensions(createExtension(variable));
 
-					fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
+				formula.addField(derivedField, categories);
 
-					DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
-						.addExtensions(createExtension(variable));
+				featureMapper.renameField(name, formatFunction("revalue", xArgument));
+			} else
 
-					formula.addField(derivedField, categories);
+			{
+				if((DataType.BOOLEAN).equals(dataType)){
+					categories = Arrays.asList("false", "true");
+				} // End if
 
-					featureMapper.renameField(name, formatFunction("revalue", xArgument));
-				} else
-
-				{
+				if(categories != null && categories.size() > 0){
 					DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
 
 					List<Value> values = dataField.getValues();
 
 					values.addAll(PMMLUtil.createValues(categories));
 
-					formula.addField(dataField, categories);
+					List<String> categoryNames;
+					List<String> categoryValues;
+
+					switch(dataType){
+						case BOOLEAN:
+							categoryNames = Arrays.asList("FALSE", "TRUE");
+							categoryValues = Arrays.asList("false", "true");
+							break;
+						default:
+							categoryNames = categories;
+							categoryValues = categories;
+							break;
+					}
+
+					formula.addField(dataField, categoryNames, categoryValues);
+				} else
+
+				{
+					DataField dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
+
+					formula.addField(dataField);
 				}
-
-				continue fields;
-			} // End if
-
-			if((DataType.BOOLEAN).equals(dataType)){
-				DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
-
-				formula.addField(dataField, Arrays.asList("TRUE", "FALSE"), Arrays.asList("true", "false"));
-			} else
-
-			{
-				DataField dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
-
-				formula.addField(dataField);
 			}
 		}
 
@@ -217,9 +225,10 @@ public class FormulaUtil {
 
 				if(categories != null && categories.size() > 0){
 					opType = OpType.CATEGORICAL;
-				} // End if
+				}
 
-				if(data != null){
+				RGenericVector data = context.getData();
+				if(data != null && data.hasValue(expressionFieldName.getValue())){
 					RVector<?> column = (RVector<?>)data.getValue(expressionFieldName.getValue());
 
 					dataType = column.getDataType();

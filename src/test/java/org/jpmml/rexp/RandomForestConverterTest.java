@@ -53,6 +53,11 @@ public class RandomForestConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateCustFormulaAudit() throws Exception {
+		evaluate("RandomForestCustFormula", "Audit");
+	}
+
+	@Test
 	public void evaluateAudit() throws Exception {
 		evaluate("RandomForest", "Audit");
 	}
@@ -79,6 +84,11 @@ public class RandomForestConverterTest extends ConverterTest {
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
 		evaluate("RandomForestFormula", "Auto");
+	}
+
+	@Test
+	public void evaluateCustFormulaAuto() throws Exception {
+		evaluate("RandomForestCustFormula", "Auto");
 	}
 
 	@Test

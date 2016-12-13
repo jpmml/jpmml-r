@@ -23,22 +23,26 @@ import java.util.List;
 
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
-import org.dmg.pmml.DataType;
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.Value;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.WildcardFeature;
 import org.jpmml.converter.mining.MiningModelUtil;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
@@ -92,49 +96,65 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private void encodeFormula(RExp terms, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, FeatureMapper featureMapper){
-		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
+	private void encodeFormula(RExp terms, RNumberVector<?> y, final RGenericVector xlevels, final RNumberVector<?> ncat, FeatureMapper featureMapper){
+		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		RStringVector dataClassNames = dataClasses.names();
+		FormulaContext context = new FormulaContext(){
+
+			@Override
+			public List<String> getCategories(String variable){
+
+				if(ncat != null && ncat.hasValue(variable)){
+
+					if((ncat.getValue(variable)).doubleValue() > 1d){
+						RStringVector levels = (RStringVector)xlevels.getValue(variable);
+
+						return levels.getValues();
+					}
+				}
+
+				return null;
+			}
+
+			@Override
+			public RGenericVector getData(){
+				return null;
+			}
+		};
+
+		Formula formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
 
 		// Dependent variable
-		{
-			FieldName name = FieldName.create(dataClassNames.getValue(0));
-			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(0));
+		int responseIndex = response.asScalar();
+		if(responseIndex != 0){
+			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
 			if(y instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)y;
 
-				featureMapper.append(name, dataType, factor.getLevelValues());
-			} else
+				List<Value> values = dataField.getValues();
 
-			{
-				featureMapper.append(name, dataType);
+				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
 			}
+
+			Feature feature = new WildcardFeature(dataField);
+
+			featureMapper.append(feature);
+		} else
+
+		{
+			throw new IllegalArgumentException();
 		}
 
 		RStringVector xlevelNames = xlevels.names();
 
 		// Independent variables
-		for(int i = 0; i < ncat.size(); i++){
-			int index = dataClassNames.indexOf(xlevelNames.getValue(i));
-			if(index < 1){
-				throw new IllegalArgumentException();
-			}
+		for(int i = 0; i < xlevelNames.size(); i++){
+			String xlevelName = xlevelNames.getValue(i);
 
-			FieldName name = FieldName.create(dataClassNames.getValue(index));
-			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(index));
+			Feature feature = formula.resolveFeature(FieldName.create(xlevelName));
 
-			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
-			if(categorical){
-				RStringVector levels = (RStringVector)xlevels.getValue(i);
-
-				featureMapper.append(name, dataType, levels.getValues());
-			} else
-
-			{
-				featureMapper.append(name, dataType);
-			}
+			featureMapper.append(feature);
 		}
 	}
 
@@ -289,6 +309,17 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			Feature feature = schema.getFeature(var - 1);
 
 			Double split = xbestsplit.get(i);
+
+			if(feature instanceof BooleanFeature){
+				BooleanFeature booleanFeature = (BooleanFeature)feature;
+
+				if(split != 0.5d){
+					throw new IllegalArgumentException();
+				}
+
+				leftPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(0));
+				rightPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(1));
+			} else
 
 			if(feature instanceof ListFeature){
 				ListFeature listFeature = (ListFeature)feature;

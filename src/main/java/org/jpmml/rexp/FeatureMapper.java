@@ -30,7 +30,9 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMML;
+import org.dmg.pmml.TypeDefinitionField;
 import org.dmg.pmml.Value;
+import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ListFeature;
@@ -129,12 +131,14 @@ public class FeatureMapper extends PMMLMapper {
 	}
 
 	public Schema createSchema(FieldName targetField, List<FieldName> activeFields){
-		DataField targetDataField = getDataField(targetField);
-
 		List<String> targetCategories = null;
 
-		if(targetDataField != null && targetDataField.hasValues()){
-			targetCategories = PMMLUtil.getValues(targetDataField);
+		{
+			DataField dataField = getDataField(targetField);
+
+			if(dataField != null && dataField.hasValues()){
+				targetCategories = PMMLUtil.getValues(dataField);
+			}
 		}
 
 		List<Feature> features = new ArrayList<>();
@@ -143,16 +147,18 @@ public class FeatureMapper extends PMMLMapper {
 			Feature feature = getFeature(activeField);
 
 			if(feature == null){
-				DataField activeDataField = getDataField(activeField);
+				TypeDefinitionField field = getField(activeField);
 
-				if(activeDataField.hasValues()){
-					List<String> categories = PMMLUtil.getValues(activeDataField);
+				if(field.hasValues()){
+					DataField dataField = (DataField)field;
 
-					feature = new ListFeature(activeDataField, categories);
+					List<String> categories = PMMLUtil.getValues(dataField);
+
+					feature = new ListFeature(field, categories);
 				} else
 
 				{
-					feature = new ContinuousFeature(activeDataField);
+					feature = new ContinuousFeature(field);
 				}
 			}
 
