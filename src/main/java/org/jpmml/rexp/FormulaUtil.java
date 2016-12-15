@@ -62,10 +62,8 @@ public class FormulaUtil {
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
 		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
 
-		RGenericVector dimnames = (RGenericVector)factors.getAttributeValue("dimnames");
-
-		RStringVector variableRows = (RStringVector)dimnames.getValue(0);
-		RStringVector termColumns = (RStringVector)dimnames.getValue(1);
+		RStringVector variableRows = factors.dimnames(0);
+		RStringVector termColumns = factors.dimnames(1);
 
 		Set<FieldName> expressionFieldNames = new LinkedHashSet<>();
 

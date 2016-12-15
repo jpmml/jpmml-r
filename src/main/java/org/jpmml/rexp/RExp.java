@@ -36,6 +36,12 @@ public class RExp {
 		return (RIntegerVector)getAttributeValue("dim");
 	}
 
+	public RStringVector dimnames(int index){
+		RGenericVector dimnames = (RGenericVector)getAttributeValue("dimnames");
+
+		return (RStringVector)dimnames.getValue(index);
+	}
+
 	public RExp getAttributeValue(String name){
 		return getAttributeValue(name, false);
 	}

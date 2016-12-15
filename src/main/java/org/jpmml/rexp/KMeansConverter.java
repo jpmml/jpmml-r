@@ -55,9 +55,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
 
-		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
-
-		RStringVector columnNames = (RStringVector)dimnames.getValue(1);
+		RStringVector columnNames = centers.dimnames(1);
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
@@ -72,16 +70,14 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
 		RIntegerVector size = (RIntegerVector)kmeans.getValue("size");
 
-		RIntegerVector dim = centers.dim();
+		RIntegerVector centersDim = centers.dim();
 
-		int rows = dim.getValue(0);
-		int columns = dim.getValue(1);
-
-		RGenericVector dimnames = (RGenericVector)centers.getAttributeValue("dimnames");
+		int rows = centersDim.getValue(0);
+		int columns = centersDim.getValue(1);
 
 		List<Cluster> clusters = new ArrayList<>();
 
-		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
+		RStringVector rowNames = centers.dimnames(0);
 		for(int i = 0; i < rowNames.size(); i++){
 			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), rows, columns, i));
 

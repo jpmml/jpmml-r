@@ -171,10 +171,8 @@ public class PreProcessFeatureMapper extends FeatureMapper {
 	private Map<FieldName, List<Double>> createArguments(RDoubleVector values, int rows){
 		Map<FieldName, List<Double>> result = new LinkedHashMap<>();
 
-		RGenericVector dimnames = (RGenericVector)values.getAttributeValue("dimnames");
-
-		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
-		RStringVector columnNames = (RStringVector)dimnames.getValue(1);
+		RStringVector rowNames = values.dimnames(0);
+		RStringVector columnNames = values.dimnames(1);
 
 		for(int i = 0; i < columnNames.size(); i++){
 			String name = columnNames.getValue(i);
