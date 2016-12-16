@@ -62,6 +62,7 @@ public class ConverterFactory {
 
 	static {
 		converters.put("BinaryTree", BinaryTreeConverter.class);
+		converters.put("earth", EarthConverter.class);
 		converters.put("gbm", GBMConverter.class);
 		converters.put("iForest", IForestConverter.class);
 		converters.put("glm", GLMConverter.class);

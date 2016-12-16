@@ -106,15 +106,7 @@ public class FormulaUtil {
 
 				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-				Discretize discretize = new Discretize(fieldName);
-
-				for(String category : categories){
-					Interval interval = ExpressionTranslator.translateInterval(category);
-
-					DiscretizeBin discretizeBin = new DiscretizeBin(category, interval);
-
-					discretize.addDiscretizeBins(discretizeBin);
-				}
+				Discretize discretize = createDiscretize(fieldName, categories);
 
 				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
 					.addExtensions(createExtension(variable));
@@ -285,7 +277,22 @@ public class FormulaUtil {
 	}
 
 	static
-	private MapValues createMapValues(FieldName fieldName, Map<String, String> mapping, List<String> categories){
+	private Discretize createDiscretize(FieldName name, List<String> categories){
+		Discretize discretize = new Discretize(name);
+
+		for(String category : categories){
+			Interval interval = ExpressionTranslator.translateInterval(category);
+
+			DiscretizeBin discretizeBin = new DiscretizeBin(category, interval);
+
+			discretize.addDiscretizeBins(discretizeBin);
+		}
+
+		return discretize;
+	}
+
+	static
+	private MapValues createMapValues(FieldName name, Map<String, String> mapping, List<String> categories){
 		Set<String> inputs = new LinkedHashSet<>(mapping.keySet());
 		Set<String> outputs = new LinkedHashSet<>(mapping.values());
 
@@ -313,7 +320,7 @@ public class FormulaUtil {
 		}
 
 		MapValues mapValues = new MapValues()
-			.addFieldColumnPairs(new FieldColumnPair(fieldName, columns.get(0)))
+			.addFieldColumnPairs(new FieldColumnPair(name, columns.get(0)))
 			.setOutputColumn(columns.get(1))
 			.setInlineTable(inlineTable);
 

@@ -12,6 +12,8 @@ Java library and command-line application for converting [R] (http://www.r-proje
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train.formula` ("formula interface") - Selected JPMML-R model types
     * `train` ("matrix interface") - Selected JPMML-R model types
+  * [`earth` package] (https://cran.r-project.org/web/packages/earth/):
+    * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
   * [`gbm` package] (http://cran.r-project.org/web/packages/gbm/):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`IsolationForest` package] (https://r-forge.r-project.org/R/?group_id=479):
