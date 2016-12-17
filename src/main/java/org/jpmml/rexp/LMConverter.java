@@ -108,8 +108,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 			Feature feature;
 
-			String[] variables = coefficientName.split(":");
-			if(variables.length == 1){
+			List<String> variables = split(coefficientName);
+			if(variables.size() == 1){
 				feature = this.formula.resolveFeature(name);
 			} else
 
@@ -167,6 +167,46 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 	public Double getFeatureCoefficient(Feature feature, RDoubleVector coefficients){
 		return this.formula.getCoefficient(feature, coefficients);
+	}
+
+	/**
+	 * Splits a string by single colon characters ('.'), ignoring sequences of two or three colon characters ("::" and ":::").
+	 */
+	static
+	List<String> split(String string){
+		List<String> result = new ArrayList<>();
+
+		int pos = 0;
+
+		for(int i = 0; i < string.length(); ){
+
+			if(string.charAt(i) == ':'){
+				int delimBegin = i;
+				int delimEnd = i;
+
+				while((delimEnd + 1) < string.length() && string.charAt(delimEnd + 1) == ':'){
+					delimEnd++;
+				}
+
+				if(delimBegin == delimEnd){
+					result.add(string.substring(pos, delimBegin));
+
+					pos = (delimEnd + 1);
+				}
+
+				i = (delimEnd + 1);
+			} else
+
+			{
+				i++;
+			}
+		}
+
+		if(pos <= string.length()){
+			result.add(string.substring(pos));
+		}
+
+		return result;
 	}
 
 	public static final String INTERCEPT = "(Intercept)";

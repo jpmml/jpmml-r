@@ -18,9 +18,32 @@
  */
 package org.jpmml.rexp;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class LMConverterTest extends ConverterTest {
+
+	@Test
+	public void split(){
+		assertEquals(Arrays.asList("", ""), LMConverter.split(":"));
+		assertEquals(Arrays.asList("::"), LMConverter.split("::"));
+
+		assertEquals(Arrays.asList("A"), LMConverter.split("A"));
+		assertEquals(Arrays.asList("", "A"), LMConverter.split(":A"));
+		assertEquals(Arrays.asList("A", ""), LMConverter.split("A:"));
+		assertEquals(Arrays.asList("::A"), LMConverter.split("::A"));
+		assertEquals(Arrays.asList("A::"), LMConverter.split("A::"));
+
+		assertEquals(Arrays.asList("A::B::C"), LMConverter.split("A::B::C"));
+		assertEquals(Arrays.asList("", "A::B::C", ""), LMConverter.split(":A::B::C:"));
+		assertEquals(Arrays.asList("A::B", "C"), LMConverter.split("A::B:C"));
+		assertEquals(Arrays.asList("A", "B::C"), LMConverter.split("A:B::C"));
+		assertEquals(Arrays.asList("A", "B", "C"), LMConverter.split("A:B:C"));
+		assertEquals(Arrays.asList("", "A", "B", "C", ""), LMConverter.split(":A:B:C:"));
+	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {

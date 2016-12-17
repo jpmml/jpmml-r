@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -78,9 +79,18 @@ public class FormulaUtil {
 			FieldName name = FieldName.create(variable);
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
 
-			if(variable.startsWith("I(")){
-				FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+			FunctionExpression functionExpression = null;
 
+			if(variable.indexOf('(') > -1 && variable.indexOf(')') > -1){
+
+				try {
+					functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+				} catch(Exception e){
+					// Ignored
+				}
+			} // End if
+
+			if(checkFunction(null, "I", functionExpression)){
 				FunctionExpression.Argument argument = functionExpression.getArgument(0);
 
 				expressionFieldNames.addAll(argument.getFieldNames());
@@ -97,10 +107,8 @@ public class FormulaUtil {
 				continue fields;
 			} else
 
-			if(variable.startsWith("cut(")){
-				FunctionExpression cutExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
-
-				FunctionExpression.Argument xArgument = cutExpression.getArgument(0);
+			if(checkFunction("base", "cut", functionExpression)){
+				FunctionExpression.Argument xArgument = functionExpression.getArgument(0);
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
@@ -116,17 +124,15 @@ public class FormulaUtil {
 				featureMapper.renameField(name, formatFunction("cut", xArgument));
 			} else
 
-			if(variable.startsWith("mapvalues(")){
-				FunctionExpression mapValuesExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
-
-				FunctionExpression.Argument xArgument = mapValuesExpression.getArgument("x", 0);
+			if(checkFunction("plyr", "mapvalues", functionExpression)){
+				FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
 				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-				FunctionExpression.Argument fromArgument = mapValuesExpression.getArgument("from", 1);
-				FunctionExpression.Argument toArgument = mapValuesExpression.getArgument("to", 2);
+				FunctionExpression.Argument fromArgument = functionExpression.getArgument("from", 1);
+				FunctionExpression.Argument toArgument = functionExpression.getArgument("to", 2);
 
 				Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
 
@@ -142,16 +148,14 @@ public class FormulaUtil {
 				featureMapper.renameField(name, formatFunction("mapvalues", xArgument));
 			} else
 
-			if(variable.startsWith("revalue(")){
-				FunctionExpression revalueExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
-
-				FunctionExpression.Argument xArgument = revalueExpression.getArgument("x", 0);
+			if(checkFunction("plyr", "revalue", functionExpression)){
+				FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
 				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
 
-				FunctionExpression.Argument replaceArgument = revalueExpression.getArgument("replace", 1);
+				FunctionExpression.Argument replaceArgument = functionExpression.getArgument("replace", 1);
 
 				Map<String, String> mapping = parseRevalue(replaceArgument);
 
@@ -235,6 +239,16 @@ public class FormulaUtil {
 		}
 
 		return formula;
+	}
+
+	static
+	private boolean checkFunction(String namespace, String function, FunctionExpression functionExpression){
+
+		if(functionExpression != null){
+			return (Objects.equals(namespace, functionExpression.getNamespace()) || Objects.equals(null, functionExpression.getNamespace())) && Objects.equals(function, functionExpression.getFunction());
+		}
+
+		return false;
 	}
 
 	static

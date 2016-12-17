@@ -21,7 +21,7 @@ generateGeneralRegressionFormulaAudit = function(){
 }
 
 generateGeneralRegressionCustFormulaAudit = function(){
-	audit.glm = glm(Adjusted ~ . - Education + revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)) + Gender:Age + Gender:Marital, data = audit, family = binomial)
+	audit.glm = glm(Adjusted ~ . - Education + plyr::revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + base::cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)) + Gender:Age + Gender:Marital, data = audit, family = binomial)
 	print(audit.glm)
 
 	storeRds(audit.glm, "GeneralRegressionCustFormulaAudit")
@@ -44,7 +44,7 @@ generateGeneralRegressionFormulaAuto = function(){
 }
 
 generateGeneralRegressionCustFormulaAuto = function(){
-	auto.glm = glm(mpg ~ (. - horsepower - weight - origin) ^ 2 + cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)) + revalue(origin, replace = c("1" = "US", "2" = "Europe", "3" = "Japan")), data = auto)
+	auto.glm = glm(mpg ~ (. - horsepower - weight - origin) ^ 2 + base::cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)) + plyr::revalue(origin, replace = c("1" = "US", "2" = "Non-US", "3" = "Non-US")), data = auto)
 	print(auto.glm)
 
 	mpg = predict(auto.glm, newdata = auto)
@@ -83,7 +83,7 @@ generateGeneralRegressionFormulaWineQuality = function(){
 }
 
 generateGeneralRegressionCustFormulaWineQuality = function(){
-	wine_quality.glm = glm(quality ~ cut(fixed.acidity, breaks = 10, dig.lab = 6) + cut(volatile.acidity, breaks = c(0, 0.5, 1.0, 1.5, 2.0)) + I(citric.acid) + I(residual.sugar) + I(chlorides) + cut(free.sulfur.dioxide / total.sulfur.dioxide, "breaks" = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) + + I(density) + I(pH) + I(sulphates) + I(alcohol), data = wine_quality)
+	wine_quality.glm = glm(quality ~ base::cut(fixed.acidity, breaks = 10, dig.lab = 6) + base::cut(volatile.acidity, breaks = c(0, 0.5, 1.0, 1.5, 2.0)) + I(citric.acid) + I(residual.sugar) + I(chlorides) + base::cut(free.sulfur.dioxide / total.sulfur.dioxide, "breaks" = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) + + I(density) + I(pH) + I(sulphates) + I(alcohol), data = wine_quality)
 	print(wine_quality.glm)
 
 	quality = predict(wine_quality.glm, newdata = wine_quality)

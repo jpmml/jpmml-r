@@ -275,6 +275,10 @@ TOKEN:
 	< ASSIGN: "=" >
 	|
 	< COMMA: "," >
+	|
+	< DOUBLE_COLON: "::" >
+	|
+	< TRIPLE_COLON: ":::" >
 }
 
 /*
@@ -546,6 +550,9 @@ Expression PrimaryExpression():
 }
 {
 	(
+		LOOKAHEAD(<IDENTIFIER> (<DOUBLE_COLON> | <TRIPLE_COLON>))
+		expression = FunctionInvocationExpression()
+		|
 		LOOKAHEAD(<IDENTIFIER> <LPAREN>)
 		expression = FunctionInvocationExpression()
 		|
@@ -563,13 +570,19 @@ Expression PrimaryExpression():
 
 Expression FunctionInvocationExpression():
 {
-	Token name;
+	Token namespace = null;
+	Token function;
 	Token begin;
 	Token end;
 	List<FunctionExpression.Argument> arguments;
 }
 {
-	name = <IDENTIFIER> begin = <LPAREN> arguments = ArgumentList() end = <RPAREN>
+	(
+		LOOKAHEAD(<IDENTIFIER> (<DOUBLE_COLON> | <TRIPLE_COLON>))
+		namespace = <IDENTIFIER> (<DOUBLE_COLON> | <TRIPLE_COLON>) function = <IDENTIFIER> begin = <LPAREN> arguments = ArgumentList() end = <RPAREN>
+		|
+		function = <IDENTIFIER> begin = <LPAREN> arguments = ArgumentList() end = <RPAREN>
+	)
 
 	{
 		if(arguments.size() > 0){
@@ -580,10 +593,8 @@ Expression FunctionInvocationExpression():
 			lastArgument.setEnd(end);
 		}
 
-		String function = name.image;
-
 		try {
-			String pmmlFunction = translateFunction(function);
+			String pmmlFunction = translateFunction(function.image);
 
 			if(arguments.size() == 1){
 				FunctionExpression.Argument argument = arguments.get(0);
@@ -596,7 +607,15 @@ Expression FunctionInvocationExpression():
 			// Ignored
 		}
 
-		FunctionExpression functionExpression = new FunctionExpression(function, arguments);
+		FunctionExpression functionExpression;
+
+		if(namespace != null){
+			functionExpression = new FunctionExpression(namespace.image, function.image, arguments);
+		} else
+
+		{
+			functionExpression = new FunctionExpression(function.image, arguments);
+		}
 
 		return functionExpression;
 	}

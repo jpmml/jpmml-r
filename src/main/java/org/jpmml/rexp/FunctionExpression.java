@@ -32,12 +32,19 @@ import org.jpmml.model.visitors.FieldReferenceFinder;
 
 public class FunctionExpression extends Expression {
 
+	private String namespace = null;
+
 	private String function = null;
 
 	private List<Argument> arguments = null;
 
 
 	public FunctionExpression(String function, List<Argument> arguments){
+		this(null, function, arguments);
+	}
+
+	public FunctionExpression(String namespace, String function, List<Argument> arguments){
+		this.namespace = namespace;
 		this.function = function;
 		this.arguments = arguments;
 	}
@@ -84,6 +91,16 @@ public class FunctionExpression extends Expression {
 		}
 
 		return this.arguments.get(index);
+	}
+
+	public String getNamespace(){
+		return this.namespace;
+	}
+
+	public FunctionExpression setNamespace(String namespace){
+		this.namespace = namespace;
+
+		return this;
 	}
 
 	public String getFunction(){
