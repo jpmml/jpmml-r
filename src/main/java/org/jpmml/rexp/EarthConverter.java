@@ -105,11 +105,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		{
 			RStringVector yNames = coefficients.dimnames(1);
 
-			if(yNames.size() != 1){
-				throw new IllegalArgumentException();
-			}
-
-			Feature feature = formula.resolveFeature(FieldName.create(yNames.getValue(0)));
+			Feature feature = formula.resolveFeature(FieldName.create(yNames.asScalar()));
 
 			featureMapper.append(feature);
 		}

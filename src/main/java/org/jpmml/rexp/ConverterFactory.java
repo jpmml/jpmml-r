@@ -68,6 +68,7 @@ public class ConverterFactory {
 		converters.put("glm", GLMConverter.class);
 		converters.put("kmeans", KMeansConverter.class);
 		converters.put("lm", LMConverter.class);
+		converters.put("mvr", MVRConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("ranger", RangerConverter.class);
 		converters.put("scorecard", ScorecardConverter.class);

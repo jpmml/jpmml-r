@@ -20,6 +20,8 @@ Java library and command-line application for converting [R] (http://www.r-proje
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`party` package] (http://cran.r-project.org/web/packages/party/):
     * `ctree` - Conditional Inference Tree (CIT) classification
+  * [`pls` package] (https://cran.r-project.org/web/packages/pls/)
+    * `mvr` - Multivariate Regression (MVR) regression
   * [`randomForest` package] (http://cran.r-project.org/web/packages/randomForest/):
     * `randomForest.formula` ("formula interface") - Random Forest (RF) regression and classification
     * `randomForest` ("matrix interface") - Random Forest regression and classification
