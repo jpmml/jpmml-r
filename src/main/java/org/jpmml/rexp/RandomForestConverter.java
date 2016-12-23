@@ -132,6 +132,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			if(y instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)y;
 
+				if(!factor.isFactor()){
+					throw new IllegalArgumentException();
+				} // End if
+
+				if(dataField.hasValues()){
+					throw new IllegalArgumentException();
+				}
+
 				List<Value> values = dataField.getValues();
 
 				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
@@ -166,6 +174,10 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 			if(y instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)y;
+
+				if(!factor.isFactor()){
+					throw new IllegalArgumentException();
+				}
 
 				featureMapper.append(name, factor.getLevelValues());
 			} else

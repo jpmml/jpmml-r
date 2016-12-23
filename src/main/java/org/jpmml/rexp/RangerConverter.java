@@ -73,6 +73,10 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			if(predictions instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)predictions;
 
+				if(!factor.isFactor()){
+					throw new IllegalArgumentException();
+				}
+
 				featureMapper.append(name, factor.getLevelValues());
 			} else
 

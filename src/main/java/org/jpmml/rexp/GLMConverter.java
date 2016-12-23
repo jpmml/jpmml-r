@@ -62,11 +62,15 @@ public class GLMConverter extends LMConverter {
 				}
 
 				RIntegerVector factor = (RIntegerVector)variable;
+				if(!factor.isFactor()){
+					throw new IllegalArgumentException();
+				} // End if
 
-				List<Value> values = dataField.getValues();
-				if(values.size() > 0){
+				if(dataField.hasValues()){
 					throw new IllegalArgumentException();
 				}
+
+				List<Value> values = dataField.getValues();
 
 				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
 				break;

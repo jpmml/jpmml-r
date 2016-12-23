@@ -59,6 +59,21 @@ public class RExp {
 		throw new IllegalArgumentException(name);
 	}
 
+	public boolean hasAttribute(String tag){
+		RPair attribute = getAttributes();
+
+		while(attribute != null){
+
+			if(attribute.tagEquals(tag)){
+				return true;
+			}
+
+			attribute = attribute.getNext();
+		}
+
+		return false;
+	}
+
 	public RPair getAttribute(String tag){
 		RPair attribute = getAttributes();
 

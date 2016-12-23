@@ -188,6 +188,10 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		RIntegerVector name = (RIntegerVector)fmap.getValue(1);
 		RIntegerVector type = (RIntegerVector)fmap.getValue(2);
 
+		if(!name.isFactor() || !type.isFactor()){
+			throw new IllegalArgumentException();
+		}
+
 		FeatureMap featureMap = new FeatureMap();
 
 		for(int i = 0; i < id.size(); i++){

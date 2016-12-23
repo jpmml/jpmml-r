@@ -55,6 +55,10 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		return Ints.asList(this.values);
 	}
 
+	public boolean isFactor(){
+		return hasAttribute("levels");
+	}
+
 	public RStringVector getLevels(){
 		RPair levels = getAttribute("levels");
 		if(levels == null){
