@@ -24,9 +24,10 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Value;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -39,7 +40,7 @@ public class GLMConverter extends LMConverter {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector glm = getObject();
 
 		RGenericVector family = (RGenericVector)glm.getValue("family");
@@ -47,12 +48,12 @@ public class GLMConverter extends LMConverter {
 
 		RStringVector familyFamily = (RStringVector)family.getValue("family");
 
-		super.encodeFeatures(featureMapper);
+		super.encodeFeatures(encoder);
 
 		GeneralRegressionModel.Distribution distribution = parseFamily(familyFamily.asScalar());
 		switch(distribution){
 			case BINOMIAL:
-				DataField dataField = featureMapper.getTargetField();
+				DataField dataField = encoder.getTargetField();
 
 				dataField.setOpType(OpType.CATEGORICAL);
 
@@ -64,15 +65,9 @@ public class GLMConverter extends LMConverter {
 				RIntegerVector factor = (RIntegerVector)variable;
 				if(!factor.isFactor()){
 					throw new IllegalArgumentException();
-				} // End if
-
-				if(dataField.hasValues()){
-					throw new IllegalArgumentException();
 				}
 
-				List<Value> values = dataField.getValues();
-
-				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
+				PMMLUtil.addValues(dataField, factor.getLevelValues());
 				break;
 			default:
 				break;
@@ -91,6 +86,7 @@ public class GLMConverter extends LMConverter {
 		RStringVector familyFamily = (RStringVector)family.getValue("family");
 		RStringVector familyLink = (RStringVector)family.getValue("link");
 
+		Label label = schema.getLabel();
 		List<Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
@@ -101,14 +97,14 @@ public class GLMConverter extends LMConverter {
 
 		String targetCategory = null;
 
-		List<String> targetCategories = schema.getTargetCategories();
-		if(targetCategories != null && targetCategories.size() > 0){
+		if(label instanceof CategoricalLabel){
+			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
 
-			if(targetCategories.size() != 2){
+			if(categoricalLabel.size() != 2){
 				throw new IllegalArgumentException();
 			}
 
-			targetCategory = targetCategories.get(1);
+			targetCategory = categoricalLabel.getValue(1);
 		}
 
 		MiningFunction miningFunction = (targetCategory != null ? MiningFunction.CLASSIFICATION : MiningFunction.REGRESSION);

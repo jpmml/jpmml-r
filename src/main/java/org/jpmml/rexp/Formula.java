@@ -30,33 +30,31 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.BooleanFeature;
+import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.ContinuousFeature;
-import org.jpmml.converter.ConvertibleBinaryFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
-import org.jpmml.converter.PMMLMapper;
 
 public class Formula {
 
-	private PMMLMapper mapper = null;
+	private RExpEncoder encoder = null;
 
 	private List<TypeDefinitionField> fields = new ArrayList<>();
 
-	private Map<FieldName, ListFeature> listFeatures = new LinkedHashMap<>();
+	private Map<FieldName, CategoricalFeature> categoricalFeatures = new LinkedHashMap<>();
 
 	private BiMap<FieldName, BinaryFeature> binaryFeatures = HashBiMap.create();
 
 
-	public Formula(PMMLMapper mapper){
-		setMapper(mapper);
+	public Formula(RExpEncoder encoder){
+		setEncoder(encoder);
 	}
 
 	public Feature resolveFeature(FieldName name){
-		PMMLMapper mapper = getMapper();
+		RExpEncoder encoder = getEncoder();
 
-		ListFeature listFeature = this.listFeatures.get(name);
-		if(listFeature != null){
-			return listFeature;
+		CategoricalFeature categoricalFeature = this.categoricalFeatures.get(name);
+		if(categoricalFeature != null){
+			return categoricalFeature;
 		}
 
 		BinaryFeature binaryFeature = this.binaryFeatures.get(name);
@@ -64,9 +62,9 @@ public class Formula {
 			return binaryFeature;
 		}
 
-		TypeDefinitionField field = mapper.getField(name);
+		TypeDefinitionField field = encoder.getField(name);
 
-		Feature feature = new ContinuousFeature(field);
+		Feature feature = new ContinuousFeature(encoder, field);
 
 		return feature;
 	}
@@ -98,7 +96,7 @@ public class Formula {
 	}
 
 	public void addField(TypeDefinitionField field, List<String> categoryNames, List<String> categoryValues){
-		PMMLMapper mapper = getMapper();
+		RExpEncoder encoder = getEncoder();
 
 		if(categoryNames.size() != categoryValues.size()){
 			throw new IllegalArgumentException();
@@ -106,23 +104,23 @@ public class Formula {
 
 		FieldName name = field.getName();
 
-		ListFeature listFeature;
+		CategoricalFeature categoricalFeature;
 
 		if((DataType.BOOLEAN).equals(field.getDataType()) && (categoryValues.size() == 2) && ("false").equals(categoryValues.get(0)) && ("true").equals(categoryValues.get(1))){
-			listFeature = new BooleanFeature(field);
+			categoricalFeature = new BooleanFeature(encoder, field);
 		} else
 
 		{
-			listFeature = new ListFeature(field, categoryValues);
+			categoricalFeature = new CategoricalFeature(encoder, field, categoryValues);
 		}
 
-		this.listFeatures.put(name, listFeature);
+		this.categoricalFeatures.put(name, categoricalFeature);
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);
 			String categoryValue = categoryValues.get(i);
 
-			BinaryFeature binaryFeature = new ConvertibleBinaryFeature(mapper, field, categoryValue);
+			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
 			this.binaryFeatures.put(FieldName.create(name.getValue() + categoryName), binaryFeature);
 		}
@@ -130,11 +128,11 @@ public class Formula {
 		this.fields.add(field);
 	}
 
-	public PMMLMapper getMapper(){
-		return this.mapper;
+	public RExpEncoder getEncoder(){
+		return this.encoder;
 	}
 
-	private void setMapper(PMMLMapper mapper){
-		this.mapper = mapper;
+	private void setEncoder(RExpEncoder encoder){
+		this.encoder = encoder;
 	}
 }

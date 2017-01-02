@@ -31,17 +31,17 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.TypeDefinitionField;
-import org.dmg.pmml.Value;
-import org.jpmml.converter.BooleanFeature;
+import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
-import org.jpmml.converter.PMMLMapper;
-import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.Label;
+import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.Schema;
 import org.jpmml.model.visitors.FieldRenamer;
 
-public class FeatureMapper extends PMMLMapper {
+public class RExpEncoder extends ModelEncoder {
 
 	private Map<FieldName, Feature> features = new LinkedHashMap<>();
 
@@ -93,13 +93,7 @@ public class FeatureMapper extends PMMLMapper {
 	}
 
 	public void append(FieldName name, DataType dataType, List<String> categories){
-		DataField dataField = createDataField(name, OpType.CATEGORICAL, dataType);
-
-		if(categories != null && categories.size() > 0){
-			List<Value> values = dataField.getValues();
-
-			values.addAll(PMMLUtil.createValues(categories));
-		}
+		DataField dataField = createDataField(name, OpType.CATEGORICAL, dataType, categories);
 
 		this.features.put(dataField.getName(), null);
 	}
@@ -131,13 +125,17 @@ public class FeatureMapper extends PMMLMapper {
 	}
 
 	public Schema createSchema(FieldName targetField, List<FieldName> activeFields){
-		List<String> targetCategories = null;
+		Label label = null;
 
-		{
+		if(targetField != null){
 			DataField dataField = getDataField(targetField);
 
-			if(dataField != null && dataField.hasValues()){
-				targetCategories = PMMLUtil.getValues(dataField);
+			if(dataField.hasValues()){
+				label = new CategoricalLabel(dataField);
+			} else
+
+			{
+				label = new ContinuousLabel(dataField);
 			}
 		}
 
@@ -150,22 +148,18 @@ public class FeatureMapper extends PMMLMapper {
 				TypeDefinitionField field = getField(activeField);
 
 				if(field.hasValues()){
-					DataField dataField = (DataField)field;
-
-					List<String> categories = PMMLUtil.getValues(dataField);
-
-					feature = new ListFeature(field, categories);
+					feature = new CategoricalFeature(this, (DataField)field);
 				} else
 
 				{
-					feature = new ContinuousFeature(field);
+					feature = new ContinuousFeature(this, field);
 				}
 			}
 
 			features.add(feature);
 		}
 
-		Schema schema = new Schema(targetField, targetCategories, activeFields, features);
+		Schema schema = new Schema(label, features);
 
 		return schema;
 	}

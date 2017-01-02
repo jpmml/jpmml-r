@@ -24,18 +24,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.Value;
 import org.dmg.pmml.mining.MiningModel;
+import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.xgboost.Classification;
 import org.jpmml.xgboost.FeatureMap;
+import org.jpmml.xgboost.LabelMap;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
-import org.jpmml.xgboost.Regression;
 import org.jpmml.xgboost.XGBoostUtil;
 
 public class XGBoostConverter extends ModelConverter<RGenericVector> {
@@ -48,7 +48,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
 		RGenericVector schema = (RGenericVector)booster.getValue("schema", true);
@@ -69,24 +69,15 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException(ioe);
 		}
 
-		List<DataField> dataFields = featureMap.getDataFields();
-
-		Learner learner = ensureLearner();
-
 		if(schema != null){
 			RVector<?> missing = (RVector<?>)schema.getValue("missing", true);
 
 			if(missing != null){
-				Value value = new Value(ValueUtil.formatValue(missing.asScalar()))
-					.setProperty(Value.Property.MISSING);
-
-				for(DataField dataField : dataFields){
-					List<Value> values = dataField.getValues();
-
-					values.add(value);
-				}
+				featureMap.addMissingValue(ValueUtil.formatValue(missing.asScalar()));
 			}
 		}
+
+		Learner learner = ensureLearner();
 
 		// Dependent variable
 		{
@@ -108,24 +99,29 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 				}
 			}
 
-			targetCategories = obj.prepareTargetCategories(targetCategories);
+			LabelMap labelMap = obj.createLabelMap(targetField, targetCategories);
 
-			if(obj instanceof Classification){
-				featureMapper.append(targetField, targetCategories);
-			} else
+			DataField dataField = labelMap.getDataField();
 
-			if(obj instanceof Regression){
-				featureMapper.append(targetField, false);
-			} else
-
-			{
-				throw new IllegalArgumentException();
-			}
+			encoder.append(dataField);
 		}
 
 		// Independent variables
-		for(DataField dataField : dataFields){
-			featureMapper.append(dataField);
+		{
+			Map<FieldName, DataField> dataFields = featureMap.getDataFields();
+
+			List<Feature> features = featureMap.getFeatures();
+			for(Feature feature : features){
+				DataField dataField = dataFields.get(feature.getName());
+
+				if(dataField == null){
+					throw new IllegalArgumentException();
+				}
+
+				encoder.addDataField(dataField);
+
+				encoder.append(feature);
+			}
 		}
 	}
 

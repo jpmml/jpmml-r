@@ -47,9 +47,7 @@ import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Row;
-import org.dmg.pmml.Value;
 import org.jpmml.converter.DOMUtil;
-import org.jpmml.converter.PMMLUtil;
 
 public class FormulaUtil {
 
@@ -57,8 +55,8 @@ public class FormulaUtil {
 	}
 
 	static
-	public Formula encodeFeatures(FormulaContext context, RExp terms, FeatureMapper featureMapper){
-		Formula formula = new Formula(featureMapper);
+	public Formula encodeFeatures(FormulaContext context, RExp terms, RExpEncoder encoder){
+		Formula formula = new Formula(encoder);
 
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
 		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
@@ -97,12 +95,12 @@ public class FormulaUtil {
 
 				Expression expression = argument.getExpression();
 
-				DerivedField derivedField =  featureMapper.createDerivedField(name, OpType.CONTINUOUS, dataType, expression)
+				DerivedField derivedField =  encoder.createDerivedField(name, OpType.CONTINUOUS, dataType, expression)
 					.addExtensions(createExtension(variable));
 
 				formula.addField(derivedField);
 
-				featureMapper.renameField(name, formatFunction("I", argument));
+				encoder.renameField(name, formatFunction("I", argument));
 
 				continue fields;
 			} else
@@ -112,16 +110,16 @@ public class FormulaUtil {
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
 
 				Discretize discretize = createDiscretize(fieldName, categories);
 
-				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
+				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
 					.addExtensions(createExtension(variable));
 
 				formula.addField(derivedField, categories);
 
-				featureMapper.renameField(name, formatFunction("cut", xArgument));
+				encoder.renameField(name, formatFunction("cut", xArgument));
 			} else
 
 			if(checkFunction("plyr", "mapvalues", functionExpression)){
@@ -129,7 +127,7 @@ public class FormulaUtil {
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
 
 				FunctionExpression.Argument fromArgument = functionExpression.getArgument("from", 1);
 				FunctionExpression.Argument toArgument = functionExpression.getArgument("to", 2);
@@ -140,12 +138,12 @@ public class FormulaUtil {
 
 				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
 
-				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
 					.addExtensions(createExtension(variable));
 
 				formula.addField(derivedField, categories);
 
-				featureMapper.renameField(name, formatFunction("mapvalues", xArgument));
+				encoder.renameField(name, formatFunction("mapvalues", xArgument));
 			} else
 
 			if(checkFunction("plyr", "revalue", functionExpression)){
@@ -153,7 +151,7 @@ public class FormulaUtil {
 
 				expressionFieldNames.addAll(xArgument.getFieldNames());
 
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, featureMapper);
+				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
 
 				FunctionExpression.Argument replaceArgument = functionExpression.getArgument("replace", 1);
 
@@ -163,12 +161,12 @@ public class FormulaUtil {
 
 				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
 
-				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
+				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
 					.addExtensions(createExtension(variable));
 
 				formula.addField(derivedField, categories);
 
-				featureMapper.renameField(name, formatFunction("revalue", xArgument));
+				encoder.renameField(name, formatFunction("revalue", xArgument));
 			} else
 
 			{
@@ -177,11 +175,7 @@ public class FormulaUtil {
 				} // End if
 
 				if(categories != null && categories.size() > 0){
-					DataField dataField = featureMapper.createDataField(name, OpType.CATEGORICAL, dataType);
-
-					List<Value> values = dataField.getValues();
-
-					values.addAll(PMMLUtil.createValues(categories));
+					DataField dataField = encoder.createDataField(name, OpType.CATEGORICAL, dataType, categories);
 
 					List<String> categoryNames;
 					List<String> categoryValues;
@@ -201,7 +195,7 @@ public class FormulaUtil {
 				} else
 
 				{
-					DataField dataField = featureMapper.createDataField(name, OpType.CONTINUOUS, dataType);
+					DataField dataField = encoder.createDataField(name, OpType.CONTINUOUS, dataType);
 
 					formula.addField(dataField);
 				}
@@ -209,7 +203,7 @@ public class FormulaUtil {
 		}
 
 		for(FieldName expressionFieldName : expressionFieldNames){
-			DataField dataField = featureMapper.getDataField(expressionFieldName);
+			DataField dataField = encoder.getDataField(expressionFieldName);
 
 			if(dataField == null){
 				OpType opType = OpType.CONTINUOUS;
@@ -228,13 +222,7 @@ public class FormulaUtil {
 					dataType = column.getDataType();
 				}
 
-				dataField = featureMapper.createDataField(expressionFieldName, opType, dataType);
-
-				if(categories != null && categories.size() > 0){
-					List<Value> values = dataField.getValues();
-
-					values.addAll(PMMLUtil.createValues(categories));
-				}
+				dataField = encoder.createDataField(expressionFieldName, opType, dataType, categories);
 			}
 		}
 
@@ -259,7 +247,7 @@ public class FormulaUtil {
 	}
 
 	static
-	private FieldName prepareInputField(FunctionExpression.Argument argument, OpType opType, DataType dataType, FeatureMapper featureMapper){
+	private FieldName prepareInputField(FunctionExpression.Argument argument, OpType opType, DataType dataType, RExpEncoder encoder){
 		Expression expression = argument.getExpression();
 
 		if(expression instanceof FieldRef){
@@ -271,7 +259,7 @@ public class FormulaUtil {
 		if(expression instanceof Apply){
 			Apply apply = (Apply)expression;
 
-			DerivedField derivedField = featureMapper.createDerivedField(formatFunction(null, argument), opType, dataType, apply)
+			DerivedField derivedField = encoder.createDerivedField(formatFunction(null, argument), opType, dataType, apply)
 				.addExtensions(createExtension((argument.formatExpression()).trim()));
 
 			return derivedField.getName();

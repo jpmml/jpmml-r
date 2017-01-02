@@ -30,9 +30,9 @@ import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -45,7 +45,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector ranger = getObject();
 
 		RGenericVector forest;
@@ -77,11 +77,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				featureMapper.append(name, factor.getLevelValues());
+				encoder.append(name, factor.getLevelValues());
 			} else
 
 			{
-				featureMapper.append(name, false);
+				encoder.append(name, false);
 			}
 		}
 
@@ -101,11 +101,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 			RStringVector levels = (RStringVector)variableLevels.getValue(independentVariableName);
 			if(levels != null){
-				featureMapper.append(name, levels.getValues());
+				encoder.append(name, levels.getValues());
 			} else
 
 			{
-				featureMapper.append(name, false);
+				encoder.append(name, false);
 			}
 		}
 	}
@@ -222,26 +222,24 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		Feature feature = schema.getFeature(splitVarIndex - 1);
 
-		if(feature instanceof ListFeature){
-			ListFeature listFeature = (ListFeature)feature;
+		if(feature instanceof CategoricalFeature){
+			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
 			int splitLevelIndex = ValueUtil.asInt(splitValue);
 
-			List<String> values = listFeature.getValues();
+			List<String> values = categoricalFeature.getValues();
 
-			leftPredicate = createSimpleSetPredicate(listFeature, values.subList(0, splitLevelIndex));
-			rightPredicate = createSimpleSetPredicate(listFeature, values.subList(splitLevelIndex, values.size()));
-		} else
-
-		if(feature instanceof ContinuousFeature){
-			String value = ValueUtil.formatValue(splitValue);
-
-			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimpleSetPredicate(categoricalFeature, values.subList(0, splitLevelIndex));
+			rightPredicate = createSimpleSetPredicate(categoricalFeature, values.subList(splitLevelIndex, values.size()));
 		} else
 
 		{
-			throw new IllegalArgumentException();
+			ContinuousFeature continuusFeature = feature.toContinuousFeature();
+
+			String value = ValueUtil.formatValue(splitValue);
+
+			leftPredicate = createSimplePredicate(continuusFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(continuusFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
 		Node leftChild = new Node()

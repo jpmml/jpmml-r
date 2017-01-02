@@ -51,7 +51,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector iForest = getObject();
 
 		RStringVector xcols = (RStringVector)iForest.getValue("xcols");
@@ -73,14 +73,14 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 		// Dependent variable
 		{
-			featureMapper.append(FieldName.create("pathLength"), false);
+			encoder.append(FieldName.create("pathLength"), false);
 		}
 
 		// Independent variables
 		for(int i = 0; i < xcols.size(); i++){
 			String xcol = xcols.getValue(i);
 
-			featureMapper.append(FieldName.create(xcol), false);
+			encoder.append(FieldName.create(xcol), false);
 		}
 	}
 

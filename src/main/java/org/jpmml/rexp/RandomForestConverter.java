@@ -29,20 +29,19 @@ import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.Value;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.BooleanFeature;
+import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.converter.WildcardFeature;
 import org.jpmml.converter.mining.MiningModelUtil;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
@@ -52,7 +51,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector randomForest = getObject();
 
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
@@ -64,7 +63,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		// The RF model was trained using the formula interface
 		if(terms != null){
-			encodeFormula(terms, y, xlevels, ncat, featureMapper);
+			encodeFormula(terms, y, xlevels, ncat, encoder);
 		} else
 
 		// The RF model was trained using the matrix (ie. non-formula) interface
@@ -75,7 +74,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				xNames = xlevels.names();
 			}
 
-			encodeNonFormula(xNames, y, xlevels, ncat, featureMapper);
+			encodeNonFormula(xNames, y, xlevels, ncat, encoder);
 		}
 	}
 
@@ -96,7 +95,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private void encodeFormula(RExp terms, RNumberVector<?> y, final RGenericVector xlevels, final RNumberVector<?> ncat, FeatureMapper featureMapper){
+	private void encodeFormula(RExp terms, RNumberVector<?> y, final RGenericVector xlevels, final RNumberVector<?> ncat, RExpEncoder encoder){
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
 		FormulaContext context = new FormulaContext(){
@@ -122,7 +121,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
+		Formula formula = FormulaUtil.encodeFeatures(context, terms, encoder);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();
@@ -134,20 +133,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 				if(!factor.isFactor()){
 					throw new IllegalArgumentException();
-				} // End if
-
-				if(dataField.hasValues()){
-					throw new IllegalArgumentException();
 				}
 
-				List<Value> values = dataField.getValues();
-
-				values.addAll(PMMLUtil.createValues(factor.getLevelValues()));
+				PMMLUtil.addValues(dataField, factor.getLevelValues());
 			}
 
-			Feature feature = new WildcardFeature(dataField);
-
-			featureMapper.append(feature);
+			encoder.append(dataField.getName(), (Feature)null);
 		} else
 
 		{
@@ -162,11 +153,11 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 			Feature feature = formula.resolveFeature(FieldName.create(xlevelName));
 
-			featureMapper.append(feature);
+			encoder.append(feature);
 		}
 	}
 
-	private void encodeNonFormula(RStringVector xNames, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, FeatureMapper featureMapper){
+	private void encodeNonFormula(RStringVector xNames, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, RExpEncoder encoder){
 
 		// Dependent variable
 		{
@@ -179,11 +170,11 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				featureMapper.append(name, factor.getLevelValues());
+				encoder.append(name, factor.getLevelValues());
 			} else
 
 			{
-				featureMapper.append(name, false);
+				encoder.append(name, false);
 			}
 		}
 
@@ -195,11 +186,11 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			if(categorical){
 				RStringVector levels = (RStringVector)xlevels.getValue(i);
 
-				featureMapper.append(name, levels.getValues());
+				encoder.append(name, levels.getValues());
 			} else
 
 			{
-				featureMapper.append(name, false);
+				encoder.append(name, false);
 			}
 		}
 	}
@@ -259,12 +250,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){
 
-			private List<String> targetCategories = schema.getTargetCategories();
+			private CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 
 			@Override
 			public String encode(Integer value){
-				return this.targetCategories.get(value - 1);
+				return this.categoricalLabel.getValue(value - 1);
 			}
 		};
 
@@ -333,24 +324,22 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				rightPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(1));
 			} else
 
-			if(feature instanceof ListFeature){
-				ListFeature listFeature = (ListFeature)feature;
+			if(feature instanceof CategoricalFeature){
+				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-				List<String> values = listFeature.getValues();
+				List<String> values = categoricalFeature.getValues();
 
-				leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, split, true));
-				rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, split, false));
-			} else
-
-			if(feature instanceof ContinuousFeature){
-				String value = ValueUtil.formatValue(split);
-
-				leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-				rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
+				leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, split, true));
+				rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, split, false));
 			} else
 
 			{
-				throw new IllegalArgumentException();
+				ContinuousFeature continuousFeature = feature.toContinuousFeature();
+
+				String value = ValueUtil.formatValue(split);
+
+				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 			}
 		} else
 

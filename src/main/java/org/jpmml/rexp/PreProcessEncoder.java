@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import org.dmg.pmml.DataType;
@@ -33,10 +32,11 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
-public class PreProcessFeatureMapper extends FeatureMapper {
+public class PreProcessEncoder extends RExpEncoder {
 
 	private Map<FieldName, List<Double>> ranges = Collections.emptyMap();
 
@@ -47,7 +47,7 @@ public class PreProcessFeatureMapper extends FeatureMapper {
 	private Map<FieldName, Double> median = Collections.emptyMap();
 
 
-	public PreProcessFeatureMapper(RGenericVector preProcess){
+	public PreProcessEncoder(RGenericVector preProcess){
 		RGenericVector method = (RGenericVector)preProcess.getValue("method");
 
 		RStringVector methodNames = method.names();
@@ -85,37 +85,27 @@ public class PreProcessFeatureMapper extends FeatureMapper {
 	}
 
 	private Schema filter(Schema schema){
-		FieldName targetField = schema.getTargetField();
-		List<String> targetCategories = schema.getTargetCategories();
-		List<FieldName> activeFields = new ArrayList<>(schema.getActiveFields());
+		Label label = schema.getLabel();
 		List<Feature> features = new ArrayList<>(schema.getFeatures());
 
-		if(activeFields.size() != features.size()){
-			throw new IllegalArgumentException();
-		}
+		for(int i = 0; i < features.size(); i++){
+			Feature feature = features.get(i);
 
-		ListIterator<FieldName> activeFieldIt = activeFields.listIterator();
-		ListIterator<Feature> featureIt = features.listIterator();
+			FieldName name = feature.getName();
 
-		while(activeFieldIt.hasNext()){
-			FieldName activeField = activeFieldIt.next();
-			Feature feature = featureIt.next();
-
-			Expression expression = encodeExpression(activeField);
+			Expression expression = encodeExpression(name);
 			if(expression == null){
 				continue;
 			}
 
-			activeFieldIt.remove();
+			DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, expression);
 
-			DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + activeField.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, expression);
+			feature = new ContinuousFeature(this, derivedField);
 
-			feature = new ContinuousFeature(derivedField);
-
-			featureIt.set(feature);
+			features.set(i, feature);
 		}
 
-		schema = new Schema(targetField, targetCategories, activeFields, features);
+		schema = new Schema(label, features);
 
 		return schema;
 	}

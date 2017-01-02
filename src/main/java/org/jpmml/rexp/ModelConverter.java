@@ -30,7 +30,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	}
 
 	abstract
-	public void encodeFeatures(FeatureMapper featureMapper);
+	public void encodeFeatures(RExpEncoder encoder);
 
 	abstract
 	public Model encodeModel(Schema schema);
@@ -61,35 +61,35 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 			preProcess = null;
 		}
 
-		FeatureMapper featureMapper;
+		RExpEncoder encoder;
 
 		if(preProcess != null){
-			featureMapper = new PreProcessFeatureMapper(preProcess);
+			encoder = new PreProcessEncoder(preProcess);
 		} else
 
 		{
-			featureMapper = new FeatureMapper();
+			encoder = new RExpEncoder();
 		}
 
-		return encodePMML(featureMapper);
+		return encodePMML(encoder);
 	}
 
-	public PMML encodePMML(FeatureMapper featureMapper){
-		encodeFeatures(featureMapper);
+	public PMML encodePMML(RExpEncoder encoder){
+		encodeFeatures(encoder);
 
 		Schema schema;
 
 		if(isSupervised()){
-			schema = featureMapper.createSupervisedSchema();
+			schema = encoder.createSupervisedSchema();
 		} else
 
 		{
-			schema = featureMapper.createUnsupervisedSchema();
+			schema = encoder.createUnsupervisedSchema();
 		}
 
 		Model model = encodeModel(schema);
 
-		PMML pmml = featureMapper.encodePMML(model);
+		PMML pmml = encoder.encodePMML(model);
 
 		return pmml;
 	}

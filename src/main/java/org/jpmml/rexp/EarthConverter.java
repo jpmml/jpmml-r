@@ -46,7 +46,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector earth = getObject();
 
 		RDoubleVector dirs = (RDoubleVector)earth.getValue("dirs");
@@ -99,7 +99,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
+		Formula formula = FormulaUtil.encodeFeatures(context, terms, encoder);
 
 		// Dependent variable
 		{
@@ -107,7 +107,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 			Feature feature = formula.resolveFeature(FieldName.create(yNames.asScalar()));
 
-			featureMapper.append(feature);
+			encoder.append(feature);
 		}
 
 		// Independent variables
@@ -138,14 +138,14 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 						{
 							FieldName name = FieldName.create(formatHingeFunction(dir, predictorName, cut));
 
-							DerivedField derivedField = featureMapper.getDerivedField(name);
+							DerivedField derivedField = encoder.getDerivedField(name);
 							if(derivedField == null){
 								Apply apply = createHingeFunction(dir, predictorName, cut);
 
-								derivedField = featureMapper.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
+								derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
 							}
 
-							feature = new ContinuousFeature(derivedField);
+							feature = new ContinuousFeature(encoder, derivedField);
 						}
 						break;
 					case 2:
@@ -167,22 +167,14 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			if(features.size() > 1){
-				Apply apply = PMMLUtil.createApply("*", (features.get(0)).ref(), (features.get(1)).ref());
-
-				for(int j = 2; j < features.size(); j++){
-					apply = PMMLUtil.createApply("*", apply, (features.get(j)).ref());
-				}
-
-				DerivedField derivedField = featureMapper.createDerivedField(FieldName.create(dirsRows.getValue(i)), OpType.CONTINUOUS, DataType.DOUBLE, apply);
-
-				feature = new InteractionFeature(derivedField, features);
+				feature = new InteractionFeature(encoder, FieldName.create(dirsRows.getValue(i)), DataType.DOUBLE, features);
 			} else
 
 			{
 				throw new IllegalArgumentException();
 			}
 
-			featureMapper.append(feature);
+			encoder.append(feature);
 		}
 	}
 

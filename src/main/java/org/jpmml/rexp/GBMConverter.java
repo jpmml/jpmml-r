@@ -40,9 +40,10 @@ import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -55,7 +56,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector gbm = getObject();
 
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
@@ -81,14 +82,14 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			switch(distributionName.asScalar()){
 				case "gaussian":
-					featureMapper.append(responseName, false);
+					encoder.append(responseName, false);
 					break;
 				case "adaboost":
 				case "bernoulli":
-					featureMapper.append(responseName, GBMConverter.BINARY_CLASSES);
+					encoder.append(responseName, GBMConverter.BINARY_CLASSES);
 					break;
 				case "multinomial":
-					featureMapper.append(responseName, classes.getValues());
+					encoder.append(responseName, classes.getValues());
 					break;
 				default:
 					throw new IllegalArgumentException();
@@ -103,11 +104,11 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			if(categorical){
 				RStringVector var_level = (RStringVector)var_levels.getValue(i);
 
-				featureMapper.append(varName, var_level.getValues());
+				encoder.append(varName, var_level.getValues());
 			} else
 
 			{
-				featureMapper.append(varName, false);
+				encoder.append(varName, false);
 			}
 		}
 	}
@@ -178,20 +179,17 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
 		Schema segmentSchema = schema.toAnonymousSchema();
 
 		List<Model> miningModels = new ArrayList<>();
 
-		List<String> targetCategories = schema.getTargetCategories();
-		for(int i = 0; i < targetCategories.size(); i++){
-			String targetCategory = targetCategories.get(i);
-
-			List<TreeModel> segmentTreeModels = getColumn(treeModels, i, (treeModels.size() / targetCategories.size()), targetCategories.size());
-
+		for(int i = 0, columns = categoricalLabel.size(), rows = (treeModels.size() / columns); i < columns; i++){
 			MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(segmentSchema))
-				.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, segmentTreeModels))
+				.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, getColumn(treeModels, i, rows, columns)))
 				.setTargets(createTargets(initF, segmentSchema))
-				.setOutput(createOutput(targetCategory));
+				.setOutput(createOutput(categoricalLabel.getValue(i)));
 
 			miningModels.add(miningModel);
 		}
@@ -233,10 +231,10 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			Double split = splitCodePred.getValue(i);
 
-			if(feature instanceof ListFeature){
-				ListFeature listFeature = (ListFeature)feature;
+			if(feature instanceof CategoricalFeature){
+				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-				List<String> values = listFeature.getValues();
+				List<String> values = categoricalFeature.getValues();
 
 				int index = ValueUtil.asInt(split);
 
@@ -244,19 +242,17 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 				List<Integer> splitValues = c_split.getValues();
 
-				leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, splitValues, true));
-				rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, splitValues, false));
-			} else
-
-			if(feature instanceof ContinuousFeature){
-				String value = ValueUtil.formatValue(split);
-
-				leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
-				rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+				leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, true));
+				rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, false));
 			} else
 
 			{
-				throw new IllegalArgumentException();
+				ContinuousFeature continuousFeature = feature.toContinuousFeature();
+
+				String value = ValueUtil.formatValue(split);
+
+				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, value);
+				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
 		} else
 
@@ -306,7 +302,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	private Targets createTargets(Double initF, Schema schema){
 
 		if(!ValueUtil.isZero(initF)){
-			Target target = ModelUtil.createRescaleTarget(schema.getTargetField(), null, initF);
+			Target target = ModelUtil.createRescaleTarget(schema, null, initF);
 
 			Targets targets = new Targets()
 				.addTargets(target);
@@ -318,8 +314,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private Output createOutput(String targetCategory){
-		OutputField gbmField = new OutputField(FieldName.create("gbmValue" + (targetCategory != null ? ("_" + targetCategory) : "")), DataType.DOUBLE)
+	private Output createOutput(String value){
+		OutputField gbmField = new OutputField(FieldName.create("gbmValue" + (value != null ? ("_" + value) : "")), DataType.DOUBLE)
 			.setOpType(OpType.CONTINUOUS)
 			.setResultFeature(ResultFeature.PREDICTED_VALUE)
 			.setFinalResult(false);

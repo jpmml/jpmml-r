@@ -50,7 +50,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector kmeans = getObject();
 
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
@@ -59,7 +59,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
-			featureMapper.append(FieldName.create(columnName), false);
+			encoder.append(FieldName.create(columnName), false);
 		}
 	}
 

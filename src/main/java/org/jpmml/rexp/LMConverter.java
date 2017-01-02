@@ -32,7 +32,6 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.WildcardFeature;
 import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class LMConverter extends ModelConverter<RGenericVector> {
@@ -45,7 +44,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
@@ -79,16 +78,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		this.formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
+		this.formula = FormulaUtil.encodeFeatures(context, terms, encoder);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();
 		if(responseIndex != 0){
 			DataField dataField = (DataField)this.formula.getField(responseIndex - 1);
 
-			Feature feature = new WildcardFeature(dataField);
-
-			featureMapper.append(feature);
+			encoder.append(dataField.getName(), (Feature)null);
 		} else
 
 		{
@@ -122,10 +119,10 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					variableFeatures.add(variableFeature);
 				}
 
-				feature = new InteractionFeature(name, DataType.DOUBLE, variableFeatures);
+				feature = new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures);
 			}
 
-			featureMapper.append(name, feature);
+			encoder.append(name, feature);
 		}
 	}
 

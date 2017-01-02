@@ -37,16 +37,16 @@ public class TrainConverter extends Converter<RGenericVector> {
 
 		ModelConverter<RExp> converter = (ModelConverter<RExp>)converterFactory.newConverter(finalModel);
 
-		FeatureMapper featureMapper;
+		RExpEncoder encoder;
 
 		if(preProcess != null){
-			featureMapper = new PreProcessFeatureMapper(preProcess);
+			encoder = new PreProcessEncoder(preProcess);
 		} else
 
 		{
-			featureMapper = new FeatureMapper();
+			encoder = new RExpEncoder();
 		}
 
-		return converter.encodePMML(featureMapper);
+		return converter.encodePMML(encoder);
 	}
 }

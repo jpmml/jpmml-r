@@ -42,7 +42,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		RGenericVector mvr = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
@@ -80,7 +80,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = FormulaUtil.encodeFeatures(context, terms, featureMapper);
+		Formula formula = FormulaUtil.encodeFeatures(context, terms, encoder);
 
 		// Dependent variable
 		{
@@ -88,7 +88,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 			Feature feature = formula.resolveFeature(name);
 
-			featureMapper.append(feature);
+			encoder.append(feature);
 		}
 
 		// Independent variables
@@ -102,12 +102,12 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 				Apply apply = PMMLUtil.createApply("/", (feature.toContinuousFeature()).ref(), PMMLUtil.createConstant(scale.getValue(i)));
 
-				DerivedField derivedField = featureMapper.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
+				DerivedField derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
-				feature = new ContinuousFeature(derivedField);
+				feature = new ContinuousFeature(encoder, derivedField);
 			}
 
-			featureMapper.append(name, feature);
+			encoder.append(name, feature);
 		}
 	}
 

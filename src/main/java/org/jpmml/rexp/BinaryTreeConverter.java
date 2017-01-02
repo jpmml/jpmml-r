@@ -33,9 +33,10 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ListFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -52,14 +53,14 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	@Override
-	public void encodeFeatures(FeatureMapper featureMapper){
+	public void encodeFeatures(RExpEncoder encoder){
 		S4Object binaryTree = getObject();
 
 		S4Object responses = (S4Object)binaryTree.getAttributeValue("responses");
 		RGenericVector tree = (RGenericVector)binaryTree.getAttributeValue("tree");
 
-		encodeResponse(responses, featureMapper);
-		encodeVariableList(tree, featureMapper);
+		encodeResponse(responses, encoder);
+		encodeVariableList(tree, encoder);
 	}
 
 	@Override
@@ -76,7 +77,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		return treeModel;
 	}
 
-	private void encodeResponse(S4Object responses, FeatureMapper featureMapper){
+	private void encodeResponse(S4Object responses, RExpEncoder encoder){
 		RGenericVector variables = (RGenericVector)responses.getAttributeValue("variables");
 		RBooleanVector is_nominal = (RBooleanVector)responses.getAttributeValue("is_nominal");
 		RGenericVector levels = (RGenericVector)responses.getAttributeValue("levels");
@@ -96,13 +97,13 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			RStringVector targetCategories = (RStringVector)levels.getValue(name);
 
-			featureMapper.append(FieldName.create(name), RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
+			encoder.append(FieldName.create(name), RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
 		} else
 
 		if((Boolean.FALSE).equals(categorical)){
 			this.miningFunction = MiningFunction.REGRESSION;
 
-			featureMapper.append(FieldName.create(name), false);
+			encoder.append(FieldName.create(name), false);
 		} else
 
 		{
@@ -110,7 +111,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		}
 	}
 
-	private void encodeVariableList(RGenericVector tree, FeatureMapper featureMapper){
+	private void encodeVariableList(RGenericVector tree, RExpEncoder encoder){
 		RBooleanVector terminal = (RBooleanVector)tree.getValue("terminal");
 		RGenericVector psplit = (RGenericVector)tree.getValue("psplit");
 		RGenericVector left = (RGenericVector)tree.getValue("left");
@@ -125,17 +126,17 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		FieldName name = FieldName.create(variableName.asScalar());
 
-		DataField dataField = featureMapper.getDataField(name);
+		DataField dataField = encoder.getDataField(name);
 		if(dataField == null){
 
 			if(splitpoint instanceof RDoubleVector){
-				featureMapper.append(name, false);
+				encoder.append(name, false);
 			} else
 
 			if(splitpoint instanceof RIntegerVector){
 				RStringVector levels = (RStringVector)splitpoint.getAttributeValue("levels");
 
-				featureMapper.append(name, levels.getValues());
+				encoder.append(name, levels.getValues());
 			} else
 
 			{
@@ -145,8 +146,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			this.featureIndexes.put(name, this.featureIndexes.size());
 		}
 
-		encodeVariableList(left, featureMapper);
-		encodeVariableList(right, featureMapper);
+		encodeVariableList(left, encoder);
+		encodeVariableList(right, encoder);
 	}
 
 	private TreeModel encodeTreeModel(RGenericVector tree, Schema schema){
@@ -197,24 +198,22 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		Feature feature = schema.getFeature(index);
 
-		if(feature instanceof ListFeature){
-			ListFeature listFeature = (ListFeature)feature;
+		if(feature instanceof CategoricalFeature){
+			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			List<String> values = listFeature.getValues();
+			List<String> values = categoricalFeature.getValues();
 
-			leftPredicate = createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), true));
-			rightPredicate = createSimpleSetPredicate(listFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), false));
-		} else
-
-		if(feature instanceof ContinuousFeature){
-			String value = ValueUtil.formatValue((Double)splitpoint.asScalar());
-
-			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), true));
+			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, (List<Integer>)splitpoint.getValues(), false));
 		} else
 
 		{
-			throw new IllegalArgumentException();
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
+
+			String value = ValueUtil.formatValue((Double)splitpoint.asScalar());
+
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
 		Node leftChild = new Node()
@@ -301,9 +300,9 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private Node encodeClassificationScore(Node node, RDoubleVector probabilities, Schema schema){
-		List<String> targetCategories = schema.getTargetCategories();
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-		if(probabilities.size() != targetCategories.size()){
+		if(categoricalLabel.size() != probabilities.size()){
 			throw new IllegalArgumentException();
 		}
 
@@ -311,18 +310,17 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		Double maxProbability = null;
 
-		for(int i = 0; i < targetCategories.size(); i++){
-			String targetCategory = targetCategories.get(i);
-
+		for(int i = 0; i < categoricalLabel.size(); i++){
+			String value = categoricalLabel.getValue(i);
 			Double probability = probabilities.getValue(i);
 
 			if(maxProbability == null || maxProbability.compareTo(probability) < 0){
-				node.setScore(targetCategory);
+				node.setScore(value);
 
 				maxProbability = probability;
 			}
 
-			ScoreDistribution scoreDistribution = new ScoreDistribution(targetCategory, probability);
+			ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
 
 			scoreDistributions.add(scoreDistribution);
 		}
@@ -340,9 +338,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private Output encodeClassificationOutput(Schema schema){
-		List<String> targetCategories = schema.getTargetCategories();
-
-		Output output = new Output(ModelUtil.createProbabilityFields(targetCategories))
+		Output output = ModelUtil.createProbabilityOutput(schema)
 			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
 
 		return output;
