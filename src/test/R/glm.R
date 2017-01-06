@@ -44,7 +44,7 @@ generateGeneralRegressionFormulaAuto = function(){
 }
 
 generateGeneralRegressionCustFormulaAuto = function(){
-	auto.glm = glm(mpg ~ (. - horsepower - weight - origin) ^ 2 + base::cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)) + plyr::revalue(origin, replace = c("1" = "US", "2" = "Non-US", "3" = "Non-US")), data = auto)
+	auto.glm = glm(mpg ~ (. - horsepower - weight - origin) ^ 2 + base::cut(horsepower, breaks = 10, dig.lab = 4) + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) + plyr::revalue(origin, replace = c("1" = "US", "2" = "Non-US", "3" = "Non-US")), data = auto)
 	print(auto.glm)
 
 	mpg = predict(auto.glm, newdata = auto)

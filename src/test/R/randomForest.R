@@ -90,7 +90,7 @@ generateRandomForestFormulaAuto = function(){
 }
 
 generateRandomForestCustFormulaAuto = function(){
-	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 7)
+	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - weight + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 7)
 	print(auto.randomForest)
 
 	mpg = predict(auto.randomForest, newdata = auto)

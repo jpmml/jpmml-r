@@ -19,30 +19,33 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.dmg.pmml.Apply;
+import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.DerivedField;
+import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.HasDerivedName;
+import org.jpmml.converter.PowerFeature;
 
 public class Formula {
 
 	private RExpEncoder encoder = null;
 
+	private BiMap<FieldName, Feature> features = HashBiMap.create();
+
 	private List<TypeDefinitionField> fields = new ArrayList<>();
-
-	private Map<FieldName, CategoricalFeature> categoricalFeatures = new LinkedHashMap<>();
-
-	private BiMap<FieldName, BinaryFeature> binaryFeatures = HashBiMap.create();
 
 
 	public Formula(RExpEncoder encoder){
@@ -50,21 +53,11 @@ public class Formula {
 	}
 
 	public Feature resolveFeature(FieldName name){
-		RExpEncoder encoder = getEncoder();
+		Feature feature = this.features.get(name);
 
-		CategoricalFeature categoricalFeature = this.categoricalFeatures.get(name);
-		if(categoricalFeature != null){
-			return categoricalFeature;
+		if(feature == null){
+			throw new IllegalArgumentException();
 		}
-
-		BinaryFeature binaryFeature = this.binaryFeatures.get(name);
-		if(binaryFeature != null){
-			return binaryFeature;
-		}
-
-		TypeDefinitionField field = encoder.getField(name);
-
-		Feature feature = new ContinuousFeature(encoder, field);
 
 		return feature;
 	}
@@ -72,12 +65,10 @@ public class Formula {
 	public Double getCoefficient(Feature feature, RDoubleVector coefficients){
 		FieldName name = feature.getName();
 
-		if(feature instanceof BinaryFeature){
-			BinaryFeature binaryFeature = (BinaryFeature)feature;
+		if(feature instanceof HasDerivedName){
+			BiMap<Feature, FieldName> inverseFeatures = this.features.inverse();
 
-			BiMap<BinaryFeature, FieldName> inverseBinaryFeatures = this.binaryFeatures.inverse();
-
-			name = inverseBinaryFeatures.get(binaryFeature);
+			name = inverseFeatures.get(feature);
 		}
 
 		return coefficients.getValue(name.getValue());
@@ -88,6 +79,36 @@ public class Formula {
 	}
 
 	public void addField(TypeDefinitionField field){
+		RExpEncoder encoder = getEncoder();
+
+		Feature feature = new ContinuousFeature(encoder, field);
+
+		if(field instanceof DerivedField){
+			DerivedField derivedField = (DerivedField)field;
+
+			Expression expression = derivedField.getExpression();
+			if(expression instanceof Apply){
+				Apply apply = (Apply)expression;
+
+				if(checkApply(apply, "pow", FieldRef.class, Constant.class)){
+					List<Expression> expressions = apply.getExpressions();
+
+					FieldRef fieldRef = (FieldRef)expressions.get(0);
+					Constant constant = (Constant)expressions.get(1);
+
+					try {
+						int power = Integer.parseInt(constant.getValue());
+
+						feature = new PowerFeature(encoder, fieldRef.getField(), DataType.DOUBLE, power);
+					} catch(NumberFormatException nfe){
+						// Ignored
+					}
+				}
+			}
+		}
+
+		this.features.put(field.getName(), feature);
+
 		this.fields.add(field);
 	}
 
@@ -102,8 +123,6 @@ public class Formula {
 			throw new IllegalArgumentException();
 		}
 
-		FieldName name = field.getName();
-
 		CategoricalFeature categoricalFeature;
 
 		if((DataType.BOOLEAN).equals(field.getDataType()) && (categoryValues.size() == 2) && ("false").equals(categoryValues.get(0)) && ("true").equals(categoryValues.get(1))){
@@ -114,7 +133,7 @@ public class Formula {
 			categoricalFeature = new CategoricalFeature(encoder, field, categoryValues);
 		}
 
-		this.categoricalFeatures.put(name, categoricalFeature);
+		this.features.put(field.getName(), categoricalFeature);
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);
@@ -122,7 +141,7 @@ public class Formula {
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
-			this.binaryFeatures.put(FieldName.create(name.getValue() + categoryName), binaryFeature);
+			this.features.put(FieldName.create((field.getName()).getValue() + categoryName), binaryFeature);
 		}
 
 		this.fields.add(field);
@@ -134,5 +153,29 @@ public class Formula {
 
 	private void setEncoder(RExpEncoder encoder){
 		this.encoder = encoder;
+	}
+
+	static
+	private boolean checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
+
+		if((function).equals(apply.getFunction())){
+			List<Expression> expressions = apply.getExpressions();
+
+			if(expressionClazzes.length == expressions.size()){
+
+				for(int i = 0; i < expressionClazzes.length; i++){
+					Class<? extends Expression> expressionClazz = expressionClazzes[i];
+					Expression expression = expressions.get(i);
+
+					if(!(expressionClazz).isInstance(expression)){
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
