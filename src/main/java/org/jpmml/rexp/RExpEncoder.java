@@ -43,7 +43,9 @@ import org.jpmml.model.visitors.FieldRenamer;
 
 public class RExpEncoder extends ModelEncoder {
 
-	private Map<FieldName, Feature> features = new LinkedHashMap<>();
+	private Label label = null;
+
+	private List<Feature> features = new ArrayList<>();
 
 	private Map<FieldName, FieldName> renamedFields = new LinkedHashMap<>();
 
@@ -62,133 +64,77 @@ public class RExpEncoder extends ModelEncoder {
 		return pmml;
 	}
 
-	public void append(FieldName name, boolean categorical){
-		append(name, categorical ? DataType.STRING : DataType.DOUBLE);
-	}
+	@Override
+	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<String> values){
 
-	public void append(FieldName name, DataType dataType){
-		OpType opType;
-
-		switch(dataType){
-			case STRING:
-			case BOOLEAN:
-				opType = OpType.CATEGORICAL;
-				break;
-			case INTEGER:
-			case FLOAT:
-			case DOUBLE:
-				opType = OpType.CONTINUOUS;
-				break;
-			default:
-				throw new IllegalArgumentException();
+		if(dataType == null){
+			dataType = TypeUtil.getDataType(values);
 		}
 
-		DataField dataField = createDataField(name, opType, dataType);
-
-		this.features.put(dataField.getName(), null);
-	}
-
-	public void append(FieldName name, List<String> categories){
-		append(name, TypeUtil.getDataType(categories), categories);
-	}
-
-	public void append(FieldName name, DataType dataType, List<String> categories){
-		DataField dataField = createDataField(name, OpType.CATEGORICAL, dataType, categories);
-
-		this.features.put(dataField.getName(), null);
-	}
-
-	public void append(DataField dataField){
-		addDataField(dataField);
-
-		this.features.put(dataField.getName(), null);
-	}
-
-	public void append(Feature feature){
-		append(feature.getName(), feature);
-	}
-
-	public void append(FieldName name, Feature feature){
-		this.features.put(name, feature);
-	}
-
-	public Schema createSupervisedSchema(){
-		List<FieldName> names = names();
-
-		return createSchema(names.get(0), names.subList(1, names.size()));
-	}
-
-	public Schema createUnsupervisedSchema(){
-		List<FieldName> names = names();
-
-		return createSchema(null, names);
-	}
-
-	public Schema createSchema(FieldName targetField, List<FieldName> activeFields){
-		Label label = null;
-
-		if(targetField != null){
-			DataField dataField = getDataField(targetField);
-
-			if(dataField.hasValues()){
-				label = new CategoricalLabel(dataField);
-			} else
-
-			{
-				label = new ContinuousLabel(dataField);
-			}
-		}
-
-		List<Feature> features = new ArrayList<>();
-
-		for(FieldName activeField : activeFields){
-			Feature feature = getFeature(activeField);
-
-			if(feature == null){
-				TypeDefinitionField field = getField(activeField);
-
-				if(field.hasValues()){
-					feature = new CategoricalFeature(this, (DataField)field);
-				} else
-
-				{
-					feature = new ContinuousFeature(this, field);
-				}
-			}
-
-			features.add(feature);
-		}
-
-		Schema schema = new Schema(label, features);
-
-		return schema;
-	}
-
-	public DataField getTargetField(){
-		List<FieldName> names = names();
-
-		if(names.size() < 1){
-			throw new IllegalArgumentException();
-		}
-
-		return getDataField(names.get(0));
-	}
-
-	private List<FieldName> names(){
-		Map<FieldName, Feature> features = getFeatures();
-
-		return new ArrayList<>(features.keySet());
+		return super.createDataField(name, opType, dataType, values);
 	}
 
 	public void renameField(FieldName from, FieldName to){
 		this.renamedFields.put(from, to);
 	}
 
-	private Feature getFeature(FieldName name){
-		return this.features.get(name);
+	public Schema createSchema(){
+		Schema schema = new Schema(getLabel(), getFeatures());
+
+		return schema;
 	}
 
-	private Map<FieldName, Feature> getFeatures(){
+	public void setLabel(DataField dataField){
+		Label label;
+
+		OpType opType = dataField.getOpType();
+		switch(opType){
+			case CATEGORICAL:
+				label = new CategoricalLabel(dataField);
+				break;
+			case CONTINUOUS:
+				label = new ContinuousLabel(dataField);
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		setLabel(label);
+	}
+
+	public void addFeature(TypeDefinitionField field){
+		Feature feature;
+
+		OpType opType = field.getOpType();
+		switch(opType){
+			case CATEGORICAL:
+				feature = new CategoricalFeature(this, (DataField)field);
+				break;
+			case CONTINUOUS:
+				feature = new ContinuousFeature(this, field);
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		addFeature(feature);
+	}
+
+	public void addFeature(Feature feature){
+		List<Feature> features = getFeatures();
+
+		features.add(feature);
+	}
+
+	public Label getLabel(){
+		return this.label;
+	}
+
+	public void setLabel(Label label){
+		this.label = label;
+	}
+
+	public List<Feature> getFeatures(){
 		return this.features;
 	}
 }

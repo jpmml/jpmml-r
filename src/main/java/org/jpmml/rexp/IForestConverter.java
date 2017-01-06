@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
@@ -51,7 +52,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector iForest = getObject();
 
 		RStringVector xcols = (RStringVector)iForest.getValue("xcols");
@@ -73,14 +74,18 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 		// Dependent variable
 		{
-			encoder.append(FieldName.create("pathLength"), false);
+			DataField dataField = encoder.createDataField(FieldName.create("pathLength"), OpType.CONTINUOUS, DataType.DOUBLE);
+
+			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
 		for(int i = 0; i < xcols.size(); i++){
 			String xcol = xcols.getValue(i);
 
-			encoder.append(FieldName.create(xcol), false);
+			DataField dataField = encoder.createDataField(FieldName.create(xcol), OpType.CONTINUOUS, DataType.DOUBLE);
+
+			encoder.addFeature(dataField);
 		}
 	}
 

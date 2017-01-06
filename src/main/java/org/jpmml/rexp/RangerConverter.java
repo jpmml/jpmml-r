@@ -21,8 +21,11 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
@@ -45,7 +48,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector ranger = getObject();
 
 		RGenericVector forest;
@@ -70,6 +73,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		{
 			FieldName name = FieldName.create("_target");
 
+			DataField dataField;
+
 			if(predictions instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)predictions;
 
@@ -77,12 +82,14 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				encoder.append(name, factor.getLevelValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, factor.getLevelValues());
 			} else
 
 			{
-				encoder.append(name, false);
+				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			}
+
+			encoder.setLabel(dataField);
 		}
 
 		RBooleanVector isOrdered = (RBooleanVector)forest.getValue("is.ordered");
@@ -99,14 +106,18 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 			FieldName name = FieldName.create(independentVariableName);
 
+			DataField dataField;
+
 			RStringVector levels = (RStringVector)variableLevels.getValue(independentVariableName);
 			if(levels != null){
-				encoder.append(name, levels.getValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, levels.getValues());
 			} else
 
 			{
-				encoder.append(name, false);
+				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			}
+
+			encoder.addFeature(dataField);
 		}
 	}
 

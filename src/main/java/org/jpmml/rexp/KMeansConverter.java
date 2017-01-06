@@ -24,9 +24,12 @@ import java.util.List;
 import org.dmg.pmml.Array;
 import org.dmg.pmml.CompareFunction;
 import org.dmg.pmml.ComparisonMeasure;
+import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
+import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.SquaredEuclidean;
 import org.dmg.pmml.clustering.Cluster;
@@ -45,12 +48,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public boolean isSupervised(){
-		return false;
-	}
-
-	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector kmeans = getObject();
 
 		RDoubleVector centers = (RDoubleVector)kmeans.getValue("centers");
@@ -59,7 +57,9 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
-			encoder.append(FieldName.create(columnName), false);
+			DataField dataField = encoder.createDataField(FieldName.create(columnName), OpType.CONTINUOUS, DataType.DOUBLE);
+
+			encoder.addFeature(dataField);
 		}
 	}
 

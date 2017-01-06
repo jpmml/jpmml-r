@@ -48,7 +48,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
 		RGenericVector schema = (RGenericVector)booster.getValue("schema", true);
@@ -103,7 +103,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 			DataField dataField = labelMap.getDataField();
 
-			encoder.append(dataField);
+			encoder.addDataField(dataField);
+			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
@@ -119,8 +120,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 				}
 
 				encoder.addDataField(dataField);
-
-				encoder.append(feature);
+				encoder.addFeature(feature);
 			}
 		}
 	}

@@ -44,7 +44,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
@@ -85,7 +85,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		if(responseIndex != 0){
 			DataField dataField = (DataField)this.formula.getField(responseIndex - 1);
 
-			encoder.append(dataField.getName(), (Feature)null);
+			encoder.setLabel(dataField);
 		} else
 
 		{
@@ -122,7 +122,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 				feature = new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures);
 			}
 
-			encoder.append(name, feature);
+			encoder.addFeature(feature);
 		}
 	}
 

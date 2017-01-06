@@ -76,8 +76,8 @@ public class PreProcessEncoder extends RExpEncoder {
 	}
 
 	@Override
-	public Schema createSchema(FieldName targetField, List<FieldName> activeFields){
-		Schema schema = super.createSchema(targetField, activeFields);
+	public Schema createSchema(){
+		Schema schema = super.createSchema();
 
 		schema = filter(schema);
 

@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
@@ -53,7 +55,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		S4Object binaryTree = getObject();
 
 		S4Object responses = (S4Object)binaryTree.getAttributeValue("responses");
@@ -84,31 +86,34 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		RStringVector variableNames = variables.names();
 
-		String name = variableNames.asScalar();
+		String variableName = variableNames.asScalar();
 
-		Boolean categorical = is_nominal.getValue(name);
+		DataField dataField;
 
+		Boolean categorical = is_nominal.getValue(variableName);
 		if((Boolean.TRUE).equals(categorical)){
 			this.miningFunction = MiningFunction.CLASSIFICATION;
 
-			RExp targetVariable = variables.getValue(name);
+			RExp targetVariable = variables.getValue(variableName);
 
 			RStringVector targetVariableClass = (RStringVector)targetVariable.getAttributeValue("class");
 
-			RStringVector targetCategories = (RStringVector)levels.getValue(name);
+			RStringVector targetCategories = (RStringVector)levels.getValue(variableName);
 
-			encoder.append(FieldName.create(name), RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
+			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CATEGORICAL, RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
 		} else
 
 		if((Boolean.FALSE).equals(categorical)){
 			this.miningFunction = MiningFunction.REGRESSION;
 
-			encoder.append(FieldName.create(name), false);
+			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CONTINUOUS, DataType.DOUBLE);
 		} else
 
 		{
 			throw new IllegalArgumentException();
 		}
+
+		encoder.setLabel(dataField);
 	}
 
 	private void encodeVariableList(RGenericVector tree, RExpEncoder encoder){
@@ -129,19 +134,22 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		DataField dataField = encoder.getDataField(name);
 		if(dataField == null){
 
-			if(splitpoint instanceof RDoubleVector){
-				encoder.append(name, false);
-			} else
-
 			if(splitpoint instanceof RIntegerVector){
 				RStringVector levels = (RStringVector)splitpoint.getAttributeValue("levels");
 
-				encoder.append(name, levels.getValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
+			} else
+
+
+			if(splitpoint instanceof RDoubleVector){
+				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			} else
 
 			{
 				throw new IllegalArgumentException();
 			}
+
+			encoder.addFeature(dataField);
 
 			this.featureIndexes.put(name, this.featureIndexes.size());
 		}

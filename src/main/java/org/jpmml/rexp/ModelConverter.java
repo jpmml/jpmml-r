@@ -30,14 +30,10 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	}
 
 	abstract
-	public void encodeFeatures(RExpEncoder encoder);
+	public void encodeSchema(RExpEncoder encoder);
 
 	abstract
 	public Model encodeModel(Schema schema);
-
-	public boolean isSupervised(){
-		return true;
-	}
 
 	@Override
 	public PMML encodePMML(){
@@ -75,17 +71,9 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	}
 
 	public PMML encodePMML(RExpEncoder encoder){
-		encodeFeatures(encoder);
+		encodeSchema(encoder);
 
-		Schema schema;
-
-		if(isSupervised()){
-			schema = encoder.createSupervisedSchema();
-		} else
-
-		{
-			schema = encoder.createUnsupervisedSchema();
-		}
+		Schema schema = encoder.createSchema();
 
 		Model model = encodeModel(schema);
 

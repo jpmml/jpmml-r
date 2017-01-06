@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import org.dmg.pmml.Apply;
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.FieldName;
@@ -42,7 +43,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector mvr = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
@@ -86,9 +87,9 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		{
 			FieldName name = FieldName.create(columnNames.asScalar());
 
-			Feature feature = formula.resolveFeature(name);
+			DataField dataField = (DataField)encoder.getField(name);
 
-			encoder.append(feature);
+			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
@@ -107,7 +108,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 				feature = new ContinuousFeature(encoder, derivedField);
 			}
 
-			encoder.append(name, feature);
+			encoder.addFeature(feature);
 		}
 	}
 

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.Apply;
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
@@ -46,7 +47,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector earth = getObject();
 
 		RDoubleVector dirs = (RDoubleVector)earth.getValue("dirs");
@@ -105,9 +106,11 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		{
 			RStringVector yNames = coefficients.dimnames(1);
 
-			Feature feature = formula.resolveFeature(FieldName.create(yNames.asScalar()));
+			FieldName name = FieldName.create(yNames.asScalar());
 
-			encoder.append(feature);
+			DataField dataField = (DataField)encoder.getField(name);
+
+			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
@@ -174,7 +177,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 				throw new IllegalArgumentException();
 			}
 
-			encoder.append(feature);
+			encoder.addFeature(feature);
 		}
 	}
 

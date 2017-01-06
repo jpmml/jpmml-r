@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
@@ -56,7 +57,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector gbm = getObject();
 
 		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
@@ -78,38 +79,45 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				responseName = FieldName.create("y");
 			}
 
-			RStringVector distributionName = (RStringVector)distribution.getValue("name");
+			DataField dataField;
 
+			RStringVector distributionName = (RStringVector)distribution.getValue("name");
 			switch(distributionName.asScalar()){
 				case "gaussian":
-					encoder.append(responseName, false);
+					dataField = encoder.createDataField(responseName, OpType.CONTINUOUS, DataType.DOUBLE);
 					break;
 				case "adaboost":
 				case "bernoulli":
-					encoder.append(responseName, GBMConverter.BINARY_CLASSES);
+					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.STRING, GBMConverter.BINARY_CLASSES);
 					break;
 				case "multinomial":
-					encoder.append(responseName, classes.getValues());
+					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.STRING, classes.getValues());
 					break;
 				default:
 					throw new IllegalArgumentException();
 			}
+
+			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
 		for(int i = 0; i < var_names.size(); i++){
 			FieldName varName = FieldName.create(var_names.getValue(i));
 
+			DataField dataField;
+
 			boolean categorical = (ValueUtil.asInt(var_type.getValue(i)) > 0);
 			if(categorical){
 				RStringVector var_level = (RStringVector)var_levels.getValue(i);
 
-				encoder.append(varName, var_level.getValues());
+				dataField = encoder.createDataField(varName, OpType.CATEGORICAL, DataType.STRING, var_level.getValues());
 			} else
 
 			{
-				encoder.append(varName, false);
+				dataField = encoder.createDataField(varName, OpType.CONTINUOUS, DataType.DOUBLE);
 			}
+
+			encoder.addFeature(dataField);
 		}
 	}
 

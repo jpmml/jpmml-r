@@ -24,8 +24,10 @@ import java.util.List;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
@@ -51,7 +53,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector randomForest = getObject();
 
 		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
@@ -135,10 +137,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
+				dataField.setOpType(OpType.CATEGORICAL);
+
 				PMMLUtil.addValues(dataField, factor.getLevelValues());
 			}
 
-			encoder.append(dataField.getName(), (Feature)null);
+			encoder.setLabel(dataField);
 		} else
 
 		{
@@ -153,7 +157,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 			Feature feature = formula.resolveFeature(FieldName.create(xlevelName));
 
-			encoder.append(feature);
+			encoder.addFeature(feature);
 		}
 	}
 
@@ -163,6 +167,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		{
 			FieldName name = FieldName.create("_target");
 
+			DataField dataField;
+
 			if(y instanceof RIntegerVector){
 				RIntegerVector factor = (RIntegerVector)y;
 
@@ -170,28 +176,34 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				encoder.append(name, factor.getLevelValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, factor.getLevelValues());
 			} else
 
 			{
-				encoder.append(name, false);
+				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			}
+
+			encoder.setLabel(dataField);
 		}
 
 		// Independernt variables
 		for(int i = 0; i < ncat.size(); i++){
 			FieldName name = FieldName.create(xNames.getValue(i));
 
+			DataField dataField;
+
 			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
 			if(categorical){
 				RStringVector levels = (RStringVector)xlevels.getValue(i);
 
-				encoder.append(name, levels.getValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
 			} else
 
 			{
-				encoder.append(name, false);
+				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			}
+
+			encoder.addFeature(dataField);
 		}
 	}
 

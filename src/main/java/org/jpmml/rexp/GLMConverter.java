@@ -40,7 +40,7 @@ public class GLMConverter extends LMConverter {
 	}
 
 	@Override
-	public void encodeFeatures(RExpEncoder encoder){
+	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector glm = getObject();
 
 		RGenericVector family = (RGenericVector)glm.getValue("family");
@@ -48,14 +48,14 @@ public class GLMConverter extends LMConverter {
 
 		RStringVector familyFamily = (RStringVector)family.getValue("family");
 
-		super.encodeFeatures(encoder);
+		super.encodeSchema(encoder);
 
 		GeneralRegressionModel.Distribution distribution = parseFamily(familyFamily.asScalar());
 		switch(distribution){
 			case BINOMIAL:
-				DataField dataField = encoder.getTargetField();
+				Label label = encoder.getLabel();
 
-				dataField.setOpType(OpType.CATEGORICAL);
+				DataField dataField = (DataField)encoder.getField(label.getName());
 
 				RNumberVector<?> variable = (RNumberVector<?>)model.getValue((dataField.getName()).getValue());
 				if(!(variable instanceof RIntegerVector)){
@@ -67,7 +67,11 @@ public class GLMConverter extends LMConverter {
 					throw new IllegalArgumentException();
 				}
 
+				dataField.setOpType(OpType.CATEGORICAL);
+
 				PMMLUtil.addValues(dataField, factor.getLevelValues());
+
+				encoder.setLabel(dataField);
 				break;
 			default:
 				break;
