@@ -23,8 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
@@ -102,24 +102,22 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			LabelMap labelMap = obj.createLabelMap(targetField, targetCategories);
 
 			DataField dataField = labelMap.getDataField();
+			if(dataField != null){
+				encoder.addDataField(dataField);
+			}
 
-			encoder.addDataField(dataField);
 			encoder.setLabel(dataField);
 		}
 
 		// Independent variables
 		{
-			Map<FieldName, DataField> dataFields = featureMap.getDataFields();
+			Collection<DataField> dataFields = (featureMap.getDataFields()).values();
+			for(DataField dataField : dataFields){
+				encoder.addDataField(dataField);
+			}
 
 			List<Feature> features = featureMap.getFeatures();
 			for(Feature feature : features){
-				DataField dataField = dataFields.get(feature.getName());
-
-				if(dataField == null){
-					throw new IllegalArgumentException();
-				}
-
-				encoder.addDataField(dataField);
 				encoder.addFeature(feature);
 			}
 		}

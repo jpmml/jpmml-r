@@ -1,31 +1,27 @@
+library("r2pmml")
 library("xgboost")
 
 source("util.R")
 
 auto = loadAutoCsv("AutoNA")
-auto$origin = NULL
-
 auto[is.na(auto)] = -999
 
-auto_x = auto[, -ncol(auto)]
+auto_X = auto[, -ncol(auto)]
 auto_y = auto[, ncol(auto)]
 
-auto_fmap = data.frame(
-	"id" = seq(from = 0, (to = ncol(auto_x) - 1)),
-	"name" = c("cylinders", "displacement", "horsepower", "weight", "acceleration", "model_year"),
-	"type" = c("int", "q", "int", "int", "q", "int")
-)
+auto.fmap = genFMap(auto_X)
+auto.dmatrix = genDMatrix(auto_y, auto_X)
 
 generateXGBoostAutoNA = function(){
 	schema = list()
 	schema$response_name = "mpg"
 	schema$missing = -999
 
-	auto.xgboost = xgboost(data = as.matrix(auto_x), label = auto_y, missing = -999, objective = "reg:linear", nrounds = 15)
-	auto.xgboost$fmap = auto_fmap
+	auto.xgboost = xgboost(data = auto.dmatrix, missing = -999, objective = "reg:linear", nrounds = 15)
+	auto.xgboost$fmap = auto.fmap
 	auto.xgboost$schema = schema
 
-	mpg = predict(auto.xgboost, newdata = as.matrix(auto_x), missing = -999)
+	mpg = predict(auto.xgboost, newdata = auto.dmatrix, missing = -999)
 
 	storeRds(auto.xgboost, "XGBoostAutoNA")
 	storeCsv(data.frame("mpg" = mpg), "XGBoostAutoNA")
@@ -37,28 +33,25 @@ generateXGBoostAutoNA()
 
 iris = loadIrisCsv("Iris")
 
-iris_x = iris[, -ncol(iris)]
+iris_X = iris[, -ncol(iris)]
 iris_y = iris[, ncol(iris)]
 
 # Convert from factor to integer[0, num_class]
 iris_y = (as.integer(iris_y) - 1)
 
-iris_fmap = data.frame(
-	"id" = seq(from = 0, (to = ncol(iris_x) - 1)),
-	"name" = c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width"),
-	"type" = c("q", "q", "q", "q")
-)
+iris.fmap = genFMap(iris_X)
+iris.dmatrix = genDMatrix(iris_y, iris_X)
 
 generateXGBoostIris = function(){
 	schema = list()
 	schema$response_name = "Species"
 	schema$response_levels = c("setosa", "versicolor", "virginica")
 
-	iris.xgboost = xgboost(data = as.matrix(iris_x), label = iris_y, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
-	iris.xgboost$fmap = iris_fmap
+	iris.xgboost = xgboost(data = iris.dmatrix, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
+	iris.xgboost$fmap = iris.fmap
 	iris.xgboost$schema = schema
 
-	prob = predict(iris.xgboost, newdata = as.matrix(iris_x))
+	prob = predict(iris.xgboost, newdata = iris.dmatrix)
 	prob = matrix(prob, ncol = 3, byrow = TRUE)
 	species = max.col(prob)
 	species = schema$response_levels[species]
