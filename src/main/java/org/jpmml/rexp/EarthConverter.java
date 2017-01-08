@@ -33,6 +33,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
@@ -117,8 +118,8 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		for(int i = 1; i < selectedTerms.size(); i++){
 			int termIndex = ValueUtil.asInt(selectedTerms.getValue(i)) - 1;
 
-			List<Double> dirsRow = RExpUtil.getRow(dirs.getValues(), rows, columns, termIndex);
-			List<Double> cutsRow = RExpUtil.getRow(cuts.getValues(), rows, columns, termIndex);
+			List<Double> dirsRow = FortranMatrixUtil.getRow(dirs.getValues(), rows, columns, termIndex);
+			List<Double> cutsRow = FortranMatrixUtil.getRow(cuts.getValues(), rows, columns, termIndex);
 
 			List<Feature> features = new ArrayList<>();
 

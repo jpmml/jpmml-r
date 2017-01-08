@@ -27,7 +27,6 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.regression.RegressionModel;
-import org.dmg.pmml.regression.RegressionTable;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
@@ -142,10 +141,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
-		RegressionTable regressionTable = RegressionModelUtil.createRegressionTable(features, intercept, featureCoefficients);
-
 		RegressionModel regressionModel = new RegressionModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), null)
-			.addRegressionTables(regressionTable);
+			.addRegressionTables(RegressionModelUtil.createRegressionTable(features, intercept, featureCoefficients));
 
 		return regressionModel;
 	}

@@ -30,6 +30,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -131,7 +132,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 		List<Feature> features = schema.getFeatures();
 
-		List<Double> featureCoefficients = RExpUtil.getColumn(coefficients.getValues(), rows, columns, 0 + (ValueUtil.asInt(ncomp.asScalar()) - 1));
+		List<Double> featureCoefficients = FortranMatrixUtil.getColumn(coefficients.getValues(), rows, (columns * components), 0 + (ValueUtil.asInt(ncomp.asScalar()) - 1));
 
 		Double intercept = yMeans.getValue(0);
 

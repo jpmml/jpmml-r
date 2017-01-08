@@ -18,12 +18,12 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
@@ -32,7 +32,7 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
@@ -85,29 +85,24 @@ public class PreProcessEncoder extends RExpEncoder {
 	}
 
 	private Schema filter(Schema schema){
-		Label label = schema.getLabel();
-		List<Feature> features = new ArrayList<>(schema.getFeatures());
+		Function<Feature, Feature> function = new Function<Feature, Feature>(){
 
-		for(int i = 0; i < features.size(); i++){
-			Feature feature = features.get(i);
+			@Override
+			public Feature apply(Feature feature){
+				FieldName name = feature.getName();
 
-			FieldName name = feature.getName();
+				Expression expression = encodeExpression(name);
+				if(expression == null){
+					return feature;
+				}
 
-			Expression expression = encodeExpression(name);
-			if(expression == null){
-				continue;
+				DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, expression);
+
+				return new ContinuousFeature(PreProcessEncoder.this, derivedField);
 			}
+		};
 
-			DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, expression);
-
-			feature = new ContinuousFeature(this, derivedField);
-
-			features.set(i, feature);
-		}
-
-		schema = new Schema(label, features);
-
-		return schema;
+		return schema.toTransformedSchema(function);
 	}
 
 	private Expression encodeExpression(FieldName name){
@@ -167,7 +162,7 @@ public class PreProcessEncoder extends RExpEncoder {
 		for(int i = 0; i < columnNames.size(); i++){
 			String name = columnNames.getValue(i);
 
-			result.put(FieldName.create(name), RExpUtil.getColumn(values.getValues(), rows, columnNames.size(), i));
+			result.put(FieldName.create(name), FortranMatrixUtil.getColumn(values.getValues(), rows, columnNames.size(), i));
 		}
 
 		return result;

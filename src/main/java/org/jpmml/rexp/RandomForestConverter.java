@@ -40,6 +40,7 @@ import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -235,11 +236,11 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunction.REGRESSION,
 					scoreEncoder,
-					RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, i),
-					RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, i),
-					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
-					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
-					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(leftDaughter.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(rightDaughter.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(nodepred.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(bestvar.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
 					segmentSchema
 				);
 
@@ -279,16 +280,16 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < columns; i++){
-			List<? extends Number> daughters = RExpUtil.getColumn(treemap.getValues(), 2 * rows, columns, i);
+			List<? extends Number> daughters = FortranMatrixUtil.getColumn(treemap.getValues(), 2 * rows, columns, i);
 
 			TreeModel treeModel = encodeTreeModel(
 					MiningFunction.CLASSIFICATION,
 					scoreEncoder,
-					RExpUtil.getColumn(daughters, rows, columns, 0),
-					RExpUtil.getColumn(daughters, rows, columns, 1),
-					RExpUtil.getColumn(nodepred.getValues(), rows, columns, i),
-					RExpUtil.getColumn(bestvar.getValues(), rows, columns, i),
-					RExpUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(daughters, rows, 2, 0),
+					FortranMatrixUtil.getColumn(daughters, rows, 2, 1),
+					FortranMatrixUtil.getColumn(nodepred.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(bestvar.getValues(), rows, columns, i),
+					FortranMatrixUtil.getColumn(xbestsplit.getValues(), rows, columns, i),
 					segmentSchema
 				);
 

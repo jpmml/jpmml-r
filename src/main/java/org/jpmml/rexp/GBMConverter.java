@@ -28,22 +28,19 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Output;
-import org.dmg.pmml.OutputField;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.SimplePredicate;
-import org.dmg.pmml.Target;
-import org.dmg.pmml.Targets;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.CMatrixUtil;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
@@ -132,7 +129,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector distributionName = (RStringVector)distribution.getValue("name");
 
-		Schema segmentSchema = schema.toAnonymousSchema();
+		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
@@ -161,43 +158,35 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			case "multinomial":
 				return encodeMultinomialClassification(treeModels, initF, schema);
 			default:
-				break;
+				throw new IllegalArgumentException();
 		}
-
-		throw new IllegalArgumentException();
 	}
 
 	private MiningModel encodeRegression(List<TreeModel> treeModels, Double initF, Schema schema){
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
-			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
-			.setTargets(createTargets(initF, schema));
+		MiningModel miningModel = createMiningModel(treeModels, initF, schema);
 
 		return miningModel;
 	}
 
 	private MiningModel encodeBinaryClassification(List<TreeModel> treeModels, Double initF, double coefficient, Schema schema){
-		Schema segmentSchema = schema.toAnonymousSchema();
+		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(segmentSchema))
-			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
-			.setTargets(createTargets(initF, segmentSchema))
-			.setOutput(createOutput(null));
+		MiningModel miningModel = createMiningModel(treeModels, initF, segmentSchema)
+			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue"), OpType.CONTINUOUS, DataType.DOUBLE));
 
-		return MiningModelUtil.createBinaryLogisticClassification(schema, miningModel, coefficient, true);
+		return MiningModelUtil.createBinaryLogisticClassification(schema, miningModel, RegressionModel.NormalizationMethod.SOFTMAX, 0d, -coefficient, true);
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
-
-		Schema segmentSchema = schema.toAnonymousSchema();
+		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 
 		List<Model> miningModels = new ArrayList<>();
 
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
 		for(int i = 0, columns = categoricalLabel.size(), rows = (treeModels.size() / columns); i < columns; i++){
-			MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(segmentSchema))
-				.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, getColumn(treeModels, i, rows, columns)))
-				.setTargets(createTargets(initF, segmentSchema))
-				.setOutput(createOutput(categoricalLabel.getValue(i)));
+			MiningModel miningModel = createMiningModel(CMatrixUtil.getColumn(treeModels, rows, columns, i), initF, segmentSchema)
+				.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue_" + categoricalLabel.getValue(i)), OpType.CONTINUOUS, DataType.DOUBLE));
 
 			miningModels.add(miningModel);
 		}
@@ -307,31 +296,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private Targets createTargets(Double initF, Schema schema){
+	private MiningModel createMiningModel(List<TreeModel> treeModels, Double initF, Schema schema){
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
+			.setTargets(ModelUtil.createRescaleTargets(schema, null, initF));
 
-		if(!ValueUtil.isZero(initF)){
-			Target target = ModelUtil.createRescaleTarget(schema, null, initF);
-
-			Targets targets = new Targets()
-				.addTargets(target);
-
-			return targets;
-		}
-
-		return null;
-	}
-
-	static
-	private Output createOutput(String value){
-		OutputField gbmField = new OutputField(FieldName.create("gbmValue" + (value != null ? ("_" + value) : "")), DataType.DOUBLE)
-			.setOpType(OpType.CONTINUOUS)
-			.setResultFeature(ResultFeature.PREDICTED_VALUE)
-			.setFinalResult(false);
-
-		Output output = new Output()
-			.addOutputFields(gbmField);
-
-		return output;
+		return miningModel;
 	}
 
 	static
@@ -360,24 +330,6 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			if(append){
 				result.add(value);
 			}
-		}
-
-		return result;
-	}
-
-	static
-	private <E> List<E> getColumn(List<E> values, int index, int rows, int columns){
-
-		if(values.size() != (rows * columns)){
-			throw new IllegalArgumentException();
-		}
-
-		List<E> result = new ArrayList<>(rows);
-
-		for(int row = 0; row < rows; row++){
-			E value = values.get((row * columns) + index);
-
-			result.add(value);
 		}
 
 		return result;

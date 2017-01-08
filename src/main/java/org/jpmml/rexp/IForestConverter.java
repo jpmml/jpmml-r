@@ -23,25 +23,26 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Output;
-import org.dmg.pmml.OutputField;
 import org.dmg.pmml.Predicate;
-import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
+import org.jpmml.converter.AbstractTransformation;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.Transformation;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 
@@ -100,6 +101,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		final
 		RIntegerVector xrow = (RIntegerVector)trees.getValue("xrow");
 
 		Schema segmentSchema = schema.toAnonymousSchema();
@@ -112,11 +114,42 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		Output output = encodeOutput(xrow);
+		// "rawPathLength / avgPathLength(xrow)"
+		Transformation normalizedPathLength = new AbstractTransformation(){
+
+			@Override
+			public FieldName getName(FieldName name){
+				return FieldName.create("normalizedPathLength");
+			}
+
+			@Override
+			public Expression createExpression(FieldRef fieldRef){
+				return PMMLUtil.createApply("/", fieldRef, PMMLUtil.createConstant(avgPathLength(xrow.asScalar())));
+			}
+		};
+
+		// "2 ^ (-1 * normalizedPathLength)"
+		Transformation anomalyScore = new AbstractTransformation(){
+
+			@Override
+			public FieldName getName(FieldName name){
+				return FieldName.create("anomalyScore");
+			}
+
+			@Override
+			public boolean isFinalResult(){
+				return true;
+			}
+
+			@Override
+			public Expression createExpression(FieldRef fieldRef){
+				return PMMLUtil.createApply("pow", PMMLUtil.createConstant(2d), PMMLUtil.createApply("*", PMMLUtil.createConstant(-1d), fieldRef));
+			}
+		};
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels))
-			.setOutput(output);
+			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("rawPathLength"), OpType.CONTINUOUS, DataType.DOUBLE, normalizedPathLength, anomalyScore));
 
 		return miningModel;
 	}
@@ -141,12 +174,12 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			root,
 			0,
 			0,
-			RExpUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
-			RExpUtil.getColumn(nSam.getValues(), rows, columns, index),
-			RExpUtil.getColumn(leftDaughter.getValues(), rows, columns, index),
-			RExpUtil.getColumn(rightDaughter.getValues(), rows, columns, index),
-			RExpUtil.getColumn(splitAtt.getValues(), rows, columns, index),
-			RExpUtil.getColumn(splitPoint.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(nSam.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(leftDaughter.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(rightDaughter.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(splitAtt.getValues(), rows, columns, index),
+			FortranMatrixUtil.getColumn(splitPoint.getValues(), rows, columns, index),
 			schema
 		);
 
@@ -199,29 +232,6 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		{
 			throw new IllegalArgumentException();
 		}
-	}
-
-	private Output encodeOutput(RIntegerVector xrow){
-		OutputField rawPathLength = new OutputField(FieldName.create("rawPathLength"), DataType.DOUBLE)
-			.setOpType(OpType.CONTINUOUS)
-			.setResultFeature(ResultFeature.PREDICTED_VALUE);
-
-		// "rawPathLength / avgPathLength(xrow)"
-		OutputField normalizedPathLength = new OutputField(FieldName.create("normalizedPathLength"), DataType.DOUBLE)
-			.setOpType(OpType.CONTINUOUS)
-			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
-			.setExpression(PMMLUtil.createApply("/", new FieldRef(rawPathLength.getName()), PMMLUtil.createConstant(avgPathLength(xrow.asScalar()))));
-
-		// "2 ^ (-1 * normalizedPathLength)"
-		OutputField score = new OutputField(FieldName.create("anomalyScore"), DataType.DOUBLE)
-			.setOpType(OpType.CONTINUOUS)
-			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
-			.setExpression(PMMLUtil.createApply("pow", PMMLUtil.createConstant(2d), PMMLUtil.createApply("*", PMMLUtil.createConstant(-1d), new FieldRef(normalizedPathLength.getName()))));
-
-		Output output = new Output()
-			.addOutputFields(rawPathLength, normalizedPathLength, score);
-
-		return output;
 	}
 
 	static

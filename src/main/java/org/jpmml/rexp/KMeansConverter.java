@@ -30,12 +30,12 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Output;
 import org.dmg.pmml.SquaredEuclidean;
 import org.dmg.pmml.clustering.Cluster;
 import org.dmg.pmml.clustering.ClusteringField;
 import org.dmg.pmml.clustering.ClusteringModel;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -79,7 +79,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector rowNames = centers.dimnames(0);
 		for(int i = 0; i < rowNames.size(); i++){
-			Array array = PMMLUtil.createRealArray(RExpUtil.getRow(centers.getValues(), rows, columns, i));
+			Array array = PMMLUtil.createRealArray(FortranMatrixUtil.getRow(centers.getValues(), rows, columns, i));
 
 			Cluster cluster = new Cluster()
 				.setName(rowNames.getValue(i))
@@ -98,10 +98,8 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 			.setCompareFunction(CompareFunction.ABS_DIFF)
 			.setMeasure(new SquaredEuclidean());
 
-		Output output = ClusteringModelUtil.createOutput(FieldName.create("cluster"), clusters);
-
 		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema), comparisonMeasure, clusteringFields, clusters)
-			.setOutput(output);
+			.setOutput(ClusteringModelUtil.createOutput(FieldName.create("cluster"), clusters));
 
 		return clusteringModel;
 	}

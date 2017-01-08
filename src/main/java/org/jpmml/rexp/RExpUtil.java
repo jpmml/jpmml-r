@@ -18,34 +18,11 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.dmg.pmml.DataType;
 
 public class RExpUtil {
 
 	private RExpUtil(){
-	}
-
-	static
-	public <E> List<E> getRow(List<E> values, int rows, int columns, int row){
-		List<E> result = new ArrayList<>(columns);
-
-		for(int i = 0; i < columns; i++){
-			E value = values.get((i * rows) + row);
-
-			result.add(value);
-		}
-
-		return result;
-	}
-
-	static
-	public <E> List<E> getColumn(List<E> values, int rows, int columns, int column){
-		int offset = (column * rows);
-
-		return values.subList(offset, offset + rows);
 	}
 
 	static

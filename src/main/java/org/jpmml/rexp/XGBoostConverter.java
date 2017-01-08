@@ -23,17 +23,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.mining.MiningModel;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.xgboost.FeatureMap;
-import org.jpmml.xgboost.LabelMap;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
 import org.jpmml.xgboost.XGBoostUtil;
@@ -99,24 +97,15 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 				}
 			}
 
-			LabelMap labelMap = obj.createLabelMap(targetField, targetCategories);
+			Label label = obj.encodeLabel(targetField, targetCategories, encoder);
 
-			DataField dataField = labelMap.getDataField();
-			if(dataField != null){
-				encoder.addDataField(dataField);
-			}
-
-			encoder.setLabel(dataField);
+			encoder.setLabel(label);
 		}
 
 		// Independent variables
 		{
-			Collection<DataField> dataFields = (featureMap.getDataFields()).values();
-			for(DataField dataField : dataFields){
-				encoder.addDataField(dataField);
-			}
+			List<Feature> features = featureMap.encodeFeatures(encoder);
 
-			List<Feature> features = featureMap.getFeatures();
 			for(Feature feature : features){
 				encoder.addFeature(feature);
 			}
@@ -189,7 +178,12 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		FeatureMap featureMap = new FeatureMap();
 
 		for(int i = 0; i < id.size(); i++){
-			featureMap.load(String.valueOf(id.getValue(i)), name.getLevelValue(i), type.getLevelValue(i));
+
+			if(i != id.getValue(i)){
+				throw new IllegalArgumentException();
+			}
+
+			featureMap.addEntry(name.getLevelValue(i), type.getLevelValue(i));
 		}
 
 		return featureMap;

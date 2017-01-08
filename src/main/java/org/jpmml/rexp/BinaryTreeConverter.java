@@ -28,7 +28,6 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
@@ -42,6 +41,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.tree.TreeModelUtil;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -71,10 +71,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		RGenericVector tree = (RGenericVector)binaryTree.getAttributeValue("tree");
 
-		Output output = encodeOutput(schema);
-
 		TreeModel treeModel = encodeTreeModel(tree, schema)
-			.setOutput(output);
+			.setOutput(TreeModelUtil.createNodeOutput(schema));
 
 		return treeModel;
 	}
@@ -249,18 +247,6 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		}
 	}
 
-	private Output encodeOutput(Schema schema){
-
-		switch(this.miningFunction){
-			case REGRESSION:
-				return encodeRegressionOutput();
-			case CLASSIFICATION:
-				return encodeClassificationOutput(schema);
-			default:
-				return null;
-		}
-	}
-
 	static
 	private <E> List<E> selectValues(List<E> values, List<Integer> splits, boolean left){
 
@@ -334,21 +320,5 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		}
 
 		return node;
-	}
-
-	static
-	private Output encodeRegressionOutput(){
-		Output output = new Output()
-			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
-
-		return output;
-	}
-
-	static
-	private Output encodeClassificationOutput(Schema schema){
-		Output output = ModelUtil.createProbabilityOutput(schema)
-			.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
-
-		return output;
 	}
 }
