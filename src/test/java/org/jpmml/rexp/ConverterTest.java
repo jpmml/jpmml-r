@@ -23,6 +23,7 @@ import java.io.InputStream;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ArchiveBatch;
 import org.jpmml.evaluator.IntegrationTest;
+import org.jpmml.evaluator.IntegrationTestBatch;
 
 abstract
 public class ConverterTest extends IntegrationTest {
@@ -33,13 +34,11 @@ public class ConverterTest extends IntegrationTest {
 	}
 
 	protected ArchiveBatch createBatch(String name, String dataset, final Class<? extends Converter<? extends RExp>> clazz){
-		ArchiveBatch result = new ArchiveBatch(name, dataset){
+		ArchiveBatch result = new IntegrationTestBatch(name, dataset){
 
 			@Override
-			public InputStream open(String path){
-				Class<? extends ConverterTest> clazz = ConverterTest.this.getClass();
-
-				return clazz.getResourceAsStream(path);
+			public IntegrationTest getIntegrationTest(){
+				return ConverterTest.this;
 			}
 
 			@Override
@@ -50,7 +49,11 @@ public class ConverterTest extends IntegrationTest {
 
 					RExp rexp = parser.parse();
 
-					return convert(rexp, clazz);
+					PMML pmml = convert(rexp, clazz);
+
+					ensureValidity(pmml);
+
+					return pmml;
 				}
 			}
 		};
