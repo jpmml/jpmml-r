@@ -308,7 +308,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			String value = categoricalLabel.getValue(i);
 			Double probability = probabilities.getValue(i);
 
-			if(maxProbability == null || maxProbability.compareTo(probability) < 0){
+			if(maxProbability == null || (maxProbability).compareTo(probability) < 0){
 				node.setScore(value);
 
 				maxProbability = probability;

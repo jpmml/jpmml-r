@@ -28,6 +28,11 @@ public class RangerConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateProbAudit() throws Exception {
+		evaluate("RangerProb", "Audit");
+	}
+
+	@Test
 	public void evaluateAutoNA() throws Exception {
 		evaluate("Ranger", "AutoNA");
 	}
@@ -35,5 +40,10 @@ public class RangerConverterTest extends ConverterTest {
 	@Test
 	public void evaluateIris() throws Exception {
 		evaluate("Ranger", "Iris");
+	}
+
+	@Test
+	public void evaluateProbIris() throws Exception {
+		evaluate("RangerProb", "Iris");
 	}
 }

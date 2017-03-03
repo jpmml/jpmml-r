@@ -146,7 +146,7 @@ public class FunctionExpression extends Expression {
 					break;
 				}
 			}
-		}
+		} // End if
 
 		if(status == VisitorAction.TERMINATE){
 			return VisitorAction.TERMINATE;
