@@ -82,7 +82,9 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = FormulaUtil.encodeFeatures(context, terms, encoder);
+		Formula formula = new Formula(encoder);
+
+		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
 
 		// Dependent variable
 		{

@@ -124,7 +124,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = FormulaUtil.encodeFeatures(context, terms, encoder);
+		Formula formula = new Formula(encoder);
+
+		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();

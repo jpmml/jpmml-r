@@ -141,10 +141,14 @@ public class Formula {
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
-			this.features.put(FieldName.create((field.getName()).getValue() + categoryName), binaryFeature);
+			this.features.put(formatBinaryFeatureName(field.getName(), categoryName), binaryFeature);
 		}
 
 		this.fields.add(field);
+	}
+
+	protected FieldName formatBinaryFeatureName(FieldName name, String category){
+		return FieldName.create(name.getValue() + category);
 	}
 
 	public RExpEncoder getEncoder(){

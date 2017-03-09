@@ -55,9 +55,7 @@ public class FormulaUtil {
 	}
 
 	static
-	public Formula encodeFeatures(FormulaContext context, RExp terms, RExpEncoder encoder){
-		Formula formula = new Formula(encoder);
-
+	public void encodeFeatures(Formula formula, FormulaContext context, RExp terms, RExpEncoder encoder){
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
 		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
 
@@ -225,8 +223,6 @@ public class FormulaUtil {
 				dataField = encoder.createDataField(expressionFieldName, opType, dataType, categories);
 			}
 		}
-
-		return formula;
 	}
 
 	static

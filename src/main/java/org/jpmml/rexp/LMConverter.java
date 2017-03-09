@@ -46,16 +46,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
 		final
 		RGenericVector xlevels = (RGenericVector)lm.getValue("xlevels", true);
+		final
 		RGenericVector model = (RGenericVector)lm.getValue("model");
 		final
 		RGenericVector data = (RGenericVector)lm.getValue("data", true);
 
 		RExp terms = model.getAttributeValue("terms");
-
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
 		FormulaContext context = new FormulaContext(){
 
@@ -73,11 +71,30 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 			@Override
 			public RGenericVector getData(){
-				return data;
+
+				if(data != null){
+					return data;
+				}
+
+				return model;
 			}
 		};
 
-		this.formula = FormulaUtil.encodeFeatures(context, terms, encoder);
+		encodeSchema(context, terms, encoder);
+	}
+
+	public void encodeSchema(FormulaContext context, RExp terms, RExpEncoder encoder){
+		RGenericVector lm = getObject();
+
+		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
+
+		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
+
+		Formula formula = createFormula(encoder);
+
+		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
+
+		this.formula = formula;
 
 		// Dependent variable
 		int responseIndex = response.asScalar();
@@ -91,12 +108,14 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		String intercept = getIntercept();
+
 		// Independent variables
 		RStringVector coefficientNames = coefficients.names();
 		for(int i = 0; i < coefficientNames.size(); i++){
 			String coefficientName = coefficientNames.getValue(i);
 
-			if((LMConverter.INTERCEPT).equals(coefficientName)){
+			if((intercept).equals(coefficientName)){
 				continue;
 			}
 
@@ -131,7 +150,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
 
-		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);
+		Double intercept = coefficients.getValue(getIntercept(), true);
 
 		List<Feature> features = schema.getFeatures();
 
@@ -145,6 +164,16 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			.addRegressionTables(RegressionModelUtil.createRegressionTable(features, intercept, featureCoefficients));
 
 		return regressionModel;
+	}
+
+	public Formula createFormula(RExpEncoder encoder){
+		Formula formula = new Formula(encoder);
+
+		return formula;
+	}
+
+	public String getIntercept(){
+		return LMConverter.INTERCEPT;
 	}
 
 	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
@@ -164,7 +193,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	/**
-	 * Splits a string by single colon characters ('.'), ignoring sequences of two or three colon characters ("::" and ":::").
+	 * Splits a string by single colon characters (':'), ignoring sequences of two or three colon characters ("::" and ":::").
 	 */
 	static
 	List<String> split(String string){
