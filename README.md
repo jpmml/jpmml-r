@@ -28,6 +28,7 @@ Java library and command-line application for converting [R] (http://www.r-proje
   * [`ranger` package] (https://cran.r-project.org/web/packages/ranger/):
     * `ranger` - Random Forest regression and classification
   * [`rms` package] (https://cran.r-project.org/web/packages/rms/):
+    * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression
   * [`r2pmml` package] (https://github.com/jpmml/r2pmml):
     * `scorecard` - Scorecard regression

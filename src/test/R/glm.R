@@ -4,7 +4,7 @@ source("util.R")
 
 audit = loadAuditCsv("Audit")
 
-predictGeneralRegressionAudit = function(audit.glm, data){
+predictGeneralRegressionAudit = function(audit.glm){
 	probabilities = predict(audit.glm, newdata = audit, type = "response")
 
 	result = data.frame("Adjusted" = as.integer(probabilities > 0.5), "probability_0" = (1 - probabilities), "probability_1" = probabilities)
@@ -17,7 +17,7 @@ generateGeneralRegressionFormulaAudit = function(){
 	print(audit.glm)
 
 	storeRds(audit.glm, "GeneralRegressionFormulaAudit")
-	storeCsv(predictGeneralRegressionAudit(audit.glm, audit), "GeneralRegressionFormulaAudit")
+	storeCsv(predictGeneralRegressionAudit(audit.glm), "GeneralRegressionFormulaAudit")
 }
 
 generateGeneralRegressionCustFormulaAudit = function(){
@@ -25,7 +25,7 @@ generateGeneralRegressionCustFormulaAudit = function(){
 	print(audit.glm)
 
 	storeRds(audit.glm, "GeneralRegressionCustFormulaAudit")
-	storeCsv(predictGeneralRegressionAudit(audit.glm, audit), "GeneralRegressionCustFormulaAudit")
+	storeCsv(predictGeneralRegressionAudit(audit.glm), "GeneralRegressionCustFormulaAudit")
 }
 
 generateGeneralRegressionFormulaAudit()

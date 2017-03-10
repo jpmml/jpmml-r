@@ -18,9 +18,12 @@
  */
 package org.jpmml.rexp;
 
-public class OLSConverter extends RMSConverter {
+import org.junit.Test;
 
-	public OLSConverter(RGenericVector ols){
-		super(ols);
+public class LRMConverterTest extends ConverterTest {
+
+	@Test
+	public void evaluateFormulaAudit() throws Exception {
+		evaluate("LogisticRegressionFormula", "Audit");
 	}
 }
