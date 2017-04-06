@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import java.util.List;
+
 import org.dmg.pmml.DataType;
 
 public class RExpUtil {
@@ -41,5 +43,20 @@ public class RExpUtil {
 		}
 
 		throw new IllegalArgumentException(type);
+	}
+
+	static
+	public List<String> getFactorLevels(RNumberVector<?> factor){
+		return getFactorLevels((RIntegerVector)factor);
+	}
+
+	static
+	public List<String> getFactorLevels(RIntegerVector factor){
+
+		if(!factor.isFactor()){
+			throw new IllegalArgumentException();
+		}
+
+		return factor.getLevelValues();
 	}
 }

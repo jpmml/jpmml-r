@@ -134,15 +134,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
 			if(y instanceof RIntegerVector){
-				RIntegerVector factor = (RIntegerVector)y;
-
-				if(!factor.isFactor()){
-					throw new IllegalArgumentException();
-				}
-
 				dataField.setOpType(OpType.CATEGORICAL);
 
-				PMMLUtil.addValues(dataField, factor.getLevelValues());
+				PMMLUtil.addValues(dataField, RExpUtil.getFactorLevels(y));
 			}
 
 			encoder.setLabel(dataField);
@@ -173,13 +167,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			DataField dataField;
 
 			if(y instanceof RIntegerVector){
-				RIntegerVector factor = (RIntegerVector)y;
-
-				if(!factor.isFactor()){
-					throw new IllegalArgumentException();
-				}
-
-				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, factor.getLevelValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, RExpUtil.getFactorLevels(y));
 			} else
 
 			{

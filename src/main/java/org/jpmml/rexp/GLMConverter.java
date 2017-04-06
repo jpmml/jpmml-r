@@ -57,19 +57,11 @@ public class GLMConverter extends LMConverter {
 
 				DataField dataField = (DataField)encoder.getField(label.getName());
 
-				RNumberVector<?> variable = (RNumberVector<?>)model.getValue((dataField.getName()).getValue());
-				if(!(variable instanceof RIntegerVector)){
-					throw new IllegalArgumentException();
-				}
-
-				RIntegerVector factor = (RIntegerVector)variable;
-				if(!factor.isFactor()){
-					throw new IllegalArgumentException();
-				}
+				RIntegerVector variable = (RIntegerVector)model.getValue((dataField.getName()).getValue());
 
 				dataField.setOpType(OpType.CATEGORICAL);
 
-				PMMLUtil.addValues(dataField, factor.getLevelValues());
+				PMMLUtil.addValues(dataField, RExpUtil.getFactorLevels(variable));
 
 				encoder.setLabel(dataField);
 				break;
