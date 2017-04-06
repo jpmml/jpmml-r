@@ -84,13 +84,9 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	public void encodeSchema(FormulaContext context, RExp terms, RExpEncoder encoder){
-		RGenericVector lm = getObject();
-
-		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
-
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		Formula formula = createFormula(encoder);
+		Formula formula = new Formula(encoder);
 
 		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
 
@@ -108,14 +104,13 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		String intercept = getIntercept();
+		String interceptName = getInterceptName();
 
 		// Independent variables
-		RStringVector coefficientNames = coefficients.names();
-		for(int i = 0; i < coefficientNames.size(); i++){
-			String coefficientName = coefficientNames.getValue(i);
+		List<String> coefficientNames = getCoefficientNames();
+		for(String coefficientName : coefficientNames){
 
-			if((intercept).equals(coefficientName)){
+			if((interceptName).equals(coefficientName)){
 				continue;
 			}
 
@@ -150,7 +145,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
 
-		Double intercept = coefficients.getValue(getIntercept(), true);
+		Double intercept = coefficients.getValue(getInterceptName(), true);
 
 		List<Feature> features = schema.getFeatures();
 
@@ -166,14 +161,18 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		return regressionModel;
 	}
 
-	public Formula createFormula(RExpEncoder encoder){
-		Formula formula = new Formula(encoder);
-
-		return formula;
+	public String getInterceptName(){
+		return LMConverter.INTERCEPT;
 	}
 
-	public String getIntercept(){
-		return LMConverter.INTERCEPT;
+	public List<String> getCoefficientNames(){
+		RGenericVector lm = getObject();
+
+		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
+
+		RStringVector coefficientNames = coefficients.names();
+
+		return coefficientNames.getValues();
 	}
 
 	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){

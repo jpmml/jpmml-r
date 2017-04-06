@@ -18,9 +18,10 @@
  */
 package org.jpmml.rexp;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.FieldName;
+import org.jpmml.converter.Feature;
 
 abstract
 public class RMSConverter extends LMConverter {
@@ -63,21 +64,30 @@ public class RMSConverter extends LMConverter {
 	}
 
 	@Override
-	public Formula createFormula(RExpEncoder encoder){
-		Formula formula = new Formula(encoder){
-
-			@Override
-			public FieldName formatBinaryFeatureName(FieldName name, String category){
-				return FieldName.create(name.getValue() + "=" + category);
-			}
-		};
-
-		return formula;
+	public String getInterceptName(){
+		return RMSConverter.INTERCEPT;
 	}
 
 	@Override
-	public String getIntercept(){
-		return RMSConverter.INTERCEPT;
+	public List<String> getCoefficientNames(){
+		RGenericVector rms = getObject();
+
+		RGenericVector design = (RGenericVector)rms.getValue("Design");
+
+		RStringVector mmcolnames = (RStringVector)design.getValue("mmcolnames");
+
+		List<String> result = new ArrayList<>();
+		result.add(RMSConverter.INTERCEPT);
+		result.addAll(mmcolnames.getValues());
+
+		return result;
+	}
+
+	@Override
+	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
+		List<Double> values = coefficients.getValues();
+
+		return values.subList(1, values.size());
 	}
 
 	public static final String INTERCEPT = "Intercept";

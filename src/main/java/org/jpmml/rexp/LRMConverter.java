@@ -66,7 +66,7 @@ public class LRMConverter extends RMSConverter {
 
 		RDoubleVector coefficients = (RDoubleVector)lrm.getValue("coefficients");
 
-		Double intercept = coefficients.getValue(getIntercept(), true);
+		Double intercept = coefficients.getValue(getInterceptName(), true);
 
 		Label label = schema.getLabel();
 		List<Feature> features = schema.getFeatures();

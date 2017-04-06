@@ -3,7 +3,6 @@ library("rms")
 source("util.R")
 
 audit = loadAuditCsv("Audit")
-levels(audit$Adjusted) = c("nope", "yep")
 
 predictLogisticRegressionAudit = function(audit.lrm){
 	probabilities = predict(audit.lrm, newdata = audit, type = "fitted")
@@ -14,7 +13,7 @@ predictLogisticRegressionAudit = function(audit.lrm){
 }
 
 generateLogisticRegressionFormulaAudit = function(){
-	audit.lrm = lrm(Adjusted ~ ., data = audit)
+	audit.lrm = lrm(Adjusted ~ Age + Employment + Education + Marital + Occupation + ifelse(Income > 250000, yes = 250000, no = Income) + Gender + Deductions + ifelse(Hours <= 80, Hours, 80), data = audit)
 	print(audit.lrm)
 
 	storeRds(audit.lrm, "LogisticRegressionFormulaAudit")

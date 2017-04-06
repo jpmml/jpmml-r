@@ -48,6 +48,7 @@ import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Row;
 import org.jpmml.converter.DOMUtil;
+import org.jpmml.converter.PMMLUtil;
 
 public class FormulaUtil {
 
@@ -118,6 +119,37 @@ public class FormulaUtil {
 				formula.addField(derivedField, categories);
 
 				encoder.renameField(name, formatFunction("cut", xArgument));
+			} else
+
+			if(checkFunction("base", "ifelse", functionExpression)){
+				FunctionExpression.Argument testArgument = functionExpression.getArgument("test", 0);
+				FunctionExpression.Argument yesArgument = functionExpression.getArgument("yes", 1);
+				FunctionExpression.Argument noArgument = functionExpression.getArgument("no", 2);
+
+				expressionFieldNames.addAll(testArgument.getFieldNames());
+				expressionFieldNames.addAll(yesArgument.getFieldNames());
+				expressionFieldNames.addAll(noArgument.getFieldNames());
+
+				OpType opType = OpType.CONTINUOUS;
+
+				if(categories != null && categories.size() > 0){
+					opType = OpType.CATEGORICAL;
+				}
+
+				// XXX: "Missing values in test give missing values in the result"
+				Apply apply = PMMLUtil.createApply("if")
+					.addExpressions(prepareExpression(testArgument), prepareExpression(yesArgument), prepareExpression(noArgument));
+
+				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, apply)
+					.addExtensions(createExtension(variable));
+
+				if(categories != null && categories.size() > 0){
+					formula.addField(derivedField, categories);
+				} else
+
+				{
+					formula.addField(derivedField);
+				}
 			} else
 
 			if(checkFunction("plyr", "mapvalues", functionExpression)){
@@ -264,6 +296,19 @@ public class FormulaUtil {
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	static
+	private Expression prepareExpression(FunctionExpression.Argument argument){
+		Expression expression = argument.getExpression();
+
+		if(expression instanceof FunctionExpression){
+			FunctionExpression functionExpression = (FunctionExpression)expression;
+
+			throw new IllegalArgumentException();
+		}
+
+		return expression;
 	}
 
 	static
