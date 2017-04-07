@@ -13,7 +13,7 @@ predictLogisticRegressionAudit = function(audit.lrm){
 }
 
 generateLogisticRegressionFormulaAudit = function(){
-	audit.lrm = lrm(Adjusted ~ Age + Employment + Education + Marital + Occupation + ifelse(Income > 250000, yes = 250000, no = Income) + Gender + Deductions + ifelse(Hours <= 80, Hours, 80), data = audit)
+	audit.lrm = lrm(Adjusted ~ ifelse(Age < 18, 18, ifelse(Age > 75, 75, Age)) + Employment + Education + Marital + Occupation + ifelse(Income > 250000, yes = 250000, no = Income) + Gender + Deductions + ifelse(Hours <= 80, Hours, 80), data = audit)
 	print(audit.lrm)
 
 	storeRds(audit.lrm, "LogisticRegressionFormulaAudit")

@@ -25,7 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -63,84 +62,67 @@ public class FormulaUtil {
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);
 
-		Set<FieldName> expressionFieldNames = new LinkedHashSet<>();
+		VariableMap expressionFields = new VariableMap();
 
-		Map<FieldName, List<String>> fieldCategories = new LinkedHashMap<>();
-
-		fields:
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getValue(i);
 
-			List<String> categories = context.getCategories(variable);
-
 			FieldName name = FieldName.create(variable);
+			OpType opType = OpType.CONTINUOUS;
 			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
 
-			FunctionExpression functionExpression = null;
+			List<String> categories = context.getCategories(variable);
+			if(categories != null && categories.size() > 0){
+				opType = OpType.CATEGORICAL;
+			}
 
+			Expression expression = null;
+
+			FieldName shortName = name;
+
+			expression:
 			if(variable.indexOf('(') > -1 && variable.indexOf(')') > -1){
+				FunctionExpression functionExpression;
 
 				try {
 					functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
 				} catch(Exception e){
-					// Ignored
+					break expression;
 				}
+
+				if(functionExpression.hasId("base", "cut")){
+					expression = encodeCutExpression(functionExpression, categories, expressionFields, encoder);
+				} else
+
+				if(functionExpression.hasId("base", "I")){
+					expression = encodeIdentityExpression(functionExpression, expressionFields, encoder);
+				} else
+
+				if(functionExpression.hasId("base", "ifelse")){
+					expression = encodeIfElseExpression(functionExpression, expressionFields, encoder);
+				} else
+
+				if(functionExpression.hasId("plyr", "mapvalues")){
+					expression = encodeMapValuesExpression(functionExpression, categories, expressionFields, encoder);
+				} else
+
+				if(functionExpression.hasId("plyr", "revalue")){
+					expression = encodeReValueExpression(functionExpression, categories, expressionFields, encoder);
+				} else
+
+				{
+					break expression;
+				}
+
+				FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
+
+				String value = (xArgument.formatExpression()).trim();
+
+				shortName = FieldName.create(functionExpression.hasId("base", "I") ? value : (functionExpression.getFunction() + "(" + value + ")"));
 			} // End if
 
-			if(checkFunction(null, "I", functionExpression)){
-				FunctionExpression.Argument argument = functionExpression.getArgument(0);
-
-				expressionFieldNames.addAll(argument.getFieldNames());
-
-				Expression expression = argument.getExpression();
-
-				DerivedField derivedField =  encoder.createDerivedField(name, OpType.CONTINUOUS, dataType, expression)
-					.addExtensions(createExtension(variable));
-
-				formula.addField(derivedField);
-
-				encoder.renameField(name, formatFunction("I", argument));
-
-				continue fields;
-			} else
-
-			if(checkFunction("base", "cut", functionExpression)){
-				FunctionExpression.Argument xArgument = functionExpression.getArgument(0);
-
-				expressionFieldNames.addAll(xArgument.getFieldNames());
-
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
-
-				Discretize discretize = createDiscretize(fieldName, categories);
-
-				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, discretize)
-					.addExtensions(createExtension(variable));
-
-				formula.addField(derivedField, categories);
-
-				encoder.renameField(name, formatFunction("cut", xArgument));
-			} else
-
-			if(checkFunction("base", "ifelse", functionExpression)){
-				FunctionExpression.Argument testArgument = functionExpression.getArgument("test", 0);
-				FunctionExpression.Argument yesArgument = functionExpression.getArgument("yes", 1);
-				FunctionExpression.Argument noArgument = functionExpression.getArgument("no", 2);
-
-				expressionFieldNames.addAll(testArgument.getFieldNames());
-				expressionFieldNames.addAll(yesArgument.getFieldNames());
-				expressionFieldNames.addAll(noArgument.getFieldNames());
-
-				OpType opType = OpType.CONTINUOUS;
-
-				if(categories != null && categories.size() > 0){
-					opType = OpType.CATEGORICAL;
-				}
-
-				// XXX: "Missing values in test give missing values in the result"
-				Apply apply = PMMLUtil.createApply("if")
-					.addExpressions(prepareExpression(testArgument), prepareExpression(yesArgument), prepareExpression(noArgument));
-
-				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, apply)
+			if(expression != null){
+				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, expression)
 					.addExtensions(createExtension(variable));
 
 				if(categories != null && categories.size() > 0){
@@ -149,54 +131,11 @@ public class FormulaUtil {
 
 				{
 					formula.addField(derivedField);
+				} // End if
+
+				if(!(name).equals(shortName)){
+					encoder.renameField(name, shortName);
 				}
-			} else
-
-			if(checkFunction("plyr", "mapvalues", functionExpression)){
-				FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
-
-				expressionFieldNames.addAll(xArgument.getFieldNames());
-
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
-
-				FunctionExpression.Argument fromArgument = functionExpression.getArgument("from", 1);
-				FunctionExpression.Argument toArgument = functionExpression.getArgument("to", 2);
-
-				Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
-
-				MapValues mapValues = createMapValues(fieldName, mapping, categories);
-
-				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
-
-				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
-					.addExtensions(createExtension(variable));
-
-				formula.addField(derivedField, categories);
-
-				encoder.renameField(name, formatFunction("mapvalues", xArgument));
-			} else
-
-			if(checkFunction("plyr", "revalue", functionExpression)){
-				FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
-
-				expressionFieldNames.addAll(xArgument.getFieldNames());
-
-				FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, dataType, encoder);
-
-				FunctionExpression.Argument replaceArgument = functionExpression.getArgument("replace", 1);
-
-				Map<String, String> mapping = parseRevalue(replaceArgument);
-
-				MapValues mapValues = createMapValues(fieldName, mapping, categories);
-
-				fieldCategories.put(fieldName, new ArrayList<>(mapping.keySet()));
-
-				DerivedField derivedField = encoder.createDerivedField(name, OpType.CATEGORICAL, dataType, mapValues)
-					.addExtensions(createExtension(variable));
-
-				formula.addField(derivedField, categories);
-
-				encoder.renameField(name, formatFunction("revalue", xArgument));
 			} else
 
 			{
@@ -232,46 +171,105 @@ public class FormulaUtil {
 			}
 		}
 
-		for(FieldName expressionFieldName : expressionFieldNames){
-			DataField dataField = encoder.getDataField(expressionFieldName);
+		Collection<Map.Entry<FieldName, List<String>>> entries = expressionFields.entrySet();
+		for(Map.Entry<FieldName, List<String>> entry : entries){
+			FieldName name = entry.getKey();
+			List<String> categories = entry.getValue();
 
+			DataField dataField = encoder.getDataField(name);
 			if(dataField == null){
 				OpType opType = OpType.CONTINUOUS;
 				DataType dataType = DataType.DOUBLE;
-
-				List<String> categories = fieldCategories.get(expressionFieldName);
 
 				if(categories != null && categories.size() > 0){
 					opType = OpType.CATEGORICAL;
 				}
 
 				RGenericVector data = context.getData();
-				if(data != null && data.hasValue(expressionFieldName.getValue())){
-					RVector<?> column = (RVector<?>)data.getValue(expressionFieldName.getValue());
+				if(data != null && data.hasValue(name.getValue())){
+					RVector<?> column = (RVector<?>)data.getValue(name.getValue());
 
 					dataType = column.getDataType();
 				}
 
-				dataField = encoder.createDataField(expressionFieldName, opType, dataType, categories);
+				dataField = encoder.createDataField(name, opType, dataType, categories);
 			}
 		}
 	}
 
 	static
-	private boolean checkFunction(String namespace, String function, FunctionExpression functionExpression){
+	private Expression encodeCutExpression(FunctionExpression functionExpression, List<String> categories, VariableMap expressionFields, RExpEncoder encoder){
+		FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
 
-		if(functionExpression != null){
-			return (Objects.equals(namespace, functionExpression.getNamespace()) || Objects.equals(null, functionExpression.getNamespace())) && Objects.equals(function, functionExpression.getFunction());
-		}
+		expressionFields.putAll(xArgument);
 
-		return false;
+		FieldName fieldName = prepareInputField(xArgument, OpType.CONTINUOUS, DataType.DOUBLE, encoder);
+
+		return createDiscretize(fieldName, categories);
 	}
 
 	static
-	private FieldName formatFunction(String function, FunctionExpression.Argument argument){
-		String value = (argument.formatExpression()).trim();
+	private Expression encodeIdentityExpression(FunctionExpression functionExpression, VariableMap expressionFields, RExpEncoder encoder){
+		FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
 
-		return FieldName.create(function != null ? (function + "(" + value + ")") : value);
+		expressionFields.putAll(xArgument);
+
+		return prepareExpression(xArgument, expressionFields, encoder);
+	}
+
+	static
+	private Expression encodeIfElseExpression(FunctionExpression functionExpression, VariableMap expressionFields, RExpEncoder encoder){
+		FunctionExpression.Argument testArgument = functionExpression.getArgument("test", 0);
+
+		expressionFields.putAll(testArgument);
+
+		FunctionExpression.Argument yesArgument = functionExpression.getArgument("yes", 1);
+		FunctionExpression.Argument noArgument = functionExpression.getArgument("no", 2);
+
+		expressionFields.putAll(yesArgument);
+		expressionFields.putAll(noArgument);
+
+		// XXX: "Missing values in test give missing values in the result"
+		Apply apply = PMMLUtil.createApply("if")
+			.addExpressions(prepareExpression(testArgument, expressionFields, encoder))
+			.addExpressions(prepareExpression(yesArgument, expressionFields, encoder), prepareExpression(noArgument, expressionFields, encoder));
+
+		return apply;
+	}
+
+	static
+	private Expression encodeMapValuesExpression(FunctionExpression functionExpression, List<String> categories, VariableMap expressionFields, RExpEncoder encoder){
+		FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
+
+		expressionFields.putAll(xArgument);
+
+		FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
+
+		FunctionExpression.Argument fromArgument = functionExpression.getArgument("from", 1);
+		FunctionExpression.Argument toArgument = functionExpression.getArgument("to", 2);
+
+		Map<String, String> mapping = parseMapValues(fromArgument, toArgument);
+
+		expressionFields.put(fieldName, new ArrayList<>(mapping.keySet()));
+
+		return createMapValues(fieldName, mapping, categories);
+	}
+
+	static
+	private Expression encodeReValueExpression(FunctionExpression functionExpression, List<String> categories, VariableMap expressionFields, RExpEncoder encoder){
+		FunctionExpression.Argument xArgument = functionExpression.getArgument("x", 0);
+
+		expressionFields.putAll(xArgument);
+
+		FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
+
+		FunctionExpression.Argument replaceArgument = functionExpression.getArgument("replace", 1);
+
+		Map<String, String> mapping = parseRevalue(replaceArgument);
+
+		expressionFields.put(fieldName, new ArrayList<>(mapping.keySet()));
+
+		return createMapValues(fieldName, mapping, categories);
 	}
 
 	static
@@ -287,8 +285,7 @@ public class FormulaUtil {
 		if(expression instanceof Apply){
 			Apply apply = (Apply)expression;
 
-			DerivedField derivedField = encoder.createDerivedField(formatFunction(null, argument), opType, dataType, apply)
-				.addExtensions(createExtension((argument.formatExpression()).trim()));
+			DerivedField derivedField = encoder.createDerivedField(FieldName.create((argument.formatExpression()).trim()), opType, dataType, apply);
 
 			return derivedField.getName();
 		} else
@@ -299,11 +296,15 @@ public class FormulaUtil {
 	}
 
 	static
-	private Expression prepareExpression(FunctionExpression.Argument argument){
+	private Expression prepareExpression(FunctionExpression.Argument argument, VariableMap expressionFields, RExpEncoder encoder){
 		Expression expression = argument.getExpression();
 
 		if(expression instanceof FunctionExpression){
 			FunctionExpression functionExpression = (FunctionExpression)expression;
+
+			if(functionExpression.hasId("base", "ifelse")){
+				return encodeIfElseExpression(functionExpression, expressionFields, encoder);
+			}
 
 			throw new IllegalArgumentException();
 		}
@@ -441,10 +442,25 @@ public class FormulaUtil {
 	private FunctionExpression toVectorExpression(FunctionExpression.Argument argument){
 		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression((argument.formatExpression()).trim());
 
-		if(!("c").equals(functionExpression.getFunction())){
+		if(!functionExpression.hasId("base", "c")){
 			throw new IllegalArgumentException();
 		}
 
 		return functionExpression;
+	}
+
+	static
+	private class VariableMap extends LinkedHashMap<FieldName, List<String>> {
+
+		public void putAll(FunctionExpression.Argument argument){
+			Set<FieldName> names = argument.getFieldNames();
+
+			for(FieldName name : names){
+
+				if(!containsKey(name)){
+					put(name, null);
+				}
+			}
+		}
 	}
 }

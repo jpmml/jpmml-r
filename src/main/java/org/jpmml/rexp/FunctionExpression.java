@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.dmg.pmml.Expression;
@@ -47,6 +48,10 @@ public class FunctionExpression extends Expression {
 		this.namespace = namespace;
 		this.function = function;
 		this.arguments = arguments;
+	}
+
+	public boolean hasId(String namespace, String function){
+		return (Objects.equals(this.namespace, namespace) || Objects.equals(this.namespace, null)) && Objects.equals(this.function, function);
 	}
 
 	public Argument getArgument(String tag, int index){
