@@ -34,6 +34,11 @@ public class GLMConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateCaretFormulaAuditMatrix() throws Exception {
+		evaluate("TrainGeneralRegressionFormula", "AuditMatrix");
+	}
+
+	@Test
 	public void evaluateFormulaAuto() throws Exception {
 		evaluate("GeneralRegressionFormula", "Auto");
 
@@ -49,6 +54,11 @@ public class GLMConverterTest extends ConverterTest {
 		try(Batch batch = createBatch("GeneralRegressionCustFormula", "Auto", LMConverter.class)){
 			evaluate(batch);
 		}
+	}
+
+	@Test
+	public void evaluateCaretFormulaAuto() throws Exception {
+		evaluate("TrainGeneralRegressionFormula", "Auto");
 	}
 
 	@Test

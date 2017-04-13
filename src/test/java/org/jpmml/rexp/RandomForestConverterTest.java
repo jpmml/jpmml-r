@@ -20,12 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.UnsignedLong;
-import org.dmg.pmml.FieldName;
-import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -64,21 +60,12 @@ public class RandomForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		evaluateCaretAudit("TrainRandomForestFormula", "AuditMatrix");
+		evaluate("TrainRandomForestFormula", "AuditMatrix");
 	}
 
 	@Test
 	public void evaluateCaretAudit() throws Exception {
-		evaluateCaretAudit("TrainRandomForest", "Audit");
-	}
-
-	private void evaluateCaretAudit(String name, String dataset) throws Exception {
-
-		try(Batch batch = createBatch(name, dataset)){
-			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("probability_0"), FieldName.create("probability_1"));
-
-			evaluate(batch, ignoredFields);
-		}
+		evaluate("TrainRandomForest", "Audit");
 	}
 
 	@Test

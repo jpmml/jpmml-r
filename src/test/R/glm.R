@@ -1,3 +1,4 @@
+library("caret")
 library("plyr")
 
 source("util.R")
@@ -31,6 +32,20 @@ generateGeneralRegressionCustFormulaAudit = function(){
 generateGeneralRegressionFormulaAudit()
 generateGeneralRegressionCustFormulaAudit()
 
+generateTrainGeneralRegressionFormulaAuditMatrix = function(){
+	audit.train = train(Adjusted ~ ., data = audit, method = "glm")
+	print(audit.train)
+
+	adjusted = predict(audit.train, newdata = audit)
+	probabilities = predict(audit.train, newdata = audit, type = "prob")
+	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
+
+	storeRds(audit.train, "TrainGeneralRegressionFormulaAuditMatrix")
+	storeCsv(data.frame(".outcome" = adjusted, probabilities), "TrainGeneralRegressionFormulaAuditMatrix")
+}
+
+generateTrainGeneralRegressionFormulaAuditMatrix()
+
 auto = loadAutoCsv("Auto")
 
 generateGeneralRegressionFormulaAuto = function(){
@@ -55,6 +70,21 @@ generateGeneralRegressionCustFormulaAuto = function(){
 
 generateGeneralRegressionFormulaAuto()
 generateGeneralRegressionCustFormulaAuto()
+
+auto.caret = auto
+auto.caret$origin = as.integer(auto.caret$origin)
+
+generateTrainGeneralRegressionFormulaAuto = function(){
+	auto.train = train(mpg ~ ., data = auto.caret, method = "glm")
+	print(auto.train)
+
+	mpg = predict(auto.train, newdata = auto.caret)
+
+	storeRds(auto.train, "TrainGeneralRegressionFormulaAuto")
+	storeCsv(data.frame(".outcome" = mpg), "TrainGeneralRegressionFormulaAuto")
+}
+
+generateTrainGeneralRegressionFormulaAuto()
 
 visit = loadVisitCsv("Visit")
 

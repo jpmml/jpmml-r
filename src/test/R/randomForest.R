@@ -54,9 +54,11 @@ generateTrainRandomForestFormulaAuditMatrix = function(){
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
+	probabilities = predict(audit.train, newdata = audit, type = "prob")
+	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
 
 	storeRds(audit.train, "TrainRandomForestFormulaAuditMatrix")
-	storeCsv(data.frame("_target" = adjusted), "TrainRandomForestFormulaAuditMatrix")
+	storeCsv(data.frame("_target" = adjusted, probabilities), "TrainRandomForestFormulaAuditMatrix")
 }
 
 generateTrainRandomForestAudit = function(){
@@ -64,9 +66,11 @@ generateTrainRandomForestAudit = function(){
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit_x)
+	probabilities = predict(audit.train, newdata = audit_x, type = "prob")
+	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
 
 	storeRds(audit.train, "TrainRandomForestAudit")
-	storeCsv(data.frame("_target" = adjusted), "TrainRandomForestAudit")
+	storeCsv(data.frame("_target" = adjusted, probabilities), "TrainRandomForestAudit")
 }
 
 set.seed(42)

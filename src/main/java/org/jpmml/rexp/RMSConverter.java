@@ -78,7 +78,7 @@ public class RMSConverter extends LMConverter {
 
 		List<String> result = new ArrayList<>();
 		result.add(RMSConverter.INTERCEPT);
-		result.addAll(mmcolnames.getValues());
+		result.addAll(mmcolnames.getDequotedValues());
 
 		return result;
 	}

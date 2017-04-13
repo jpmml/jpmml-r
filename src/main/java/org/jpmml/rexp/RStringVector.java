@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.dmg.pmml.DataType;
 
 public class RStringVector extends RVector<String> {
@@ -43,9 +45,17 @@ public class RStringVector extends RVector<String> {
 		return this.values.size();
 	}
 
+	public String getDequotedValue(int i){
+		return RStringVector.FUNCTION_DEQUOTE.apply(getValue(i));
+	}
+
 	@Override
 	public String getValue(int index){
 		return this.values.get(index);
+	}
+
+	public List<String> getDequotedValues(){
+		return Lists.transform(getValues(), RStringVector.FUNCTION_DEQUOTE);
 	}
 
 	@Override
@@ -56,4 +66,17 @@ public class RStringVector extends RVector<String> {
 	private void setValues(List<String> values){
 		this.values = values;
 	}
+
+	private static final Function<String, String> FUNCTION_DEQUOTE = new Function<String, String>(){
+
+		@Override
+		public String apply(String string){
+
+			if((string.length() > 1) && (string.charAt(0) == '`' && string.charAt(string.length() - 1) == '`')){
+				string = string.substring(1, string.length() - 1);
+			}
+
+			return string;
+		}
+	};
 }

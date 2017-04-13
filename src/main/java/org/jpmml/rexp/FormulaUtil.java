@@ -65,7 +65,7 @@ public class FormulaUtil {
 		VariableMap expressionFields = new VariableMap();
 
 		for(int i = 0; i < variableRows.size(); i++){
-			String variable = variableRows.getValue(i);
+			String variable = variableRows.getDequotedValue(i);
 
 			FieldName name = FieldName.create(variable);
 			OpType opType = OpType.CONTINUOUS;

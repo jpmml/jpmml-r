@@ -172,7 +172,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector coefficientNames = coefficients.names();
 
-		return coefficientNames.getValues();
+		return coefficientNames.getDequotedValues();
 	}
 
 	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){

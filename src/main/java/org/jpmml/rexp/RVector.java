@@ -80,7 +80,7 @@ public class RVector<V> extends RExp {
 
 		RStringVector vector = (RStringVector)names.getValue();
 
-		List<String> values = vector.getValues();
+		List<String> values = vector.getDequotedValues();
 		for(int i = 0; i < values.size(); i++){
 			String value = values.get(i);
 
