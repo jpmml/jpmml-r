@@ -90,6 +90,8 @@ public class RExpParser {
 				return readRealVector(flags);
 			case SExpTypes.STRSXP:
 				return readStringVector(flags);
+			case SExpTypes.DOTSXP:
+				return readEllipsis(flags);
 			case SExpTypes.VECSXP:
 			case SExpTypes.EXPRSXP:
 				return readVector(flags);
@@ -301,6 +303,16 @@ public class RExpParser {
 		}
 
 		return new RStringVector(values, readAttributes(flags));
+	}
+
+	private RExp readEllipsis(int flags) throws IOException {
+		RPair attributes = readAttributes(flags);
+
+		RExp environment = readTag(flags);
+		RExp value = readRExp();
+		RExp expression = readRExp();
+
+		return null;
 	}
 
 	private RGenericVector readVector(int flags) throws IOException {
