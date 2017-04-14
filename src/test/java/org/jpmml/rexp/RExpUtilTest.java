@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2017 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -20,20 +20,24 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class LMConverterTest extends ConverterTest {
+import static org.junit.Assert.assertEquals;
+
+public class RExpUtilTest {
 
 	@Test
-	public void evaluateFormulaAuto() throws Exception {
-		evaluate("LinearRegressionFormula", "Auto");
-	}
+	public void makeName(){
+		assertEquals("X", RExpUtil.makeName(""));
 
-	@Test
-	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("LinearRegressionCustFormula", "Auto");
-	}
+		assertEquals("A", RExpUtil.makeName("A"));
+		assertEquals("X1", RExpUtil.makeName("1"));
+		assertEquals(".", RExpUtil.makeName("."));
+		assertEquals("X_", RExpUtil.makeName("_"));
+		assertEquals("X.", RExpUtil.makeName("-"));
 
-	@Test
-	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("LinearRegressionFormula", "WineQuality");
+		assertEquals("AA", RExpUtil.makeName("AA"));
+		assertEquals("A.", RExpUtil.makeName("A."));
+		assertEquals("A1", RExpUtil.makeName("A1"));
+		assertEquals("A_", RExpUtil.makeName("A_"));
+		assertEquals("A.", RExpUtil.makeName("A-"));
 	}
 }

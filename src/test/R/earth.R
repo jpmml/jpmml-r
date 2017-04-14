@@ -16,7 +16,7 @@ generateEarthFormulaAuto = function(){
 }
 
 generateEarthCustFormulaAuto = function(){
-	auto.earth = earth(mpg ~ . + I(displacement / cylinders) + I(log(weight)), data = auto, degree = 3)
+	auto.earth = earth(mpg ~ . + weight:horsepower + weight:acceleration + I(displacement / cylinders) + I(log(weight)), data = auto, degree = 3)
 	auto.earth$xlevels = list("origin" = c("1", "2", "3"))
 	print(auto.earth)
 

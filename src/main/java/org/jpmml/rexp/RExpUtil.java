@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.FieldName;
 
 public class RExpUtil {
 
@@ -58,5 +59,41 @@ public class RExpUtil {
 		}
 
 		return factor.getLevelValues();
+	}
+
+	static
+	public FieldName makeName(FieldName name){
+		return FieldName.create(makeName(name.getValue()));
+	}
+
+	static
+	public String makeName(String string){
+		StringBuilder sb = new StringBuilder();
+
+		if(string.length() == 0){
+			sb.append('X');
+		} else
+
+		{
+			char c = string.charAt(0);
+
+			// "A name starts with a letter or the dot (not followed by a number)"
+			if(!(Character.isLetter(c) || (c == '.'))){
+				sb.append('X');
+			}
+		}
+
+		for(int i = 0; i < string.length(); i++){
+			char c = string.charAt(i);
+
+			// "A name consists of letters, numbers and the dot or underline character"
+			if(!(Character.isLetter(c) || (c >= '0' && c <= '9') || (c == '.' || c == '_'))){
+				c = '.';
+			}
+
+			sb.append(c);
+		}
+
+		return sb.toString();
 	}
 }

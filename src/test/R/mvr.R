@@ -15,7 +15,7 @@ generatePLSRegressionFormulaAuto = function(){
 }
 
 generatePLSRegressionCustFormulaAuto = function(){
-	auto.mvr = plsr(mpg ~ . - horsepower - weight + I(displacement / cylinders) + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) + I(log(weight)), data = auto, ncomp = 3)
+	auto.mvr = plsr(mpg ~ . - horsepower - weight + weight:horsepower + weight:acceleration + I(displacement / cylinders) + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) + I(log(weight)), data = auto, ncomp = 3)
 	print(auto.mvr)
 
 	mpg = predict(auto.mvr, newdata = auto, ncomp = 3)

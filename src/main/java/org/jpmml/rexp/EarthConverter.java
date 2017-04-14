@@ -27,7 +27,6 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
@@ -79,7 +78,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		int rows = dirsRows.size();
 		int columns = dirsColumns.size();
 
-		List<String> predictors = dirsColumns.getValues();
+		List<String> predictorNames = dirsColumns.getValues();
 
 		FormulaContext context = new FormulaContext(){
 
@@ -101,9 +100,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = new Formula(encoder);
-
-		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
+		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
 		{
@@ -126,27 +123,29 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			List<Feature> features = new ArrayList<>();
 
 			predictors:
-			for(int j = 0; j < predictors.size(); j++){
-				String predictor = predictors.get(j);
-
-				FieldName predictorName = FieldName.create(predictor);
+			for(int j = 0; j < predictorNames.size(); j++){
+				String predictorName = predictorNames.get(j);
 
 				int dir = ValueUtil.asInt(dirsRow.get(j));
 				double cut = cutsRow.get(j);
 
-				Feature feature;
+				if(dir == 0){
+					continue predictors;
+				}
+
+				Feature feature = formula.resolveFeature(predictorName);
 
 				switch(dir){
-					case 0:
-						continue predictors;
 					case -1:
 					case 1:
 						{
-							FieldName name = FieldName.create(formatHingeFunction(dir, predictorName, cut));
+							feature = feature.toContinuousFeature();
+
+							FieldName name = FieldName.create(formatHingeFunction(dir, feature, cut));
 
 							DerivedField derivedField = encoder.getDerivedField(name);
 							if(derivedField == null){
-								Apply apply = createHingeFunction(dir, predictorName, cut);
+								Apply apply = createHingeFunction(dir, feature, cut);
 
 								derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
 							}
@@ -155,9 +154,6 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 						}
 						break;
 					case 2:
-						{
-							feature = formula.resolveFeature(predictorName);
-						}
 						break;
 					default:
 						throw new IllegalArgumentException();
@@ -209,28 +205,28 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private String formatHingeFunction(int dir, FieldName name, double cut){
+	private String formatHingeFunction(int dir, Feature feature, double cut){
 
 		switch(dir){
 			case -1:
-				return ("h(" + cut + " - " + name.getValue() + ")");
+				return ("h(" + cut + " - " + (feature.getName()).getValue() + ")");
 			case 1:
-				return ("h(" + name.getValue() + " - " + cut + ")");
+				return ("h(" + (feature.getName()).getValue() + " - " + cut + ")");
 			default:
 				throw new IllegalArgumentException();
 		}
 	}
 
 	static
-	private Apply createHingeFunction(int dir, FieldName name, double cut){
+	private Apply createHingeFunction(int dir, Feature feature, double cut){
 		Expression expression;
 
 		switch(dir){
 			case -1:
-				expression = PMMLUtil.createApply("-", PMMLUtil.createConstant(cut), new FieldRef(name));
+				expression = PMMLUtil.createApply("-", PMMLUtil.createConstant(cut), feature.ref());
 				break;
 			case 1:
-				expression = PMMLUtil.createApply("-", new FieldRef(name), PMMLUtil.createConstant(cut));
+				expression = PMMLUtil.createApply("-", feature.ref(), PMMLUtil.createConstant(cut));
 				break;
 			default:
 				throw new IllegalArgumentException();

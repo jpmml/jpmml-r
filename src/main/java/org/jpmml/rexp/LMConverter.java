@@ -22,13 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
-import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.regression.RegressionModelUtil;
@@ -86,16 +83,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(FormulaContext context, RExp terms, RExpEncoder encoder){
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		Formula formula = new Formula(encoder);
-
-		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
-
-		this.formula = formula;
+		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();
 		if(responseIndex != 0){
-			DataField dataField = (DataField)this.formula.getField(responseIndex - 1);
+			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
 			encoder.setLabel(dataField);
 		} else
@@ -114,29 +107,12 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 				continue;
 			}
 
-			FieldName name = FieldName.create(coefficientName);
-
-			Feature feature;
-
-			List<String> variables = split(coefficientName);
-			if(variables.size() == 1){
-				feature = this.formula.resolveFeature(name);
-			} else
-
-			{
-				List<Feature> variableFeatures = new ArrayList<>();
-
-				for(String variable : variables){
-					Feature variableFeature = this.formula.resolveFeature(FieldName.create(variable));
-
-					variableFeatures.add(variableFeature);
-				}
-
-				feature = new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures);
-			}
+			Feature feature = formula.resolveFeature(coefficientName);
 
 			encoder.addFeature(feature);
 		}
+
+		this.formula = formula;
 	}
 
 	@Override
@@ -189,46 +165,6 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 	public Double getFeatureCoefficient(Feature feature, RDoubleVector coefficients){
 		return this.formula.getCoefficient(feature, coefficients);
-	}
-
-	/**
-	 * Splits a string by single colon characters (':'), ignoring sequences of two or three colon characters ("::" and ":::").
-	 */
-	static
-	List<String> split(String string){
-		List<String> result = new ArrayList<>();
-
-		int pos = 0;
-
-		for(int i = 0; i < string.length(); ){
-
-			if(string.charAt(i) == ':'){
-				int delimBegin = i;
-				int delimEnd = i;
-
-				while((delimEnd + 1) < string.length() && string.charAt(delimEnd + 1) == ':'){
-					delimEnd++;
-				}
-
-				if(delimBegin == delimEnd){
-					result.add(string.substring(pos, delimBegin));
-
-					pos = (delimEnd + 1);
-				}
-
-				i = (delimEnd + 1);
-			} else
-
-			{
-				i++;
-			}
-		}
-
-		if(pos <= string.length()){
-			result.add(string.substring(pos));
-		}
-
-		return result;
 	}
 
 	public static final String INTERCEPT = "(Intercept)";

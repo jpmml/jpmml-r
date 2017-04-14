@@ -82,9 +82,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		Formula formula = new Formula(encoder);
-
-		FormulaUtil.encodeFeatures(formula, context, terms, encoder);
+		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
 		{
@@ -97,16 +95,16 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 		// Independent variables
 		for(int i = 0; i < rowNames.size(); i++){
-			FieldName name = FieldName.create(rowNames.getValue(i));
+			String rowName = rowNames.getValue(i);
 
-			Feature feature = formula.resolveFeature(name);
+			Feature feature = formula.resolveFeature(rowName);
 
 			if(scale != null){
-				name = FieldName.create("scale(" + name.getValue() + ")");
+				feature = feature.toContinuousFeature();
 
-				Apply apply = PMMLUtil.createApply("/", (feature.toContinuousFeature()).ref(), PMMLUtil.createConstant(scale.getValue(i)));
+				Apply apply = PMMLUtil.createApply("/", feature.ref(), PMMLUtil.createConstant(scale.getValue(i)));
 
-				DerivedField derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
+				DerivedField derivedField = encoder.createDerivedField(FieldName.create("scale(" + (feature.getName()).getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
 				feature = new ContinuousFeature(encoder, derivedField);
 			}

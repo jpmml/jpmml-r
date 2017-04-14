@@ -19,7 +19,9 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -37,11 +39,14 @@ import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.HasDerivedName;
+import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.PowerFeature;
 
 public class Formula {
 
 	private RExpEncoder encoder = null;
+
+	private Map<FieldName, FieldName> validNames = new HashMap<>();
 
 	private BiMap<FieldName, Feature> features = HashBiMap.create();
 
@@ -52,11 +57,32 @@ public class Formula {
 		setEncoder(encoder);
 	}
 
+	public Feature resolveFeature(String name){
+		RExpEncoder encoder = getEncoder();
+
+		List<String> variables = split(name);
+		if(variables.size() == 1){
+			return resolveFeature(FieldName.create(name));
+		} else
+
+		{
+			List<Feature> variableFeatures = new ArrayList<>();
+
+			for(String variable : variables){
+				Feature variableFeature = resolveFeature(FieldName.create(variable));
+
+				variableFeatures.add(variableFeature);
+			}
+
+			return new InteractionFeature(encoder, FieldName.create(name), DataType.DOUBLE, variableFeatures);
+		}
+	}
+
 	public Feature resolveFeature(FieldName name){
-		Feature feature = this.features.get(name);
+		Feature feature = getFeature(name);
 
 		if(feature == null){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(name.getValue());
 		}
 
 		return feature;
@@ -107,7 +133,7 @@ public class Formula {
 			}
 		}
 
-		this.features.put(field.getName(), feature);
+		putFeature(field.getName(), feature);
 
 		this.fields.add(field);
 	}
@@ -133,7 +159,7 @@ public class Formula {
 			categoricalFeature = new CategoricalFeature(encoder, field, categoryValues);
 		}
 
-		this.features.put(field.getName(), categoricalFeature);
+		putFeature(field.getName(), categoricalFeature);
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);
@@ -141,10 +167,33 @@ public class Formula {
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
-			this.features.put(FieldName.create((field.getName()).getValue() + categoryName), binaryFeature);
+			putFeature(FieldName.create((field.getName()).getValue() + categoryName), binaryFeature);
 		}
 
 		this.fields.add(field);
+	}
+
+	private Feature getFeature(FieldName name){
+		Feature feature = this.features.get(name);
+
+		if(feature == null){
+
+			if(this.validNames.containsKey(name)){
+				feature = this.features.get(this.validNames.get(name));
+			}
+		}
+
+		return feature;
+	}
+
+	private void putFeature(FieldName name, Feature feature){
+		FieldName validName = RExpUtil.makeName(name);
+
+		if(!(name).equals(validName)){
+			this.validNames.put(validName, name);
+		}
+
+		this.features.put(name, feature);
 	}
 
 	public RExpEncoder getEncoder(){
@@ -153,6 +202,46 @@ public class Formula {
 
 	private void setEncoder(RExpEncoder encoder){
 		this.encoder = encoder;
+	}
+
+	/**
+	 * Splits a string by single colon characters (':'), ignoring sequences of two or three colon characters ("::" and ":::").
+	 */
+	static
+	List<String> split(String string){
+		List<String> result = new ArrayList<>();
+
+		int pos = 0;
+
+		for(int i = 0; i < string.length(); ){
+
+			if(string.charAt(i) == ':'){
+				int delimBegin = i;
+				int delimEnd = i;
+
+				while((delimEnd + 1) < string.length() && string.charAt(delimEnd + 1) == ':'){
+					delimEnd++;
+				}
+
+				if(delimBegin == delimEnd){
+					result.add(string.substring(pos, delimBegin));
+
+					pos = (delimEnd + 1);
+				}
+
+				i = (delimEnd + 1);
+			} else
+
+			{
+				i++;
+			}
+		}
+
+		if(pos <= string.length()){
+			result.add(string.substring(pos));
+		}
+
+		return result;
 	}
 
 	static
