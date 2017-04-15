@@ -62,7 +62,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		try {
 			xlevels = (RGenericVector)earth.getValue("xlevels");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No predictor levels information. Please initialize the \'xlevels\' attribute", iae);
+			throw new IllegalArgumentException("No variable levels information. Please initialize the \'xlevels\' attribute", iae);
 		}
 
 		RStringVector dirsRows = dirs.dimnames(0);
@@ -85,7 +85,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			@Override
 			public List<String> getCategories(String variable){
 
-				if(xlevels != null && xlevels.hasValue(variable)){
+				if(xlevels.hasValue(variable)){
 					RStringVector levels = (RStringVector)xlevels.getValue(variable);
 
 					return levels.getValues();

@@ -10,10 +10,11 @@ Java library and command-line application for converting [R](http://www.r-projec
 * Supported model and transformation types:
   * [`caret` package](http://cran.r-project.org/web/packages/caret/):
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
-    * `train.formula` ("formula interface") - Selected JPMML-R model types
-    * `train` ("matrix interface") - Selected JPMML-R model types
+    * `train` - Selected JPMML-R model types
   * [`earth` package](https://cran.r-project.org/web/packages/earth/):
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
+  * [`e1071` package](https://cran.r-project.org/web/packages/e1071/):
+    * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
   * [`gbm` package](http://cran.r-project.org/web/packages/gbm/):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
@@ -23,8 +24,7 @@ Java library and command-line application for converting [R](http://www.r-projec
   * [`pls` package](https://cran.r-project.org/web/packages/pls/)
     * `mvr` - Multivariate Regression (MVR) regression
   * [`randomForest` package](http://cran.r-project.org/web/packages/randomForest/):
-    * `randomForest.formula` ("formula interface") - Random Forest (RF) regression and classification
-    * `randomForest` ("matrix interface") - Random Forest regression and classification
+    * `randomForest` - Random Forest (RF) regression and classification
   * [`ranger` package](https://cran.r-project.org/web/packages/ranger/):
     * `ranger` - Random Forest regression and classification
   * [`rms` package](https://cran.r-project.org/web/packages/rms/):

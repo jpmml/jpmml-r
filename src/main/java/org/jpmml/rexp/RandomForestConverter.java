@@ -57,27 +57,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector randomForest = getObject();
 
-		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
-		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y", true);
 		RExp terms = randomForest.getValue("terms", true);
 
-		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
-		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
-
-		// The RF model was trained using the formula interface
 		if(terms != null){
-			encodeFormula(terms, y, xlevels, ncat, encoder);
+			encodeFormula(encoder);
 		} else
 
-		// The RF model was trained using the matrix (ie. non-formula) interface
 		{
-			RStringVector xNames = (RStringVector)randomForest.getValue("xNames", true);
-
-			if(xNames == null){
-				xNames = xlevels.names();
-			}
-
-			encodeNonFormula(xNames, y, xlevels, ncat, encoder);
+			encodeNonFormula(encoder);
 		}
 	}
 
@@ -98,7 +85,18 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private void encodeFormula(RExp terms, RNumberVector<?> y, final RGenericVector xlevels, final RNumberVector<?> ncat, RExpEncoder encoder){
+	private void encodeFormula(RExpEncoder encoder){
+		RGenericVector randomForest = getObject();
+
+		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
+		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y", true);
+		RExp terms = randomForest.getValue("terms");
+
+		final
+		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
+		final
+		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
+
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
 		FormulaContext context = new FormulaContext(){
@@ -156,7 +154,19 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private void encodeNonFormula(RStringVector xNames, RNumberVector<?> y, RGenericVector xlevels, RNumberVector<?> ncat, RExpEncoder encoder){
+	private void encodeNonFormula(RExpEncoder encoder){
+		RGenericVector randomForest = getObject();
+
+		RGenericVector forest = (RGenericVector)randomForest.getValue("forest");
+		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y", true);
+		RStringVector xNames = (RStringVector)randomForest.getValue("xNames", true);
+
+		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
+		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
+
+		if(xNames == null){
+			xNames = xlevels.names();
+		}
 
 		// Dependent variable
 		{
