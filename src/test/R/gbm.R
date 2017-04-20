@@ -13,10 +13,9 @@ audit_y = audit[, ncol(audit)]
 audit_y = as.numeric(audit_y == "1")
 
 predictGBMAudit = function(audit.gbm){
-	probability_1 = predict(audit.gbm, newdata = audit_x, type = "response", n.trees = 100)
-	probability_0 = (1 - probability_1)
+	probability = predict(audit.gbm, newdata = audit_x, type = "response", n.trees = 100)
 
-	result = data.frame("Adjusted" = as.integer(probability_1 > 0.5), "probability_0" = probability_0, "probability_1" = probability_1)
+	result = data.frame("Adjusted" = as.integer(probability > 0.5), "probability(0)" = (1 - probability), "probability(1)" = probability, check.names = FALSE)
 
 	return (result)
 }
@@ -54,7 +53,7 @@ predictGBMIris = function(iris.gbm){
 	species = as.factor(apply(probabilities, 1, FUN = which.max))
 	levels(species) = c("setosa", "versicolor", "virginica")
 
-	result = data.frame("Species" = species, "probability_setosa" = probabilities[, 1], "probability_versicolor" = probabilities[, 2], "probability_virginica" = probabilities[, 3])
+	result = data.frame("Species" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE)
 
 	return (result)
 }
@@ -87,11 +86,8 @@ generateTrainGBMFormulaIris = function(){
 	species = predict(iris.train, newdata = iris)
 	probabilities = predict(iris.train, newdata = iris, type = "prob")
 
-	result = cbind(species, probabilities)
-	names(result) = c("Species", "probability_setosa", "probability_versicolor", "probability_virginica")
-
 	storeRds(iris.train, "TrainGBMFormulaIris")
-	storeCsv(result, "TrainGBMFormulaIris")
+	storeCsv(data.frame("Species" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "TrainGBMFormulaIris")
 }
 
 set.seed(42)

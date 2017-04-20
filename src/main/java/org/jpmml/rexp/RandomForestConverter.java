@@ -42,7 +42,6 @@ import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
@@ -130,9 +129,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
 			if(y instanceof RIntegerVector){
-				dataField.setOpType(OpType.CATEGORICAL);
-
-				PMMLUtil.addValues(dataField, RExpUtil.getFactorLevels(y));
+				dataField = encoder.toCategorical(dataField.getName(), RExpUtil.getFactorLevels(y));
 			}
 
 			encoder.setLabel(dataField);

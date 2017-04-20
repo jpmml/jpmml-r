@@ -13,8 +13,9 @@ predictRandomForestAudit = function(audit.randomForest, data, targetName){
 	adjusted = predict(audit.randomForest, newdata = data)
 	probabilities = predict(audit.randomForest, newdata = data, type = "prob")
 
-	result = data.frame("y" = adjusted, "probability_0" = probabilities[, 1], "probability_1" = probabilities[, 2])
-	names(result) = gsub("^y$", targetName, names(result))
+	result = data.frame(adjusted)
+	names(result) = c(targetName)
+	result = data.frame(result, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE)
 
 	return (result)
 }
@@ -55,10 +56,9 @@ generateTrainRandomForestFormulaAuditMatrix = function(){
 
 	adjusted = predict(audit.train, newdata = audit)
 	probabilities = predict(audit.train, newdata = audit, type = "prob")
-	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
 
 	storeRds(audit.train, "TrainRandomForestFormulaAuditMatrix")
-	storeCsv(data.frame("_target" = adjusted, probabilities), "TrainRandomForestFormulaAuditMatrix")
+	storeCsv(data.frame("_target" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainRandomForestFormulaAuditMatrix")
 }
 
 generateTrainRandomForestAudit = function(){
@@ -67,10 +67,9 @@ generateTrainRandomForestAudit = function(){
 
 	adjusted = predict(audit.train, newdata = audit_x)
 	probabilities = predict(audit.train, newdata = audit_x, type = "prob")
-	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
 
 	storeRds(audit.train, "TrainRandomForestAudit")
-	storeCsv(data.frame("_target" = adjusted, probabilities), "TrainRandomForestAudit")
+	storeCsv(data.frame("_target" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainRandomForestAudit")
 }
 
 set.seed(42)
@@ -156,8 +155,9 @@ predictRandomForestIris = function(iris.randomForest, data, targetName){
 	species = predict(iris.randomForest, newdata = data)
 	probabilities = predict(iris.randomForest, newdata = data, type = "prob")
 
-	result = data.frame("y" = species, "probability_setosa" = probabilities[, 1], "probability_versicolor" = probabilities[, 2], "probability_virginica" = probabilities[, 3])
-	names(result) = gsub("^y$", targetName, names(result))
+	result = data.frame(species)
+	names(result) = c(targetName)
+	result = data.frame(result, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE)
 
 	return (result)
 }
@@ -252,8 +252,9 @@ predictRandomForestWineColor = function(wine_color.randomForest, data, targetNam
 	color = predict(wine_color.randomForest, newdata = wine_color)
 	probabilities = predict(wine_color.randomForest, newdata = wine_color, type = "prob")
 
-	result = data.frame("y" = color, "probability_red" = probabilities[, 1], "probability_white" = probabilities[, 2])
-	names(result) = gsub("^y$", targetName, names(result))
+	result = data.frame(color)
+	names(result) = c(targetName)
+	result = data.frame(result, "probability(red)" = probabilities[, 1], "probability(white)" = probabilities[, 2], check.names = FALSE)
 
 	return (result)
 }

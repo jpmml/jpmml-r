@@ -33,6 +33,7 @@ import org.dmg.pmml.scorecard.Characteristics;
 import org.dmg.pmml.scorecard.Scorecard;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 
@@ -85,7 +86,7 @@ public class ScorecardConverter extends GLMConverter {
 			Characteristic characteristic = fieldCharacteristics.get(name);
 			if(characteristic == null){
 				characteristic = new Characteristic()
-					.setName(FieldName.create("score(" + name.getValue() + ")"));
+					.setName(FeatureUtil.createName("score", feature));
 
 				fieldCharacteristics.put(name, characteristic);
 			}

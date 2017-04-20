@@ -174,7 +174,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		MiningModel miningModel = createMiningModel(treeModels, initF, segmentSchema)
 			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue"), OpType.CONTINUOUS, DataType.DOUBLE));
 
-		return MiningModelUtil.createBinaryLogisticClassification(schema, miningModel, RegressionModel.NormalizationMethod.SOFTMAX, 0d, -coefficient, true);
+		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 0d, -coefficient, RegressionModel.NormalizationMethod.SOFTMAX, true, schema);
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
@@ -186,12 +186,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		for(int i = 0, columns = categoricalLabel.size(), rows = (treeModels.size() / columns); i < columns; i++){
 			MiningModel miningModel = createMiningModel(CMatrixUtil.getColumn(treeModels, rows, columns, i), initF, segmentSchema)
-				.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue_" + categoricalLabel.getValue(i)), OpType.CONTINUOUS, DataType.DOUBLE));
+				.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue(" + categoricalLabel.getValue(i) + ")"), OpType.CONTINUOUS, DataType.DOUBLE));
 
 			miningModels.add(miningModel);
 		}
 
-		return MiningModelUtil.createClassification(schema, miningModels, RegressionModel.NormalizationMethod.SOFTMAX, true);
+		return MiningModelUtil.createClassification(miningModels, RegressionModel.NormalizationMethod.SOFTMAX, true, schema);
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){

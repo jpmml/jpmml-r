@@ -51,13 +51,13 @@ generateXGBoostIris = function(){
 	iris.xgboost$fmap = iris.fmap
 	iris.xgboost$schema = schema
 
-	prob = predict(iris.xgboost, newdata = iris.dmatrix)
-	prob = matrix(prob, ncol = 3, byrow = TRUE)
-	species = max.col(prob)
+	probabilities = predict(iris.xgboost, newdata = iris.dmatrix)
+	probabilities = matrix(probabilities, ncol = 3, byrow = TRUE)
+	species = max.col(probabilities)
 	species = schema$response_levels[species]
 
 	storeRds(iris.xgboost, "XGBoostIris")
-	storeCsv(data.frame("Species" = species, "probability_setosa" = prob[, 1], "probability_versicolor" = prob[, 2], "probability_virginica" = prob[, 3]), "XGBoostIris")
+	storeCsv(data.frame("Species" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "XGBoostIris")
 }
 
 set.seed(42)

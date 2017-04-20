@@ -1,4 +1,4 @@
-Species,probability_setosa,probability_versicolor,probability_virginica,nodeId
+Species,probability(setosa),probability(versicolor),probability(virginica),nodeId
 setosa,1,0,0,2
 setosa,1,0,0,2
 setosa,1,0,0,2

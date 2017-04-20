@@ -21,7 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.Array;
 import org.dmg.pmml.CompareFunction;
 import org.dmg.pmml.ComparisonMeasure;
 import org.dmg.pmml.DataField;
@@ -32,7 +31,6 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.SquaredEuclidean;
 import org.dmg.pmml.clustering.Cluster;
-import org.dmg.pmml.clustering.ClusteringField;
 import org.dmg.pmml.clustering.ClusteringModel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
@@ -75,30 +73,26 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		int rows = centersDim.getValue(0);
 		int columns = centersDim.getValue(1);
 
+		List<Feature> features = schema.getFeatures();
+
 		List<Cluster> clusters = new ArrayList<>();
 
 		RStringVector rowNames = centers.dimnames(0);
 		for(int i = 0; i < rowNames.size(); i++){
-			Array array = PMMLUtil.createRealArray(FortranMatrixUtil.getRow(centers.getValues(), rows, columns, i));
-
 			Cluster cluster = new Cluster()
-				.setName(rowNames.getValue(i))
 				.setId(String.valueOf(i + 1))
+				.setName(rowNames.getValue(i))
 				.setSize(size.getValue(i))
-				.setArray(array);
+				.setArray(PMMLUtil.createRealArray(FortranMatrixUtil.getRow(centers.getValues(), rows, columns, i)));
 
 			clusters.add(cluster);
 		}
-
-		List<Feature> features = schema.getFeatures();
-
-		List<ClusteringField> clusteringFields = ClusteringModelUtil.createClusteringFields(features);
 
 		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE)
 			.setCompareFunction(CompareFunction.ABS_DIFF)
 			.setMeasure(new SquaredEuclidean());
 
-		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema), comparisonMeasure, clusteringFields, clusters)
+		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema), comparisonMeasure, ClusteringModelUtil.createClusteringFields(features), clusters)
 			.setOutput(ClusteringModelUtil.createOutput(FieldName.create("cluster"), clusters));
 
 		return clusteringModel;

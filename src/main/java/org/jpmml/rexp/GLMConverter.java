@@ -23,13 +23,11 @@ import java.util.List;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.OpType;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
@@ -55,13 +53,9 @@ public class GLMConverter extends LMConverter {
 			case BINOMIAL:
 				Label label = encoder.getLabel();
 
-				DataField dataField = (DataField)encoder.getField(label.getName());
+				RIntegerVector variable = (RIntegerVector)model.getValue((label.getName()).getValue());
 
-				RIntegerVector variable = (RIntegerVector)model.getValue((dataField.getName()).getValue());
-
-				dataField.setOpType(OpType.CATEGORICAL);
-
-				PMMLUtil.addValues(dataField, RExpUtil.getFactorLevels(variable));
+				DataField dataField = encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
 
 				encoder.setLabel(dataField);
 				break;

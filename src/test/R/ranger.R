@@ -14,10 +14,10 @@ generateRangerAudit = function(){
 	audit.ranger$variable.levels = getVariableLevels(audit)
 	print(audit.ranger)
 
-	Adjusted = predict(audit.ranger, data = audit)$predictions
+	adjusted = predict(audit.ranger, data = audit)$predictions
 
 	storeRds(audit.ranger, "RangerAudit")
-	storeCsv(data.frame("_target" = Adjusted), "RangerAudit")
+	storeCsv(data.frame("_target" = adjusted), "RangerAudit")
 }
 
 generateRangerProbAudit = function(){
@@ -26,10 +26,10 @@ generateRangerProbAudit = function(){
 	print(audit.ranger)
 
 	probabilities = predict(audit.ranger, data = audit)$predictions
-	Adjusted = apply(probabilities, 1, function(x) { colnames(probabilities)[which.max(x)] })
+	adjusted = apply(probabilities, 1, function(x) { colnames(probabilities)[which.max(x)] })
 
 	storeRds(audit.ranger, "RangerProbAudit")
-	storeCsv(data.frame("_target" = Adjusted, "probability_0" = probabilities[, 1], "probability_1" = probabilities[, 2]), "RangerProbAudit")
+	storeCsv(data.frame("_target" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "RangerProbAudit")
 }
 
 set.seed(42)
@@ -66,10 +66,10 @@ generateRangerIris = function(){
 	iris.ranger$variable.levels = getVariableLevels(iris)
 	print(iris.ranger)
 
-	Species = predict(iris.ranger, data = iris)$predictions
+	species = predict(iris.ranger, data = iris)$predictions
 
 	storeRds(iris.ranger, "RangerIris")
-	storeCsv(data.frame("_target" = Species), "RangerIris")
+	storeCsv(data.frame("_target" = species), "RangerIris")
 }
 
 generateRangerProbIris = function(){
@@ -78,11 +78,10 @@ generateRangerProbIris = function(){
 	print(iris.ranger)
 
 	probabilities = predict(iris.ranger, data = iris)$predictions
-	Species = apply(probabilities, 1, function(x) { colnames(probabilities)[which.max(x)] })
-	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
+	species = apply(probabilities, 1, function(x) { colnames(probabilities)[which.max(x)] })
 
 	storeRds(iris.ranger, "RangerProbIris")
-	storeCsv(data.frame("_target" = Species, probabilities), "RangerProbIris")
+	storeCsv(data.frame("_target" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "RangerProbIris")
 }
 
 set.seed(42)

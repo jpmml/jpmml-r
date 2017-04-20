@@ -8,7 +8,7 @@ audit = loadAuditCsv("Audit")
 predictGeneralRegressionAudit = function(audit.glm){
 	probabilities = predict(audit.glm, newdata = audit, type = "response")
 
-	result = data.frame("Adjusted" = as.integer(probabilities > 0.5), "probability_0" = (1 - probabilities), "probability_1" = probabilities)
+	result = data.frame("Adjusted" = as.integer(probabilities > 0.5), "probability(0)" = (1 - probabilities), "probability(1)" = probabilities, check.names = FALSE)
 
 	return (result)
 }
@@ -38,10 +38,9 @@ generateTrainGeneralRegressionFormulaAuditMatrix = function(){
 
 	adjusted = predict(audit.train, newdata = audit)
 	probabilities = predict(audit.train, newdata = audit, type = "prob")
-	colnames(probabilities) = lapply(colnames(probabilities), function(x){ paste("probability", x, sep = "_") })
 
 	storeRds(audit.train, "TrainGeneralRegressionFormulaAuditMatrix")
-	storeCsv(data.frame(".outcome" = adjusted, probabilities), "TrainGeneralRegressionFormulaAuditMatrix")
+	storeCsv(data.frame(".outcome" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainGeneralRegressionFormulaAuditMatrix")
 }
 
 generateTrainGeneralRegressionFormulaAuditMatrix()

@@ -32,6 +32,7 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -89,14 +90,13 @@ public class PreProcessEncoder extends RExpEncoder {
 
 			@Override
 			public Feature apply(Feature feature){
-				FieldName name = feature.getName();
+				Expression expression = encodeExpression(feature);
 
-				Expression expression = encodeExpression(name);
 				if(expression == null){
 					return feature;
 				}
 
-				DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, expression);
+				DerivedField derivedField = createDerivedField(FeatureUtil.createName("preProcess", feature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
 
 				return new ContinuousFeature(PreProcessEncoder.this, derivedField);
 			}
@@ -105,8 +105,10 @@ public class PreProcessEncoder extends RExpEncoder {
 		return schema.toTransformedSchema(function);
 	}
 
-	private Expression encodeExpression(FieldName name){
-		Expression expression = new FieldRef(name);
+	private Expression encodeExpression(Feature feature){
+		FieldName name = feature.getName();
+
+		Expression expression = feature.ref();
 
 		List<Double> ranges = this.ranges.get(name);
 		if(ranges != null){

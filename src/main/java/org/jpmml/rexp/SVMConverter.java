@@ -21,43 +21,33 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.dmg.pmml.Apply;
-import org.dmg.pmml.Array;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
-import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.RealSparseArray;
-import org.dmg.pmml.regression.CategoricalPredictor;
-import org.dmg.pmml.support_vector_machine.Coefficient;
-import org.dmg.pmml.support_vector_machine.Coefficients;
 import org.dmg.pmml.support_vector_machine.LinearKernel;
 import org.dmg.pmml.support_vector_machine.PolynomialKernel;
 import org.dmg.pmml.support_vector_machine.RadialBasisKernel;
 import org.dmg.pmml.support_vector_machine.SigmoidKernel;
-import org.dmg.pmml.support_vector_machine.SupportVector;
-import org.dmg.pmml.support_vector_machine.SupportVectorMachine;
 import org.dmg.pmml.support_vector_machine.SupportVectorMachineModel;
-import org.dmg.pmml.support_vector_machine.SupportVectors;
-import org.dmg.pmml.support_vector_machine.VectorDictionary;
-import org.dmg.pmml.support_vector_machine.VectorFields;
-import org.dmg.pmml.support_vector_machine.VectorInstance;
-import org.jpmml.converter.BinaryFeature;
-import org.jpmml.converter.CMatrixUtil;
-import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.FeatureUtil;
+import org.jpmml.converter.FortranMatrix;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.OutlierTransformation;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.Transformation;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.support_vector_machine.LibSVMUtil;
 
 public class SVMConverter extends ModelConverter<RGenericVector> {
 
@@ -104,32 +94,12 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
 				{
-					supportVectorMachineModel = encodeClassification(nSv, sv, rho, coefs, schema);
+					supportVectorMachineModel = encodeClassification(sv, nSv, rho, coefs, schema);
 				}
 				break;
 			case ONE_CLASSIFICATION:
 				{
-					Transformation outlier = new Transformation(){
-
-						@Override
-						public FieldName getName(FieldName name){
-							return FieldName.create("outlier");
-						}
-
-						@Override
-						public DataType getDataType(DataType dataType){
-							return DataType.BOOLEAN;
-						}
-
-						@Override
-						public OpType getOpType(OpType opType){
-							return OpType.CATEGORICAL;
-						}
-
-						@Override
-						public boolean isFinalResult(){
-							return true;
-						}
+					Transformation outlier = new OutlierTransformation(){
 
 						@Override
 						public Expression createExpression(FieldRef fieldRef){
@@ -139,6 +109,10 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 					supportVectorMachineModel = encodeRegression(sv, rho, coefs, schema)
 						.setOutput(ModelUtil.createPredictedOutput(FieldName.create("decisionFunction"), OpType.CONTINUOUS, DataType.DOUBLE, outlier));
+
+					if(yScale != null && yScale.size() > 0){
+						throw new IllegalArgumentException();
+					}
 				}
 				break;
 			case EPS_REGRESSION:
@@ -158,7 +132,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				throw new IllegalArgumentException();
 		}
 
-		supportVectorMachineModel.setKernel(svmKernel.encodeKernel(degree.asScalar(), gamma.asScalar(), coef0.asScalar()));
+		supportVectorMachineModel.setKernel(svmKernel.createKernel(degree.asScalar(), gamma.asScalar(), coef0.asScalar()));
 
 		return supportVectorMachineModel;
 	}
@@ -220,9 +194,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					{
 						RStringVector stringLevels = (RStringVector)levels;
 
-						dataField.setOpType(OpType.CATEGORICAL);
-
-						PMMLUtil.addValues(dataField, stringLevels.getValues());
+						dataField = encoder.toCategorical(dataField.getName(), stringLevels.getValues());
 					}
 					break;
 				case ONE_CLASSIFICATION:
@@ -362,7 +334,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			if(scaled.getValue(i)){
 				feature = feature.toContinuousFeature();
 
-				FieldName name = FieldName.create("scale(" + (feature.getName()).getValue() + ")");
+				FieldName name = FeatureUtil.createName("scale", feature);
 
 				DerivedField derivedField = encoder.getDerivedField(name);
 				if(derivedField == null){
@@ -384,165 +356,28 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private SupportVectorMachineModel encodeClassification(RIntegerVector nSv, RDoubleVector sv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
-		VectorDictionary vectorDictionary = encodeVectorDictionary(sv, schema);
+	private SupportVectorMachineModel encodeClassification(RDoubleVector sv, RIntegerVector nSv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
+		RStringVector rowNames = sv.dimnames(0);
+		RStringVector columnNames = sv.dimnames(1);
 
-		List<VectorInstance> vectorInstances = vectorDictionary.getVectorInstances();
-
-		int numberOfVectors = 0;
-
-		int[] offsets = new int[nSv.size() + 1];
-
-		for(int i = 0; i < nSv.size(); i++){
-			numberOfVectors += nSv.getValue(i);
-
-			offsets[i + 1] = offsets[i] + nSv.getValue(i);
-		}
-
-		List<SupportVectorMachine> supportVectorMachines = new ArrayList<>();
-
-		int i = 0;
-
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
-
-		for(int first = 0, size = categoricalLabel.size(); first < size; first++){
-
-			for(int second = first + 1; second < size; second++){
-				List<VectorInstance> svmVectorInstances = new ArrayList<>();
-				svmVectorInstances.addAll(slice(vectorInstances, offsets, first));
-				svmVectorInstances.addAll(slice(vectorInstances, offsets, second));
-
-				Double svmRho = rho.getValue(i);
-
-				List<Double> svmCoefs = new ArrayList<>();
-				svmCoefs.addAll(slice(CMatrixUtil.getRow(coefs.getValues(), size - 1, numberOfVectors, second - 1), offsets, first));
-				svmCoefs.addAll(slice(CMatrixUtil.getRow(coefs.getValues(), size - 1, numberOfVectors, first), offsets, second));
-
-				SupportVectorMachine supportVectorMachine = encodeSupportVectorMachine(svmVectorInstances, svmRho, svmCoefs)
-					.setTargetCategory(categoricalLabel.getValue(first))
-					.setAlternateTargetCategory(categoricalLabel.getValue(second));
-
-				supportVectorMachines.add(supportVectorMachine);
-
-				i++;
-			}
-		}
-
-		SupportVectorMachineModel supportVectorMachineModel = new SupportVectorMachineModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema), vectorDictionary, supportVectorMachines)
-			.setClassificationMethod(SupportVectorMachineModel.ClassificationMethod.ONE_AGAINST_ONE);
-
-		return supportVectorMachineModel;
+		return LibSVMUtil.createClassification(new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), nSv.getValues(), rowNames.getValues(), rho.getValues(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
 	}
 
 	static
 	private SupportVectorMachineModel encodeRegression(RDoubleVector sv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
-		VectorDictionary vectorDictionary = encodeVectorDictionary(sv, schema);
-
-		List<VectorInstance> vectorInstances = vectorDictionary.getVectorInstances();
-
-		List<SupportVectorMachine> supportVectorMachines = new ArrayList<>();
-		supportVectorMachines.add(encodeSupportVectorMachine(vectorInstances, rho.asScalar(), coefs.getValues()));
-
-		SupportVectorMachineModel supportvectorMachineModel = new SupportVectorMachineModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), vectorDictionary, supportVectorMachines);
-
-		return supportvectorMachineModel;
-	}
-
-	static
-	private VectorDictionary encodeVectorDictionary(RDoubleVector sv, Schema schema){
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		List<Feature> features = schema.getFeatures();
-
-		if(columnNames.size() != features.size()){
-			throw new IllegalArgumentException();
-		}
-
-		VectorFields vectorFields = new VectorFields();
-
-		for(Feature feature : features){
-
-			if(feature instanceof BinaryFeature){
-				BinaryFeature binaryFeature = (BinaryFeature)feature;
-
-				CategoricalPredictor categoricalPredictor = new CategoricalPredictor(binaryFeature.getName(), binaryFeature.getValue(), 1d);
-
-				vectorFields.addContent(categoricalPredictor);
-			} else
-
-			{
-				ContinuousFeature continuousFeature = feature.toContinuousFeature();
-
-				vectorFields.addContent(continuousFeature.ref());
-			}
-		}
-
-		VectorDictionary vectorDictionary = new VectorDictionary(vectorFields);
-
-		Double defaultValue = 0d;
-
-		for(int i = 0; i < rowNames.size(); i++){
-			String rowName = rowNames.getValue(i);
-
-			VectorInstance vectorInstance = new VectorInstance(rowName);
-
-			List<Double> values = FortranMatrixUtil.getRow(sv.getValues(), rowNames.size(), columnNames.size(), i);
-
-			if(ValueUtil.isSparse(values, defaultValue, 0.75d)){
-				RealSparseArray sparseArray = PMMLUtil.createRealSparseArray(values, defaultValue);
-
-				vectorInstance.setRealSparseArray(sparseArray);
-			} else
-
-			{
-				Array array = PMMLUtil.createRealArray(values);
-
-				vectorInstance.setArray(array);
-			}
-
-			vectorDictionary.addVectorInstances(vectorInstance);
-		}
-
-		return vectorDictionary;
+		return LibSVMUtil.createRegression(new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), rowNames.getValues(), rho.asScalar(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
 	}
 
-	static
-	private SupportVectorMachine encodeSupportVectorMachine(List<VectorInstance> vectorInstances, Double rho, List<Double> coefs){
+	private static final Function<Double, Double> FUNCTION_NEGATE = new Function<Double, Double>(){
 
-		if(vectorInstances.size() != coefs.size()){
-			throw new IllegalArgumentException();
+		@Override
+		public Double apply(Double value){
+			return -1d * value;
 		}
-
-		Coefficients coefficients = new Coefficients()
-			.setAbsoluteValue(rho);
-
-		SupportVectors supportVectors = new SupportVectors();
-
-		for(int i = 0; i < vectorInstances.size(); i++){
-			Double coef = coefs.get(i);
-			VectorInstance vectorInstance = vectorInstances.get(i);
-
-			Coefficient coefficient = new Coefficient()
-				.setValue(-1d * coef);
-
-			coefficients.addCoefficients(coefficient);
-
-			SupportVector supportVector = new SupportVector(vectorInstance.getId());
-
-			supportVectors.addSupportVectors(supportVector);
-		}
-
-		SupportVectorMachine supportVectorMachine = new SupportVectorMachine(coefficients)
-			.setSupportVectors(supportVectors);
-
-		return supportVectorMachine;
-	}
-
-	static
-	private <E> List<E> slice(List<E> list, int[] offsets, int index){
-		return list.subList(offsets[index], offsets[index + 1]);
-	}
+	};
 
 	private enum Type {
 		C_CLASSIFICATION,
@@ -557,14 +392,14 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		LINEAR(){
 
 			@Override
-			public LinearKernel encodeKernel(Double degree, Double gamma, Double coef0){
+			public LinearKernel createKernel(Double degree, Double gamma, Double coef0){
 				return new LinearKernel();
 			}
 		},
 		POLYNOMIAL(){
 
 			@Override
-			public PolynomialKernel encodeKernel(Double degree, Double gamma, Double coef0){
+			public PolynomialKernel createKernel(Double degree, Double gamma, Double coef0){
 				return new PolynomialKernel()
 					.setGamma(gamma)
 					.setCoef0(coef0)
@@ -574,7 +409,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RADIAL(){
 
 			@Override
-			public RadialBasisKernel encodeKernel(Double degree, Double gamma, Double coef0){
+			public RadialBasisKernel createKernel(Double degree, Double gamma, Double coef0){
 				return new RadialBasisKernel()
 					.setGamma(gamma);
 			}
@@ -582,7 +417,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		SIGMOID(){
 
 			@Override
-			public SigmoidKernel encodeKernel(Double degree, Double gamma, Double coef0){
+			public SigmoidKernel createKernel(Double degree, Double gamma, Double coef0){
 				return new SigmoidKernel()
 					.setGamma(gamma)
 					.setCoef0(coef0);
@@ -591,6 +426,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		;
 
 		abstract
-		public org.dmg.pmml.support_vector_machine.Kernel encodeKernel(Double degree, Double gamma, Double coef0);
+		public org.dmg.pmml.support_vector_machine.Kernel createKernel(Double degree, Double gamma, Double coef0);
 	}
 }

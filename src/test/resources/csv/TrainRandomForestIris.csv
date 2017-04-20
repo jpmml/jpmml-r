@@ -1,4 +1,4 @@
-_target,probability_setosa,probability_versicolor,probability_virginica
+_target,probability(setosa),probability(versicolor),probability(virginica)
 setosa,1,0,0
 setosa,1,0,0
 setosa,1,0,0

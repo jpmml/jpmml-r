@@ -2,7 +2,7 @@ library("party")
 
 source("util.R")
 
-predictCTree = function(ctree, data, targetName){
+predictClassificationTree = function(ctree, data, targetName, probabilityNames){
 	target = data[, targetName]
 
 	classes = ctree@predict_response(newdata = data, type = "response")
@@ -11,10 +11,11 @@ predictCTree = function(ctree, data, targetName){
 
 	# Convert from list of lists to data.frame
 	probabilities = data.frame(matrix(unlist(probabilities), nrow = nrow(data), byrow = TRUE))
-	names(probabilities) = lapply(levels(target), function(value){ return (paste("probability", value, sep = "_")) })
+	names(probabilities) = probabilityNames
 
-	result = data.frame("y" = classes, probabilities, "nodeId" = nodes)
-	names(result) = gsub("^y$", targetName, names(result))
+	result = data.frame(classes)
+	names(result) = c(targetName)
+	result = data.frame(result, probabilities, "nodeId" = nodes, check.names = FALSE)
 
 	return (result)
 }
@@ -26,7 +27,7 @@ generateBinaryTreeAudit = function(){
 	print(audit.ctree)
 
 	storeRds(audit.ctree, "BinaryTreeAudit")
-	storeCsv(predictCTree(audit.ctree, audit, "Adjusted"), "BinaryTreeAudit")
+	storeCsv(predictClassificationTree(audit.ctree, audit, "Adjusted", c("probability(0)", "probability(1)")), "BinaryTreeAudit")
 }
 
 set.seed(42)
@@ -57,7 +58,7 @@ generateBinaryTreeIris = function(){
 	print(iris.ctree)
 
 	storeRds(iris.ctree, "BinaryTreeIris")
-	storeCsv(predictCTree(iris.ctree, iris, "Species"), "BinaryTreeIris")
+	storeCsv(predictClassificationTree(iris.ctree, iris, "Species", c("probability(setosa)", "probability(versicolor)", "probability(virginica)")), "BinaryTreeIris")
 }
 
 set.seed(42)

@@ -22,7 +22,7 @@ generateKMeansIris = function(){
 	center_3 = as.list(centers[3, ])
 
 	storeRds(iris.kmeans, "KMeansIris")
-	storeCsv(data.frame("cluster" = cluster, "affinity_1" = affinity(iris_x, center_1), "affinity_2" = affinity(iris_x, center_2), "affinity_3" = affinity(iris_x, center_3)), "KMeansIris")
+	storeCsv(data.frame("cluster" = cluster, "affinity(1)" = affinity(iris_x, center_1), "affinity(2)" = affinity(iris_x, center_2), "affinity(3)" = affinity(iris_x, center_3), check.names = FALSE), "KMeansIris")
 }
 
 set.seed(42)

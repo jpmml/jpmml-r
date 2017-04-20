@@ -7,7 +7,7 @@ audit = loadAuditCsv("Audit")
 predictLogisticRegressionAudit = function(audit.lrm){
 	probabilities = predict(audit.lrm, newdata = audit, type = "fitted")
 
-	result = data.frame("Adjusted" = as.integer(probabilities > 0.5), "probability_0" = (1 - probabilities), "probability_1" = probabilities)
+	result = data.frame("Adjusted" = as.integer(probabilities > 0.5), "probability(0)" = (1 - probabilities), "probability(1)" = probabilities, check.names = FALSE)
 
 	return (result)
 }

@@ -23,13 +23,11 @@ import java.util.List;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.OpType;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
@@ -51,11 +49,7 @@ public class LRMConverter extends RMSConverter {
 
 		Label label = encoder.getLabel();
 
-		DataField dataField = (DataField)encoder.getField(label.getName());
-
-		dataField.setOpType(OpType.CATEGORICAL);
-
-		PMMLUtil.addValues(dataField, freqNames.getValues());
+		DataField dataField = encoder.toCategorical(label.getName(), freqNames.getValues());
 
 		encoder.setLabel(dataField);
 	}
