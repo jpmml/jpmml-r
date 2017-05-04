@@ -105,11 +105,11 @@ public class Main {
 
 			RExpParser parser = new RExpParser(is);
 
-			long start = System.currentTimeMillis();
+			long begin = System.currentTimeMillis();
 			rexp = parser.parse();
 			long end = System.currentTimeMillis();
 
-			logger.info("Parsed RDS in {} ms.", (end - start));
+			logger.info("Parsed RDS in {} ms.", (end - begin));
 		} catch(Exception e){
 			logger.error("Failed to parse RDS", e);
 
@@ -145,11 +145,11 @@ public class Main {
 		try {
 			logger.info("Converting..");
 
-			long start = System.currentTimeMillis();
+			long begin = System.currentTimeMillis();
 			pmml = converter.encodePMML();
 			long end = System.currentTimeMillis();
 
-			logger.info("Converted in {} ms.", (end - start));
+			logger.info("Converted in {} ms.", (end - begin));
 		} catch(Exception e){
 			logger.error("Failed to convert", e);
 
@@ -159,11 +159,11 @@ public class Main {
 		try(OutputStream os = new FileOutputStream(this.output)){
 			logger.info("Marshalling PMML..");
 
-			long start = System.currentTimeMillis();
+			long begin = System.currentTimeMillis();
 			MetroJAXBUtil.marshalPMML(pmml, os);
 			long end = System.currentTimeMillis();
 
-			logger.info("Marshalled PMML in {} ms.", (end - start));
+			logger.info("Marshalled PMML in {} ms.", (end - begin));
 		} catch(Exception e){
 			logger.error("Failed to marshal PMML", e);
 

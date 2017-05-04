@@ -301,12 +301,12 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		{
-			ContinuousFeature continuusFeature = feature.toContinuousFeature();
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
 			String value = ValueUtil.formatValue(splitValue);
 
-			leftPredicate = createSimplePredicate(continuusFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(continuusFeature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
 		Node leftChild = new Node()
