@@ -292,7 +292,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			int splitLevelIndex = ValueUtil.asInt(splitValue);
+			int splitLevelIndex = ValueUtil.asInt(Math.floor(splitValue.doubleValue()));
 
 			List<String> values = categoricalFeature.getValues();
 
