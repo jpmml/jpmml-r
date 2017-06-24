@@ -18,31 +18,20 @@
  */
 package org.jpmml.rexp;
 
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
 import org.dmg.pmml.FieldName;
-import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
 public class IForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateIsolationForestAuto() throws Exception {
-		evaluateIsolationForest("Auto");
+		evaluate("IForest", "Auto", excludeFields(IForestConverterTest.pathLengthFields));
 	}
 
 	@Test
 	public void evaluateIsolationForestIris() throws Exception {
-		evaluateIsolationForest("Iris");
+		evaluate("IForest", "Iris", excludeFields(IForestConverterTest.pathLengthFields));
 	}
 
-	private void evaluateIsolationForest(String dataset) throws Exception {
-
-		try(Batch batch = createBatch("IForest", dataset)){
-			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("rawPathLength"), FieldName.create("normalizedPathLength"));
-
-			evaluate(batch, ignoredFields);
-		}
-	}
+	private static final FieldName[] pathLengthFields = {FieldName.create("rawPathLength"), FieldName.create("normalizedPathLength")};
 }

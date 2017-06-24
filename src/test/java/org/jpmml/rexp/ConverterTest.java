@@ -20,21 +20,33 @@ package org.jpmml.rexp;
 
 import java.io.InputStream;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Predicate;
+import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ArchiveBatch;
 import org.jpmml.evaluator.IntegrationTest;
 import org.jpmml.evaluator.IntegrationTestBatch;
+import org.jpmml.evaluator.PMMLEquivalence;
 
 abstract
 public class ConverterTest extends IntegrationTest {
 
-	@Override
-	protected ArchiveBatch createBatch(String name, String dataset){
-		return createBatch(name, dataset, null);
+	public ConverterTest(){
+		super(new PMMLEquivalence(1e-9, 1e-9));
 	}
 
-	protected ArchiveBatch createBatch(String name, String dataset, final Class<? extends Converter<? extends RExp>> clazz){
-		ArchiveBatch result = new IntegrationTestBatch(name, dataset){
+	public ConverterTest(Equivalence<Object> equivalence){
+		super(equivalence);
+	}
+
+	@Override
+	protected ArchiveBatch createBatch(String name, String dataset, Predicate<FieldName> predicate){
+		return createBatch(name, dataset, predicate, null);
+	}
+
+	protected ArchiveBatch createBatch(String name, String dataset, Predicate<FieldName> predicate, final Class<? extends Converter<? extends RExp>> clazz){
+		ArchiveBatch result = new IntegrationTestBatch(name, dataset, predicate){
 
 			@Override
 			public IntegrationTest getIntegrationTest(){

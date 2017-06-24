@@ -18,13 +18,14 @@
  */
 package org.jpmml.rexp;
 
-import java.util.Set;
-
-import org.dmg.pmml.FieldName;
-import org.jpmml.evaluator.Batch;
+import org.jpmml.evaluator.PMMLEquivalence;
 import org.junit.Test;
 
 public class XGBoostConverterTest extends ConverterTest {
+
+	public XGBoostConverterTest(){
+		super(new PMMLEquivalence(1e-6, 1e-6));
+	}
 
 	@Test
 	public void evaluateXGBoostAutoNA() throws Exception {
@@ -34,10 +35,5 @@ public class XGBoostConverterTest extends ConverterTest {
 	@Test
 	public void evaluateXGBoostIris() throws Exception {
 		evaluate("XGBoost", "Iris");
-	}
-
-	@Override
-	public void evaluate(Batch batch, Set<FieldName> ignoredFields) throws Exception {
-		evaluate(batch, ignoredFields, 1e-6, 1e-6);
 	}
 }

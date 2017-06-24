@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import com.google.common.base.Predicates;
+import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
@@ -42,8 +44,8 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateFormulaAuto() throws Exception {
 		evaluate("GeneralRegressionFormula", "Auto");
 
-		try(Batch batch = createBatch("GeneralRegressionFormula", "Auto", LMConverter.class)){
-			evaluate(batch);
+		try(Batch batch = createBatch("GeneralRegressionFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+			evaluate(batch, null);
 		}
 	}
 
@@ -51,8 +53,8 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateCustFormulaAuto() throws Exception {
 		evaluate("GeneralRegressionCustFormula", "Auto");
 
-		try(Batch batch = createBatch("GeneralRegressionCustFormula", "Auto", LMConverter.class)){
-			evaluate(batch);
+		try(Batch batch = createBatch("GeneralRegressionCustFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+			evaluate(batch, null);
 		}
 	}
 

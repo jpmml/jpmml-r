@@ -18,11 +18,7 @@
  */
 package org.jpmml.rexp;
 
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
 import org.dmg.pmml.FieldName;
-import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
 public class SVMConverterTest extends ConverterTest {
@@ -34,12 +30,7 @@ public class SVMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAnomalyFormulaAudit() throws Exception {
-
-		try(Batch batch = createBatch("LibSVMAnomalyFormula", "Audit")){
-			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("decisionFunction"));
-
-			evaluate(batch, ignoredFields);
-		}
+		evaluate("LibSVMAnomalyFormula", "Audit", excludeFields(SVMConverterTest.decisionFunctionFields));
 	}
 
 	@Test
@@ -59,16 +50,13 @@ public class SVMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAnomalyFormulaIris() throws Exception {
-
-		try(Batch batch = createBatch("LibSVMAnomalyFormula", "Iris")){
-			Set<FieldName> ignoredFields = ImmutableSet.of(FieldName.create("decisionFunction"));
-
-			evaluate(batch, ignoredFields);
-		}
+		evaluate("LibSVMAnomalyFormula", "Iris", excludeFields(SVMConverterTest.decisionFunctionFields));
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
 		evaluate("LibSVM", "Iris");
 	}
+
+	private static final FieldName[] decisionFunctionFields = {FieldName.create("decisionFunction")};
 }
