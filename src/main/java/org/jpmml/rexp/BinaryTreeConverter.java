@@ -28,6 +28,7 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
@@ -41,7 +42,6 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.converter.tree.TreeModelUtil;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -71,8 +71,25 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		RGenericVector tree = (RGenericVector)binaryTree.getAttributeValue("tree");
 
+		Output output;
+
+		switch(this.miningFunction){
+			case REGRESSION:
+				output = new Output();
+				break;
+			case CLASSIFICATION:
+				CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
+				output = ModelUtil.createProbabilityOutput(categoricalLabel);
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		output.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
+
 		TreeModel treeModel = encodeTreeModel(tree, schema)
-			.setOutput(TreeModelUtil.createNodeOutput(schema));
+			.setOutput(output);
 
 		return treeModel;
 	}
@@ -300,8 +317,6 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			throw new IllegalArgumentException();
 		}
 
-		List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
-
 		Double maxProbability = null;
 
 		for(int i = 0; i < categoricalLabel.size(); i++){
@@ -316,7 +331,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
 
-			scoreDistributions.add(scoreDistribution);
+			node.addScoreDistributions(scoreDistribution);
 		}
 
 		return node;

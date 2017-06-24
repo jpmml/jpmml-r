@@ -174,7 +174,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		MiningModel miningModel = createMiningModel(treeModels, initF, segmentSchema)
 			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue"), OpType.CONTINUOUS, DataType.DOUBLE));
 
-		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 0d, -coefficient, RegressionModel.NormalizationMethod.SOFTMAX, true, schema);
+		return MiningModelUtil.createBinaryLogisticClassification(miningModel, -coefficient, 0d, RegressionModel.NormalizationMethod.SOFTMAX, true, schema);
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){

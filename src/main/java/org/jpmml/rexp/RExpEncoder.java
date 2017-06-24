@@ -19,17 +19,12 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.PMML;
 import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
@@ -39,7 +34,6 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.Schema;
-import org.jpmml.model.visitors.FieldRenamer;
 
 public class RExpEncoder extends ModelEncoder {
 
@@ -47,22 +41,6 @@ public class RExpEncoder extends ModelEncoder {
 
 	private List<Feature> features = new ArrayList<>();
 
-	private Map<FieldName, FieldName> renamedFields = new LinkedHashMap<>();
-
-
-	@Override
-	public PMML encodePMML(Model model){
-		PMML pmml = super.encodePMML(model);
-
-		Collection<Map.Entry<FieldName, FieldName>> entries = this.renamedFields.entrySet();
-		for(Map.Entry<FieldName, FieldName> entry : entries){
-			FieldRenamer renamer = new FieldRenamer(entry.getKey(), entry.getValue());
-
-			renamer.applyTo(pmml);
-		}
-
-		return pmml;
-	}
 
 	@Override
 	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<String> values){
@@ -72,10 +50,6 @@ public class RExpEncoder extends ModelEncoder {
 		}
 
 		return super.createDataField(name, opType, dataType, values);
-	}
-
-	public void renameField(FieldName from, FieldName to){
-		this.renamedFields.put(from, to);
 	}
 
 	public Schema createSchema(){

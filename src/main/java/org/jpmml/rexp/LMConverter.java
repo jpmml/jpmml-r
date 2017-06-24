@@ -22,11 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
-import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.regression.RegressionModelUtil;
 
@@ -131,10 +128,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
-		RegressionModel regressionModel = new RegressionModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), null)
-			.addRegressionTables(RegressionModelUtil.createRegressionTable(features, intercept, featureCoefficients));
-
-		return regressionModel;
+		return RegressionModelUtil.createRegression(features, featureCoefficients, intercept, schema);
 	}
 
 	public String getInterceptName(){
