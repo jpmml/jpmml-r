@@ -80,7 +80,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			case CLASSIFICATION:
 				CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-				output = ModelUtil.createProbabilityOutput(categoricalLabel);
+				output = ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel);
 				break;
 			default:
 				throw new IllegalArgumentException();
@@ -179,7 +179,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		encodeNode(root, tree, schema);
 
-		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema), root)
+		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

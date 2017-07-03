@@ -178,11 +178,11 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
 		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 
 		List<Model> miningModels = new ArrayList<>();
-
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 		for(int i = 0, columns = categoricalLabel.size(), rows = (treeModels.size() / columns); i < columns; i++){
 			MiningModel miningModel = createMiningModel(CMatrixUtil.getColumn(treeModels, rows, columns, i), initF, segmentSchema)
@@ -201,7 +201,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, tree, c_splits, schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
 
 		return treeModel;
@@ -297,9 +297,11 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 	static
 	private MiningModel createMiningModel(List<TreeModel> treeModels, Double initF, Schema schema){
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+		ContinuousLabel continuousLabel = (ContinuousLabel)schema.getLabel();
+
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(continuousLabel))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
-			.setTargets(ModelUtil.createRescaleTargets(schema, null, initF));
+			.setTargets(ModelUtil.createRescaleTargets(null, initF, continuousLabel));
 
 		return miningModel;
 	}

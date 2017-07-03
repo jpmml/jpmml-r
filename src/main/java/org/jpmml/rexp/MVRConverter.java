@@ -141,7 +141,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			intercept -= (featureCoefficients.get(j) * xMeans.getValue(j));
 		}
 
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), null, null, null)
 			.setLinkFunction(GeneralRegressionModel.LinkFunction.IDENTITY);
 
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, null);

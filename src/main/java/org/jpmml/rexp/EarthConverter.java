@@ -196,7 +196,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		List<Double> featureCoefficients = (coefficients.getValues()).subList(1, features.size() + 1);
 
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), null, null, null)
 			.setLinkFunction(GeneralRegressionModel.LinkFunction.IDENTITY);
 
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, null);

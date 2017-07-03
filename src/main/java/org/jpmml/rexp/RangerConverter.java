@@ -35,6 +35,7 @@ import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
@@ -157,7 +158,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.REGRESSION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels));
 
 		return miningModel;
@@ -185,7 +186,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.CLASSIFICATION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels));
 
 		return miningModel;
@@ -196,6 +197,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		final
 		RStringVector levels = (RStringVector)forest.getValue("levels");
+
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
@@ -227,9 +230,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.CLASSIFICATION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels))
-			.setOutput(ModelUtil.createProbabilityOutput(schema));
+			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return miningModel;
 	}
@@ -263,7 +266,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

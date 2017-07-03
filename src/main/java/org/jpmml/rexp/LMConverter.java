@@ -128,7 +128,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
-		return RegressionModelUtil.createRegression(features, featureCoefficients, intercept, schema);
+		return RegressionModelUtil.createRegression(features, featureCoefficients, intercept, null, schema);
 	}
 
 	public String getInterceptName(){

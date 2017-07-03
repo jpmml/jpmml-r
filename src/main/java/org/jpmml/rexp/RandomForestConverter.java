@@ -242,7 +242,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels));
 
 		return miningModel;
@@ -256,19 +256,19 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
 		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
 
+		int rows = nrnodes.asScalar();
+		int columns = ValueUtil.asInt(ntree.asScalar());
+
+		final
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){
-
-			private CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
-
 
 			@Override
 			public String encode(Integer value){
-				return this.categoricalLabel.getValue(value - 1);
+				return categoricalLabel.getValue(value - 1);
 			}
 		};
-
-		int rows = nrnodes.asScalar();
-		int columns = ValueUtil.asInt(ntree.asScalar());
 
 		Schema segmentSchema = schema.toAnonymousSchema();
 
@@ -291,9 +291,9 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels))
-			.setOutput(ModelUtil.createProbabilityOutput(schema));
+			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return miningModel;
 	}
@@ -305,7 +305,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

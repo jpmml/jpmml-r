@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
@@ -48,9 +49,9 @@ public class GLMConverter extends LMConverter {
 
 		super.encodeSchema(encoder);
 
-		GeneralRegressionModel.Distribution distribution = parseFamily(familyFamily.asScalar());
-		switch(distribution){
-			case BINOMIAL:
+		MiningFunction miningFunction = getMiningFunction(familyFamily.asScalar());
+		switch(miningFunction){
+			case CLASSIFICATION:
 				Label label = encoder.getLabel();
 
 				RIntegerVector variable = (RIntegerVector)model.getValue((label.getName()).getValue());
@@ -85,21 +86,27 @@ public class GLMConverter extends LMConverter {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
+		MiningFunction miningFunction = getMiningFunction(familyFamily.asScalar());
+
 		String targetCategory = null;
 
-		if(label instanceof CategoricalLabel){
-			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
+		switch(miningFunction){
+			case CLASSIFICATION:
+				{
+					CategoricalLabel categoricalLabel = (CategoricalLabel)label;
 
-			if(categoricalLabel.size() != 2){
-				throw new IllegalArgumentException();
-			}
+					if(categoricalLabel.size() != 2){
+						throw new IllegalArgumentException();
+					}
 
-			targetCategory = categoricalLabel.getValue(1);
+					targetCategory = categoricalLabel.getValue(1);
+				}
+				break;
+			default:
+				break;
 		}
 
-		MiningFunction miningFunction = (targetCategory != null ? MiningFunction.CLASSIFICATION : MiningFunction.REGRESSION);
-
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(schema), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(label), null, null, null)
 			.setDistribution(parseFamily(familyFamily.asScalar()))
 			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
 			.setLinkParameter(parseLinkParameter(familyLink.asScalar()));
@@ -108,13 +115,30 @@ public class GLMConverter extends LMConverter {
 
 		switch(miningFunction){
 			case CLASSIFICATION:
-				generalRegressionModel.setOutput(ModelUtil.createProbabilityOutput(schema));
+				generalRegressionModel.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, (CategoricalLabel)label));
 				break;
 			default:
 				break;
 		}
 
 		return generalRegressionModel;
+	}
+
+	static
+	private MiningFunction getMiningFunction(String family){
+		GeneralRegressionModel.Distribution distribution = parseFamily(family);
+
+		switch(distribution){
+			case BINOMIAL:
+				return MiningFunction.CLASSIFICATION;
+			case NORMAL:
+			case GAMMA:
+			case IGAUSS:
+			case POISSON:
+				return MiningFunction.REGRESSION;
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 
 	static

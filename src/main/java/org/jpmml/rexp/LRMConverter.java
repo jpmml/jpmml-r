@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
@@ -60,9 +61,16 @@ public class LRMConverter extends RMSConverter {
 
 		RDoubleVector coefficients = (RDoubleVector)lrm.getValue("coefficients");
 
+		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
+		if(categoricalLabel.size() != 2){
+			throw new IllegalArgumentException();
+		}
+
+		String targetCategory = categoricalLabel.getValue(1);
+
 		Double intercept = coefficients.getValue(getInterceptName(), true);
 
-		Label label = schema.getLabel();
 		List<Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
@@ -71,21 +79,9 @@ public class LRMConverter extends RMSConverter {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
-		String targetCategory = null;
-
-		if(label instanceof CategoricalLabel){
-			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
-
-			if(categoricalLabel.size() != 2){
-				throw new IllegalArgumentException();
-			}
-
-			targetCategory = categoricalLabel.getValue(1);
-		}
-
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel), null, null, null)
 			.setLinkFunction(GeneralRegressionModel.LinkFunction.LOGIT)
-			.setOutput(ModelUtil.createProbabilityOutput(schema));
+			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, targetCategory);
 

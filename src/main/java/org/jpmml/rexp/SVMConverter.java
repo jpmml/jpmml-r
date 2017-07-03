@@ -124,7 +124,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 						RDoubleVector yScaledCenter = (RDoubleVector)yScale.getValue("scaled:center");
 						RDoubleVector yScaledScale = (RDoubleVector)yScale.getValue("scaled:scale");
 
-						supportVectorMachineModel.setTargets(ModelUtil.createRescaleTargets(schema, -1d * yScaledScale.asScalar(), yScaledCenter.asScalar()));
+						supportVectorMachineModel.setTargets(ModelUtil.createRescaleTargets(-1d * yScaledScale.asScalar(), yScaledCenter.asScalar(), (ContinuousLabel)schema.getLabel()));
 					}
 				}
 				break;
