@@ -33,7 +33,7 @@ abstract
 public class ConverterTest extends IntegrationTest {
 
 	public ConverterTest(){
-		super(new PMMLEquivalence(1e-9, 1e-9));
+		super(new PMMLEquivalence(1e-13, 1e-13));
 	}
 
 	public ConverterTest(Equivalence<Object> equivalence){
