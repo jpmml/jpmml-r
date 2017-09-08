@@ -114,8 +114,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 			DataField dataField;
 
-			RStringVector levels = (RStringVector)variableLevels.getValue(independentVariableName);
-			if(levels != null){
+			if(variableLevels.hasValue(independentVariableName)){
+				RStringVector levels = (RStringVector)variableLevels.getValue(independentVariableName);
+
 				dataField = encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, levels.getValues());
 			} else
 
