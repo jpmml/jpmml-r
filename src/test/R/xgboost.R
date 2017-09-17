@@ -13,10 +13,10 @@ auto.fmap = genFMap(auto_X)
 auto.dmatrix = genDMatrix(auto_y, auto_X)
 
 generateXGBoostAutoNA = function(){
-	auto.xgboost = xgboost(data = auto.dmatrix, missing = -999, objective = "reg:linear", nrounds = 15)
-	auto.xgboost = decorate(auto.xgboost, fmap = auto.fmap, response_name = "mpg", missing = -999)
+	auto.xgboost = xgboost(data = auto.dmatrix, missing = -999, objective = "reg:linear", nrounds = 71)
+	auto.xgboost = decorate(auto.xgboost, fmap = auto.fmap, response_name = "mpg", missing = -999, ntreelimit = 17, compact = TRUE)
 
-	mpg = predict(auto.xgboost, newdata = auto.dmatrix, missing = -999)
+	mpg = predict(auto.xgboost, newdata = auto.dmatrix, missing = -999, ntreelimit = 17)
 
 	storeRds(auto.xgboost, "XGBoostAutoNA")
 	storeCsv(data.frame("mpg" = mpg), "XGBoostAutoNA")
@@ -39,7 +39,7 @@ iris.dmatrix = genDMatrix(iris_y, iris_X)
 
 generateXGBoostIris = function(){
 	iris.xgboost = xgboost(data = iris.dmatrix, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
-	iris.xgboost = decorate(iris.xgboost, fmap = iris.fmap, response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"))
+	iris.xgboost = decorate(iris.xgboost, fmap = iris.fmap, response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"), compact = TRUE)
 
 	probabilities = predict(iris.xgboost, newdata = iris.dmatrix)
 	probabilities = matrix(probabilities, ncol = 3, byrow = TRUE)

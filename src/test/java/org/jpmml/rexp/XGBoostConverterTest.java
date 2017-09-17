@@ -18,13 +18,14 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.evaluator.FloatEquivalence;
 import org.jpmml.evaluator.PMMLEquivalence;
 import org.junit.Test;
 
 public class XGBoostConverterTest extends ConverterTest {
 
 	public XGBoostConverterTest(){
-		super(new PMMLEquivalence(1e-6, 1e-6));
+		super(new FloatEquivalence(1));
 	}
 
 	@Test
@@ -34,6 +35,6 @@ public class XGBoostConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateXGBoostIris() throws Exception {
-		evaluate("XGBoost", "Iris");
+		evaluate("XGBoost", "Iris", new PMMLEquivalence(1e-6, 1e-6));
 	}
 }
