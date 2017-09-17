@@ -50,7 +50,7 @@ public class LRMConverter extends RMSConverter {
 
 		Label label = encoder.getLabel();
 
-		DataField dataField = encoder.toCategorical(label.getName(), freqNames.getValues());
+		DataField dataField = (DataField)encoder.toCategorical(label.getName(), freqNames.getValues());
 
 		encoder.setLabel(dataField);
 	}

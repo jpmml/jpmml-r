@@ -129,7 +129,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
 			if(y instanceof RIntegerVector){
-				dataField = encoder.toCategorical(dataField.getName(), RExpUtil.getFactorLevels(y));
+				dataField = (DataField)encoder.toCategorical(dataField.getName(), RExpUtil.getFactorLevels(y));
 			}
 
 			encoder.setLabel(dataField);

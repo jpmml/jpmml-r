@@ -56,7 +56,7 @@ public class GLMConverter extends LMConverter {
 
 				RIntegerVector variable = (RIntegerVector)model.getValue((label.getName()).getValue());
 
-				DataField dataField = encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
+				DataField dataField = (DataField)encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
 
 				encoder.setLabel(dataField);
 				break;

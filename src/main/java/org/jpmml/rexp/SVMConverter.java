@@ -194,7 +194,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					{
 						RStringVector stringLevels = (RStringVector)levels;
 
-						dataField = encoder.toCategorical(dataField.getName(), stringLevels.getValues());
+						dataField = (DataField)encoder.toCategorical(dataField.getName(), stringLevels.getValues());
 					}
 					break;
 				case ONE_CLASSIFICATION:
