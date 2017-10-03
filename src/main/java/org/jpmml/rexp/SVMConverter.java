@@ -151,7 +151,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		try {
 			xlevels = (RGenericVector)svm.getValue("xlevels");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No variable levels information. Please initialize the \'xlevels\' attribute", iae);
+			throw new IllegalArgumentException("No variable levels information. Please initialize the \'xlevels\' element", iae);
 		}
 
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];

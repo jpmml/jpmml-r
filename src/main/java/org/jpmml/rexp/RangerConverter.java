@@ -58,7 +58,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		try {
 			forest = (RGenericVector)ranger.getValue("forest");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No forest information. Please initialize the \'forest\' attribute", iae);
+			throw new IllegalArgumentException("No forest information. Please initialize the \'forest\' element", iae);
 		}
 
 		RGenericVector variableLevels;
@@ -66,7 +66,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		try {
 			variableLevels = (RGenericVector)ranger.getValue("variable.levels");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No variable levels information. Please initialize the \'variable.levels\' attribute", iae);
+			throw new IllegalArgumentException("No variable levels information. Please initialize the \'variable.levels\' element", iae);
 		}
 
 		RStringVector treeType = (RStringVector)ranger.getValue("treetype");

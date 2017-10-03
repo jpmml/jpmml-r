@@ -55,7 +55,7 @@ public class ScorecardConverter extends GLMConverter {
 		try {
 			scConf = (RGenericVector)glm.getValue("sc.conf");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No scorecard configuration information. Please initialize the \'sc.conf\' attribute", iae);
+			throw new IllegalArgumentException("No scorecard configuration information. Please initialize the \'sc.conf\' element", iae);
 		}
 
 		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);

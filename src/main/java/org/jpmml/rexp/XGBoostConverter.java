@@ -56,7 +56,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		try {
 			fmap = (RVector<?>)booster.getValue("fmap");
 		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No feature map information. Please initialize the \'fmap\' attribute");
+			throw new IllegalArgumentException("No feature map information. Please initialize the \'fmap\' element");
 		}
 
 		FeatureMap featureMap;
