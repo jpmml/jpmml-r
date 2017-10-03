@@ -49,7 +49,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		RExp terms = model.getAttributeValue("terms");
 
-		FormulaContext context = new FormulaContext(){
+		FormulaContext context = new ModelFrameFormulaContext(model){
 
 			@Override
 			public List<String> getCategories(String variable){
@@ -60,7 +60,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					return levels.getValues();
 				}
 
-				return null;
+				return super.getCategories(variable);
 			}
 
 			@Override
@@ -70,7 +70,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 					return data;
 				}
 
-				return model;
+				return super.getData();
 			}
 		};
 

@@ -57,31 +57,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		RStringVector rowNames = coefficients.dimnames(0);
 		RStringVector columnNames = coefficients.dimnames(1);
 
-		FormulaContext context = new FormulaContext(){
-
-			@Override
-			public List<String> getCategories(String variable){
-
-				if(model.hasValue(variable)){
-					RVector<?> vector = (RVector<?>)model.getValue(variable);
-
-					if(vector instanceof RIntegerVector){
-						RIntegerVector factor = (RIntegerVector)vector;
-
-						if(factor.isFactor()){
-							return factor.getLevelValues();
-						}
-					}
-				}
-
-				return null;
-			}
-
-			@Override
-			public RGenericVector getData(){
-				return model;
-			}
-		};
+		FormulaContext context = new ModelFrameFormulaContext(model);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
