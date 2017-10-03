@@ -29,12 +29,12 @@ public class XGBoostConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void evaluateXGBoostAutoNA() throws Exception {
+	public void evaluateAutoNA() throws Exception {
 		evaluate("XGBoost", "AutoNA");
 	}
 
 	@Test
-	public void evaluateXGBoostIris() throws Exception {
+	public void evaluateIris() throws Exception {
 		evaluate("XGBoost", "Iris", new PMMLEquivalence(1e-6, 1e-6));
 	}
 }

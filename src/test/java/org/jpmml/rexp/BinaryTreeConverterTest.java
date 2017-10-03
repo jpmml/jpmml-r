@@ -28,12 +28,12 @@ public class BinaryTreeConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void convertAuto() throws Exception {
+	public void evaluateAuto() throws Exception {
 		evaluate("BinaryTree", "Auto");
 	}
 
 	@Test
-	public void convertIris() throws Exception {
+	public void evaluateIris() throws Exception {
 		evaluate("BinaryTree", "Iris");
 	}
 }

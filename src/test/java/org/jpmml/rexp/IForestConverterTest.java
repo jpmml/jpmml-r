@@ -24,12 +24,12 @@ import org.junit.Test;
 public class IForestConverterTest extends ConverterTest {
 
 	@Test
-	public void evaluateIsolationForestAuto() throws Exception {
+	public void evaluateAuto() throws Exception {
 		evaluate("IForest", "Auto", excludeFields(IForestConverterTest.pathLengthFields));
 	}
 
 	@Test
-	public void evaluateIsolationForestIris() throws Exception {
+	public void evaluateIris() throws Exception {
 		evaluate("IForest", "Iris", excludeFields(IForestConverterTest.pathLengthFields));
 	}
 
