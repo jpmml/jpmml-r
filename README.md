@@ -13,6 +13,8 @@ Java library and command-line application for converting [R](http://www.r-projec
     * `train` - Selected JPMML-R model types
   * [`earth` package](https://cran.r-project.org/web/packages/earth/):
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
+  * [`elmNN` package](https://cran.r-project.org/web/packages/elmNN/):
+    * `elmNN` - Extreme Learning Machine (ELM) regression
   * [`e1071` package](https://cran.r-project.org/web/packages/e1071/):
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
   * [`gbm` package](http://cran.r-project.org/web/packages/gbm/):
