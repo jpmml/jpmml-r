@@ -123,7 +123,7 @@ public class Main {
 		if(this.converter != null){
 			logger.info("Initializing user-specified Converter {}", this.converter);
 
-			Class<? extends Converter> clazz = (Class<? extends Converter>)Class.forName(this.converter);
+			Class<? extends Converter<?>> clazz = (Class<? extends Converter<?>>)Class.forName(this.converter);
 
 			converter = converterFactory.newConverter(clazz, rexp);
 		} else

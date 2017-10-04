@@ -31,7 +31,7 @@ public class ConverterFactory {
 		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
 
 		for(String name : names){
-			Class<? extends Converter> clazz = ConverterFactory.converters.get(name);
+			Class<? extends Converter<?>> clazz = ConverterFactory.converters.get(name);
 
 			if(clazz != null){
 				return newConverter(clazz, rexp);
@@ -41,7 +41,7 @@ public class ConverterFactory {
 		throw new IllegalArgumentException("No built-in converter for class " + names.getValues());
 	}
 
-	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter> clazz, R rexp){
+	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter<?>> clazz, R rexp){
 
 		try {
 			Constructor<?> constructor = clazz.getDeclaredConstructor(rexp.getClass());
@@ -57,7 +57,7 @@ public class ConverterFactory {
 		return new ConverterFactory();
 	}
 
-	private static Map<String, Class<? extends Converter>> converters = new LinkedHashMap<>();
+	private static Map<String, Class<? extends Converter<?>>> converters = new LinkedHashMap<>();
 
 	static {
 		converters.put("BinaryTree", BinaryTreeConverter.class);
