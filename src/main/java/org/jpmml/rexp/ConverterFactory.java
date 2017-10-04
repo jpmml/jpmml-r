@@ -30,10 +30,9 @@ public class ConverterFactory {
 	public <R extends RExp> Converter<R> newConverter(R rexp){
 		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
 
-		for(int i = 0; i < names.size(); i++){
-			String name = names.getValue(i);
-
+		for(String name : names){
 			Class<? extends Converter> clazz = ConverterFactory.converters.get(name);
+
 			if(clazz != null){
 				return newConverter(clazz, rexp);
 			}

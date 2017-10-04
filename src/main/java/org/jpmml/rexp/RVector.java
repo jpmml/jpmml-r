@@ -18,13 +18,14 @@
  */
 package org.jpmml.rexp;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 import org.dmg.pmml.DataType;
 
 abstract
-public class RVector<V> extends RExp {
+public class RVector<V> extends RExp implements Iterable<V> {
 
 	public RVector(RPair attributes){
 		super(attributes);
@@ -41,6 +42,13 @@ public class RVector<V> extends RExp {
 
 	abstract
 	public List<V> getValues();
+
+	@Override
+	public Iterator<V> iterator(){
+		List<V> values = getValues();
+
+		return values.iterator();
+	}
 
 	public V asScalar(){
 		List<V> values = getValues();
