@@ -55,7 +55,7 @@ Enter the project root directory and build using [Apache Maven](http://maven.apa
 mvn clean install
 ```
 
-The build produces an executable uber-JAR file `target/converter-executable-1.2-SNAPSHOT.jar`.
+The build produces an executable uber-JAR file `target/converter-executable-1.3-SNAPSHOT.jar`.
 
 # Usage #
 
@@ -80,17 +80,17 @@ saveRDS(rf, "rf.rds")
 
 Converting the RDS file `rf.rds` to a PMML file `rf.pmml`:
 ```
-java -jar target/converter-executable-1.2-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
+java -jar target/converter-executable-1.3-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
 Getting help:
 ```
-java -jar target/converter-executable-1.2-SNAPSHOT.jar --help
+java -jar target/converter-executable-1.3-SNAPSHOT.jar --help
 ```
 
 The conversion of large files (1 GB and beyond) can be sped up by increasing the JVM heap size using `-Xms` and `-Xmx` options:
 ```
-java -Xms4G -Xmx8G -jar target/converter-executable-1.2-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
+java -Xms4G -Xmx8G -jar target/converter-executable-1.3-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
 # License #
