@@ -60,7 +60,7 @@ public class ScorecardConverter extends GLMConverter {
 
 		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);
 
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
 			throw new IllegalArgumentException();

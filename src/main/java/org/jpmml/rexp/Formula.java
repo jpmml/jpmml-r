@@ -30,9 +30,9 @@ import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
+import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
-import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.CategoricalFeature;
@@ -50,7 +50,7 @@ public class Formula {
 
 	private BiMap<FieldName, Feature> features = HashBiMap.create();
 
-	private List<TypeDefinitionField> fields = new ArrayList<>();
+	private List<Field<?>> fields = new ArrayList<>();
 
 
 	public Formula(RExpEncoder encoder){
@@ -100,11 +100,11 @@ public class Formula {
 		return coefficients.getValue(name.getValue());
 	}
 
-	public TypeDefinitionField getField(int index){
+	public Field<?> getField(int index){
 		return this.fields.get(index);
 	}
 
-	public void addField(TypeDefinitionField field){
+	public void addField(Field<?> field){
 		RExpEncoder encoder = getEncoder();
 
 		Feature feature = new ContinuousFeature(encoder, field);
@@ -138,11 +138,11 @@ public class Formula {
 		this.fields.add(field);
 	}
 
-	public void addField(TypeDefinitionField field, List<String> categories){
+	public void addField(Field<?> field, List<String> categories){
 		addField(field, categories, categories);
 	}
 
-	public void addField(TypeDefinitionField field, List<String> categoryNames, List<String> categoryValues){
+	public void addField(Field<?> field, List<String> categoryNames, List<String> categoryValues){
 		RExpEncoder encoder = getEncoder();
 
 		if(categoryNames.size() != categoryValues.size()){

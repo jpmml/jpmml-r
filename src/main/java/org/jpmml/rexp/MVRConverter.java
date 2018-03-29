@@ -107,7 +107,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		int columns = columnNames.size();
 		int components = compNames.size();
 
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		List<Double> featureCoefficients = FortranMatrixUtil.getColumn(coefficients.getValues(), rows, (columns * components), 0 + (ValueUtil.asInt(ncomp.asScalar()) - 1));
 

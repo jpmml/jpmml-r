@@ -23,9 +23,9 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.TypeDefinitionField;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
@@ -76,7 +76,7 @@ public class RExpEncoder extends ModelEncoder {
 		setLabel(label);
 	}
 
-	public void addFeature(TypeDefinitionField field){
+	public void addFeature(Field<?> field){
 		Feature feature;
 
 		OpType opType = field.getOpType();

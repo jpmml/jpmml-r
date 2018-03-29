@@ -188,7 +188,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		Double intercept = coefficients.getValue(0);
 
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + 1)){
 			throw new IllegalArgumentException();

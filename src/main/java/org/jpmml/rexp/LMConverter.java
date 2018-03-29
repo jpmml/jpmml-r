@@ -120,7 +120,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		Double intercept = coefficients.getValue(getInterceptName(), true);
 
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
 			throw new IllegalArgumentException();
@@ -145,7 +145,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		return coefficientNames.getDequotedValues();
 	}
 
-	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
+	public List<Double> getFeatureCoefficients(List<? extends Feature> features, RDoubleVector coefficients){
 		List<Double> result = new ArrayList<>();
 
 		for(Feature feature : features){

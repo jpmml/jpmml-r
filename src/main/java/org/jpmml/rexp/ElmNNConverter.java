@@ -100,7 +100,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector nhid = (RDoubleVector)elmNN.getValue("nhid");
 
 		Label label = schema.getLabel();
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		switch(actfun.asScalar()){
 			case "purelin":

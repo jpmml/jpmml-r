@@ -84,7 +84,7 @@ public class RMSConverter extends LMConverter {
 	}
 
 	@Override
-	public List<Double> getFeatureCoefficients(List<Feature> features, RDoubleVector coefficients){
+	public List<Double> getFeatureCoefficients(List<? extends Feature> features, RDoubleVector coefficients){
 		List<Double> values = coefficients.getValues();
 
 		return values.subList(1, values.size());

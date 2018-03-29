@@ -78,7 +78,7 @@ public class GLMConverter extends LMConverter {
 		RStringVector familyLink = (RStringVector)family.getValue("link");
 
 		Label label = schema.getLabel();
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
 			throw new IllegalArgumentException();

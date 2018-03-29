@@ -71,7 +71,7 @@ public class LRMConverter extends RMSConverter {
 
 		Double intercept = coefficients.getValue(getInterceptName(), true);
 
-		List<Feature> features = schema.getFeatures();
+		List<? extends Feature> features = schema.getFeatures();
 
 		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
 			throw new IllegalArgumentException();
