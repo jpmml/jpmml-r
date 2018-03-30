@@ -7,7 +7,7 @@ auto = loadAutoCsv("Auto")
 
 generateEarthFormulaAuto = function(){
 	auto.earth = earth(mpg ~ ., data = auto, degree = 2)
-	auto.earth = decorate(auto.earth, auto)
+	auto.earth = decorate(auto.earth, data = auto)
 	print(auto.earth)
 
 	mpg = predict(auto.earth, newdata = auto)
@@ -18,7 +18,7 @@ generateEarthFormulaAuto = function(){
 
 generateEarthCustFormulaAuto = function(){
 	auto.earth = earth(mpg ~ . + weight:horsepower + weight:acceleration + I(displacement / cylinders) + I(log(weight)), data = auto, degree = 3)
-	auto.earth = decorate(auto.earth, auto)
+	auto.earth = decorate(auto.earth, data = auto)
 	print(auto.earth)
 
 	mpg = predict(auto.earth)

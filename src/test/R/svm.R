@@ -7,7 +7,7 @@ audit = loadAuditCsv("Audit")
 
 generateLibSVMFormulaAudit = function(){
 	audit.svm = svm(Adjusted ~ ., data = audit)
-	audit.svm = decorate(audit.svm, audit)
+	audit.svm = decorate(audit.svm, data = audit)
 	print(audit.svm)
 
 	adjusted = predict(audit.svm, newdata = audit)
@@ -18,7 +18,7 @@ generateLibSVMFormulaAudit = function(){
 
 generateLibSVMAnomalyFormulaAudit = function(){
 	audit.svm = svm(~ . - Adjusted, data = audit, type = "one-classification")
-	audit.svm = decorate(audit.svm, audit)
+	audit.svm = decorate(audit.svm, data = audit)
 	print(audit.svm)
 
 	outlier = predict(audit.svm, newdata = audit)
@@ -38,7 +38,7 @@ auto_y = auto[, ncol(auto)]
 
 generateLibSVMFormulaAuto = function(){
 	auto.svm = svm(mpg ~ ., data = auto)
-	auto.svm = decorate(auto.svm, auto)
+	auto.svm = decorate(auto.svm, data = auto)
 	print(auto.svm)
 
 	mpg = predict(auto.svm, newdata = auto)
@@ -70,7 +70,7 @@ iris_y = iris[, ncol(iris)]
 
 generateLibSVMFormulaIris = function(){
 	iris.svm = svm(Species ~ ., data = iris)
-	iris.svm = decorate(iris.svm, iris)
+	iris.svm = decorate(iris.svm, data = iris)
 	print(iris.svm)
 
 	species = predict(iris.svm, newdata = iris)
@@ -81,7 +81,7 @@ generateLibSVMFormulaIris = function(){
 
 generateLibSVMAnomalyFormulaIris = function(){
 	iris.svm = svm(~ . - Species, data = iris, type = "one-classification")
-	iris.svm = decorate(iris.svm, iris)
+	iris.svm = decorate(iris.svm, data = iris)
 	print(iris.svm)
 
 	outlier = predict(iris.svm, newdata = iris)

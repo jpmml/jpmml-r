@@ -12,7 +12,7 @@ audit = loadAuditCsv("Audit")
 
 generateRangerAudit = function(){
 	audit.ranger = ranger(Adjusted ~ ., data = audit, num.trees = 7, write.forest = TRUE)
-	audit.ranger = decorate(audit.ranger, audit)
+	audit.ranger = decorate(audit.ranger, data = audit)
 	print(audit.ranger)
 
 	adjusted = predict(audit.ranger, data = audit)$predictions
@@ -23,7 +23,7 @@ generateRangerAudit = function(){
 
 generateRangerProbAudit = function(){
 	audit.ranger = ranger(Adjusted ~ ., data = audit, probability = TRUE, num.trees = 7, write.forest = TRUE)
-	audit.ranger = decorate(audit.ranger, audit)
+	audit.ranger = decorate(audit.ranger, data = audit)
 	print(audit.ranger)
 
 	probabilities = predict(audit.ranger, data = audit)$predictions
@@ -46,7 +46,7 @@ auto = predict(auto.preProc, auto.raw)
 
 generateRangerAutoNA = function(){
 	auto.ranger = ranger(mpg ~ ., data = auto, num.trees = 7, write.forest = TRUE)
-	auto.ranger = decorate(auto.ranger, auto, preProcess = auto.preProc)
+	auto.ranger = decorate(auto.ranger, data = auto, preProcess = auto.preProc)
 	print(auto.ranger)
 
 	mpg = predict(auto.ranger, data = auto)$prediction
@@ -63,7 +63,7 @@ iris = loadIrisCsv("Iris")
 
 generateRangerIris = function(){
 	iris.ranger = ranger(Species ~ ., data = iris, num.trees = 7, write.forest = TRUE)
-	iris.ranger = decorate(iris.ranger, iris)
+	iris.ranger = decorate(iris.ranger, data = iris)
 	print(iris.ranger)
 
 	species = predict(iris.ranger, data = iris)$predictions
@@ -74,7 +74,7 @@ generateRangerIris = function(){
 
 generateRangerProbIris = function(){
 	iris.ranger = ranger(Species ~ ., data = iris, probability = TRUE, num.trees = 7, write.forest = TRUE)
-	iris.ranger = decorate(iris.ranger, iris)
+	iris.ranger = decorate(iris.ranger, data = iris)
 	print(iris.ranger)
 
 	probabilities = predict(iris.ranger, data = iris)$predictions

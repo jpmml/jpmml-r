@@ -7,7 +7,7 @@ auto = loadAutoCsv("Auto")
 
 generateElmNNFormulaAuto = function(){
 	auto.elmNN = elmtrain(mpg ~ ., data = auto, nhid = 11, actfun = "purelin")
-	auto.elmNN = decorate(auto.elmNN, dataset = auto)
+	auto.elmNN = decorate(auto.elmNN, data = auto)
 	print(auto.elmNN)
 
 	mpg = predict(auto.elmNN, newdata = auto)
@@ -24,7 +24,7 @@ wine_quality = loadWineQualityCsv("WineQuality")
 
 generateElmNNFormulaWineQuality = function(){
 	wine_quality.elmNN = elmtrain(quality ~ ., data = wine_quality, nhid = 9, actfun = "purelin")
-	wine_quality.elmNN = decorate(wine_quality.elmNN, dataset = wine_quality)
+	wine_quality.elmNN = decorate(wine_quality.elmNN, data = wine_quality)
 	print(wine_quality.elmNN)
 
 	quality = predict(wine_quality.elmNN, newdata = wine_quality)
