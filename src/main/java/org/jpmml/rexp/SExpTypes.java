@@ -19,7 +19,7 @@
 package org.jpmml.rexp;
 
 /**
- * @see https://github.com/wch/r-source/blob/trunk/src/include/Rinternals.h
+ * @see <a href="https://github.com/wch/r-source/blob/trunk/src/include/Rinternals.h">Rinternals.h</a>
  */
 public interface SExpTypes {
 

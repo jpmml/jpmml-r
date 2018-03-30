@@ -19,7 +19,7 @@
 package org.jpmml.rexp;
 
 /**
- * @see https://github.com/wch/r-source/blob/trunk/src/main/serialize.c
+ * @see <a href="https://github.com/wch/r-source/blob/trunk/src/main/serialize.c">serialize.c</a>
  */
 public interface SerializationTypes {
 
