@@ -1,3 +1,4 @@
+library("caret")
 library("r2pmml")
 library("xgboost")
 
@@ -26,7 +27,11 @@ set.seed(42)
 
 generateXGBoostAutoNA()
 
-iris = loadIrisCsv("Iris")
+iris.raw = loadIrisCsv("Iris")
+
+iris.preProc = preProcess(iris.raw, method = c("range"))
+
+iris = predict(iris.preProc, newdata = iris.raw)
 
 iris_X = iris[, -ncol(iris)]
 iris_y = iris[, ncol(iris)]
@@ -39,7 +44,7 @@ iris.dmatrix = genDMatrix(iris_y, iris_X)
 
 generateXGBoostIris = function(){
 	iris.xgboost = xgboost(data = iris.dmatrix, missing = NA, objective = "multi:softprob", num_class = 3, nrounds = 15)
-	iris.xgboost = decorate(iris.xgboost, fmap = iris.fmap, response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"), compact = TRUE)
+	iris.xgboost = decorate(iris.xgboost, preProcess = iris.preProc, fmap = iris.fmap, response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"), compact = TRUE)
 
 	probabilities = predict(iris.xgboost, newdata = iris.dmatrix)
 	probabilities = matrix(probabilities, ncol = 3, byrow = TRUE)

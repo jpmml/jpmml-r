@@ -121,7 +121,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Learner learner = ensureLearner();
 
-		MiningModel miningModel = learner.encodeMiningModel((ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null), (compact != null ? compact.asScalar() : false), schema);
+		Schema xgbSchema = XGBoostUtil.toXGBoostSchema(schema);
+
+		MiningModel miningModel = learner.encodeMiningModel((ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null), (compact != null ? compact.asScalar() : false), xgbSchema);
 
 		return miningModel;
 	}
