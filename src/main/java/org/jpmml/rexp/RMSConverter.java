@@ -60,7 +60,7 @@ public class RMSConverter extends LMConverter {
 			}
 		};
 
-		encodeSchema(context, terms, encoder);
+		encodeSchema(terms, context, encoder);
 	}
 
 	@Override

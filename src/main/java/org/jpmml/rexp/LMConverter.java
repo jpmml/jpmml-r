@@ -74,10 +74,10 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			}
 		};
 
-		encodeSchema(context, terms, encoder);
+		encodeSchema(terms, context, encoder);
 	}
 
-	public void encodeSchema(FormulaContext context, RExp terms, RExpEncoder encoder){
+	public void encodeSchema(RExp terms, FormulaContext context, RExpEncoder encoder){
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
