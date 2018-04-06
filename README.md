@@ -1,35 +1,35 @@
 JPMML-R
 =======
 
-Java library and command-line application for converting [R](http://www.r-project.org/) models to PMML.
+Java library and command-line application for converting [R](https://www.r-project.org/) models to PMML.
 
 # Features #
 
 * Fast and memory-efficient:
   * Can produce a 5 GB Random Forest PMML file in less than 1 minute on a desktop PC
 * Supported model and transformation types:
-  * [`caret` package](http://cran.r-project.org/web/packages/caret/):
+  * [`caret` package](https://cran.r-project.org/package=caret):
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train` - Selected JPMML-R model types
-  * [`earth` package](https://cran.r-project.org/web/packages/earth/):
+  * [`earth` package](https://cran.r-project.org/package=earth):
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
-  * [`elmNN` package](https://cran.r-project.org/web/packages/elmNN/):
+  * [`elmNN` package](https://cran.r-project.org/package=elmNN):
     * `elmNN` - Extreme Learning Machine (ELM) regression
-  * [`e1071` package](https://cran.r-project.org/web/packages/e1071/):
+  * [`e1071` package](https://cran.r-project.org/package=e1071):
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
-  * [`gbm` package](http://cran.r-project.org/web/packages/gbm/):
+  * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
-  * [`party` package](http://cran.r-project.org/web/packages/party/):
+  * [`party` package](https://cran.r-project.org/package=party):
     * `ctree` - Conditional Inference Tree (CIT) classification
-  * [`pls` package](https://cran.r-project.org/web/packages/pls/)
+  * [`pls` package](https://cran.r-project.org/package=pls)
     * `mvr` - Multivariate Regression (MVR) regression
-  * [`randomForest` package](http://cran.r-project.org/web/packages/randomForest/):
+  * [`randomForest` package](https://cran.r-project.org/package=randomForest):
     * `randomForest` - Random Forest (RF) regression and classification
-  * [`ranger` package](https://cran.r-project.org/web/packages/ranger/):
+  * [`ranger` package](https://cran.r-project.org/package=ranger):
     * `ranger` - Random Forest regression and classification
-  * [`rms` package](https://cran.r-project.org/web/packages/rms/):
+  * [`rms` package](https://cran.r-project.org/package=rms):
     * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression
   * [`r2pmml` package](https://github.com/jpmml/r2pmml):
@@ -38,7 +38,7 @@ Java library and command-line application for converting [R](http://www.r-projec
     * `glm` - Generalized linear (GLM) regression and classification
     * `kmeans` - K-Means clustering
     * `lm` - Linear (LM) regression
-  * [`xgboost` package](https://cran.r-project.org/web/packages/xgboost/):
+  * [`xgboost` package](https://cran.r-project.org/package=xgboost):
     * `xgb.Booster` - XGBoost (XGB) regression and classification
 * Production quality:
   * Complete test coverage.
