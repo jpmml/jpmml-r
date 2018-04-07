@@ -32,6 +32,8 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`rms` package](https://cran.r-project.org/package=rms):
     * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression
+  * [`rpart` package](https://cran.r-project.org/package=rpart):
+    * `rpart` - Recursive Partitioning (RPart) regression and classification
   * [`r2pmml` package](https://github.com/jpmml/r2pmml):
     * `scorecard` - Scorecard regression
   * `stats` package:

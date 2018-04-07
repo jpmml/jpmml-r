@@ -71,6 +71,7 @@ public class ConverterFactory {
 		converters.put("lrm", LRMConverter.class);
 		converters.put("mvr", MVRConverter.class);
 		converters.put("ols", OLSConverter.class);
+		converters.put("rpart", RPartConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("ranger", RangerConverter.class);
 		converters.put("scorecard", ScorecardConverter.class);
