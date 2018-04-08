@@ -30,6 +30,13 @@ loadIrisCsv = function(name){
 	return (iris)
 }
 
+loadVersicolorCsv = function(name){
+	versicolor = loadCsv(name)
+	versicolor$Species = as.factor(versicolor$Species)
+
+	return (versicolor)
+}
+
 loadVisitCsv = function(name){
 	visit = loadCsv(name)
 	visit$outwork = as.logical(visit$outwork)

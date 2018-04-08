@@ -6,7 +6,7 @@ source("util.R")
 audit = loadAuditCsv("Audit")
 
 generateRPartAudit = function(){
-	audit.rpart = rpart(Adjusted ~ ., data = audit, control = list(cp = 0))
+	audit.rpart = rpart(Adjusted ~ ., data = audit, control = list(cp = 0, usesurrogate = 0))
 	print(audit.rpart)
 
 	adjusted = predict(audit.rpart, newdata = audit, type = "class")
@@ -23,7 +23,7 @@ generateRPartAudit()
 auto = loadAutoCsv("Auto")
 
 generateRPartAuto = function(){
-	auto.rpart = rpart(mpg ~ ., data = auto, control = list(cp = 0))
+	auto.rpart = rpart(mpg ~ ., data = auto, control = list(cp = 0, usesurrogate = 0))
 	print(auto.rpart)
 
 	mpg = predict(auto.rpart, newdata = auto)
@@ -39,7 +39,7 @@ generateRPartAuto()
 iris = loadIrisCsv("Iris")
 
 generateRPartIris = function(){
-	iris.rpart = rpart(Species ~ ., data = iris)
+	iris.rpart = rpart(Species ~ ., data = iris, control = list(cp = 0, usesurrogate = 0))
 	print(iris.rpart)
 
 	species = predict(iris.rpart, newdata = iris, type = "class")
@@ -71,7 +71,7 @@ generateTrainRPartIris()
 wine_quality = loadWineQualityCsv("WineQuality")
 
 generateRPartWineQuality = function(){
-	wine_quality.rpart = rpart(quality ~ ., data = wine_quality, control = list(cp = 0))
+	wine_quality.rpart = rpart(quality ~ ., data = wine_quality, control = list(cp = 0, usesurrogate = 0))
 	print(wine_quality.rpart)
 
 	quality = predict(wine_quality.rpart, newdata = wine_quality)
@@ -87,7 +87,7 @@ generateRPartWineQuality()
 wine_color = loadWineColorCsv("WineColor")
 
 generateRPartWineColor = function(){
-	wine_color.rpart = rpart(color ~ ., data = wine_color, control = list(cp = 0))
+	wine_color.rpart = rpart(color ~ ., data = wine_color, control = list(cp = 0, usesurrogate = 0))
 	print(wine_color.rpart)
 
 	color = predict(wine_color.rpart, newdata = wine_color, type = "class")

@@ -8,6 +8,8 @@ Java library and command-line application for converting [R](https://www.r-proje
 * Fast and memory-efficient:
   * Can produce a 5 GB Random Forest PMML file in less than 1 minute on a desktop PC
 * Supported model and transformation types:
+  * [`ada` package](https://cran.r-project.org/package=ada):
+    * `ada` - Stochastic Boosting (SB) classification
   * [`caret` package](https://cran.r-project.org/package=caret):
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train` - Selected JPMML-R model types

@@ -20,9 +20,11 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.OpType;
@@ -41,6 +43,31 @@ public class RExpEncoder extends ModelEncoder {
 
 	private List<Feature> features = new ArrayList<>();
 
+
+	public void addFields(RExpEncoder encoder){
+		Map<FieldName, DataField> dataFields = encoder.getDataFields();
+		Map<FieldName, DerivedField> derivedFields = encoder.getDerivedFields();
+
+		for(FieldName name : dataFields.keySet()){
+			DataField dataField = getDataField(name);
+
+			if(dataField == null){
+				dataField = dataFields.get(name);
+
+				addDataField(dataField);
+			}
+		}
+
+		for(FieldName name : derivedFields.keySet()){
+			DerivedField derivedField = getDerivedField(name);
+
+			if(derivedField == null){
+				derivedField = derivedFields.get(name);
+
+				addDerivedField(derivedField);
+			}
+		}
+	}
 
 	@Override
 	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<String> values){

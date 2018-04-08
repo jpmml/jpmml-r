@@ -24,7 +24,6 @@ import java.util.List;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
-import org.dmg.pmml.Model;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
@@ -118,7 +117,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Model encodeModel(Schema schema){
+	public TreeModel encodeModel(Schema schema){
 		RGenericVector rpart = getObject();
 
 		RGenericVector frame = (RGenericVector)rpart.getValue("frame");
@@ -127,6 +126,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RIntegerVector csplit = (RIntegerVector)rpart.getValue("csplit", true);
 
 		RIntegerVector var = (RIntegerVector)frame.getValue("var");
+		RIntegerVector n = (RIntegerVector)frame.getValue("n");
 		RIntegerVector ncompete = (RIntegerVector)frame.getValue("ncompete");
 		RIntegerVector nsurrogate = (RIntegerVector)frame.getValue("nsurrogate");
 
@@ -140,15 +140,15 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		switch(method.asScalar()){
 			case "anova":
-				return encodeRegression(frame, rowNames, var, splitOffsets, splits, csplit, schema);
+				return encodeRegression(frame, rowNames, var, n, splitOffsets, splits, csplit, schema);
 			case "class":
-				return encodeClassification(frame, rowNames, var, splitOffsets, splits, csplit, schema);
+				return encodeClassification(frame, rowNames, var, n, splitOffsets, splits, csplit, schema);
 			default:
 				throw new IllegalArgumentException();
 		}
 	}
 
-	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RNumberVector<?> yval = (RNumberVector<?>)frame.getValue("yval");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
@@ -156,23 +156,27 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			@Override
 			public void encode(Node node, int offset){
 				Number score = yval.getValue(offset);
+				Number recordCount = n.getValue(offset);
 
-				node.setScore(ValueUtil.formatValue(score));
+				node
+					.setScore(ValueUtil.formatValue(score))
+					.setRecordCount(recordCount.doubleValue());
 			}
 		};
 
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, 1, rowNames, var, splitOffsets, splits, csplit, scoreEncoder, schema);
+		encodeNode(root, 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root)
-			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
+			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT)
+			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION);
 
 		return treeModel;
 	}
 
-	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RDoubleVector yval2 = (RDoubleVector)frame.getValue("yval2");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
@@ -183,7 +187,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 			private List<Integer> classes = null;
 
-			private List<List<Integer>> recordCounts = new ArrayList<>();
+			private List<List<? extends Number>> recordCounts = new ArrayList<>();
 
 
 			{
@@ -195,7 +199,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 				this.classes = new ArrayList<>(classes);
 
 				for(int i = 0; i < categories.size(); i++){
-					List<Integer> recordCounts = ValueUtil.asIntegers(FortranMatrixUtil.getColumn(yval2.getValues(), rows, columns, 1 + i));
+					List<? extends Number> recordCounts = FortranMatrixUtil.getColumn(yval2.getValues(), rows, columns, 1 + i);
 
 					this.recordCounts.add(new ArrayList<>(recordCounts));
 				}
@@ -203,43 +207,45 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public void encode(Node node, int offset){
-				node.setScore(categories.get(this.classes.get(offset) - 1));
+				String score = categories.get(this.classes.get(offset) - 1);
+				Integer recordCount = n.getValue(offset);
 
-				int recordCount = 0;
+				node
+					.setScore(score)
+					.setRecordCount(recordCount.doubleValue());
 
 				for(int i = 0; i < categories.size(); i++){
-					List<Integer> recordCounts = this.recordCounts.get(i);
+					List<? extends Number> recordCounts = this.recordCounts.get(i);
 
 					ScoreDistribution scoreDistribution = new ScoreDistribution()
 						.setValue(categories.get(i))
-						.setRecordCount(recordCounts.get(offset));
+						.setRecordCount(recordCounts.get(offset).doubleValue());
 
 					node.addScoreDistributions(scoreDistribution);
-
-					recordCount += recordCounts.get(offset);
 				}
-
-				node.setRecordCount((double)recordCount);
 			}
 		};
 
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, 1, rowNames, var, splitOffsets, splits, csplit, scoreEncoder, schema);
+		encodeNode(root, 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT)
+			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int rowName, RIntegerVector rowNames, RIntegerVector var, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
+	private void encodeNode(Node node, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
 		int offset = rowNames.indexOf(rowName);
 		if(offset < 0){
 			throw new IllegalArgumentException();
 		}
+
+		node.setId(String.valueOf(rowName));
 
 		scoreEncoder.encode(node, offset);
 
@@ -260,6 +266,14 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		int splitOffset = splitOffsets[offset];
 
+		Node leftChild = new Node();
+		Node rightChild = new Node();
+
+		encodeNode(leftChild, rowName * 2, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
+		encodeNode(rightChild, (rowName * 2) + 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
+
+		boolean leftIsMajority = (leftChild.getRecordCount() > rightChild.getRecordCount());
+
 		Predicate leftPredicate;
 		Predicate rightPredicate;
 
@@ -276,8 +290,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		if(splitType == 1){
 			String value = ValueUtil.formatValue(splitValue);
 
-			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_THAN, value);
-			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 		} else
 
 		{
@@ -296,26 +310,21 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
 		}
 
-		Node leftChild = new Node()
-			.setPredicate(leftPredicate);
-
-		Node rightChild = new Node()
-			.setPredicate(rightPredicate);
-
-		encodeNode(leftChild, rowName * 2, rowNames, var, splitOffsets, splits, csplit, scoreEncoder, schema);
-		encodeNode(rightChild, (rowName * 2) + 1, rowNames, var, splitOffsets, splits, csplit, scoreEncoder, schema);
+		leftChild.setPredicate(leftPredicate);
+		rightChild.setPredicate(rightPredicate);
 
 		node.addNodes(leftChild, rightChild);
 	}
 
 	static
-	private List<String> selectValues(List<String> values, List<Integer> flags, int flag){
+	private List<String> selectValues(List<String> values, List<Integer> valueFlags, int flag){
 		List<String> result = new ArrayList<>(values.size());
 
 		for(int i = 0; i < values.size(); i++){
 			String value = values.get(i);
+			Integer valueFlag = valueFlags.get(i);
 
-			if(flags.get(i) == flag){
+			if(valueFlag == flag){
 				result.add(value);
 			}
 		}
