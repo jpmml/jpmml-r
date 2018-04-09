@@ -99,8 +99,10 @@ java -Xms4G -Xmx8G -jar target/converter-executable-1.3-SNAPSHOT.jar --rds-input
 
 # License #
 
-JPMML-R is licensed under the [GNU Affero General Public License (AGPL) version 3.0](http://www.gnu.org/licenses/agpl-3.0.html). Other licenses are available on request.
+JPMML-R is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](http://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
 
 # Additional information #
 
-Please contact [info@openscoring.io](mailto:info@openscoring.io)
+JPMML-R is developed and maintained by Openscoring Ltd, Estonia.
+
+Openscoring Ltd offers a wide variety of [products and services](https://openscoring.io/#products-list) in the field of applied predictive analytics. Please subscribe to Opensoring Ltd [newsletter](https://openscoring.io/#newsletter) for periodic updates about JPMML and Openscoring software projects.
