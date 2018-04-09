@@ -45,7 +45,7 @@ auto.preProc = preProcess(auto.raw, method = c("medianImpute"))
 auto = predict(auto.preProc, auto.raw)
 
 generateRangerAutoNA = function(){
-	auto.ranger = ranger(mpg ~ ., data = auto, num.trees = 7, write.forest = TRUE)
+	auto.ranger = ranger(mpg ~ . - origin, data = auto, num.trees = 7, write.forest = TRUE)
 	auto.ranger = decorate(auto.ranger, data = auto, preProcess = auto.preProc)
 	print(auto.ranger)
 

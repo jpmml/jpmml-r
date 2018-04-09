@@ -2,6 +2,17 @@ library("rattle")
 
 source("util.R")
 
+# See http://stackoverflow.com/a/27454361/1808924
+insertNA = function(df, frac = 0.20){
+	mod = function(x){
+		return (x[sample(c(TRUE, NA), prob = c(1 - frac, frac), size = length(x), replace = TRUE)])
+	}
+
+	df = as.data.frame(lapply(df, FUN = mod))
+
+	return (df)
+}
+
 createAudit = function(audit){
 	audit$ID = NULL
 	audit$IGNORE_Accounts = NULL
@@ -10,8 +21,6 @@ createAudit = function(audit){
 	audit$Deductions = as.logical(audit$Deductions > 0)
 
 	names(audit)[ncol(audit)] = "Adjusted"
-
-	storeCsv(audit, "AuditNA")
 
 	audit = na.omit(audit)
 
@@ -24,6 +33,13 @@ createAudit = function(audit){
 	audit.matrix = audit.matrix[, 2:ncol(audit.matrix)]
 
 	storeCsv(audit.matrix, "AuditMatrix")
+
+	audit_x = audit[, -ncol(audit)]
+	audit_y = audit[, ncol(audit)]
+
+	auditNA = cbind(insertNA(audit_x), "Adjusted" = audit_y)
+
+	storeCsv(auditNA, "AuditNA")
 }
 
 loadAuto = function(){
@@ -40,15 +56,27 @@ createAuto = function(){
 	# Move the "mpg" column to the last position
 	auto = subset(auto, select = c(cylinders:origin, mpg))
 
-	storeCsv(auto, "AutoNA")
-
 	auto = na.omit(auto)
 
 	storeCsv(auto, "Auto")
+
+	auto_x = auto[, -ncol(auto)]
+	auto_y = auto[, ncol(auto)]
+
+	autoNA = cbind(insertNA(auto_x, frac = 0.05), "mpg" = auto_y)
+
+	storeCsv(autoNA, "AutoNA")
 }
 
 createIris = function(iris){
 	storeCsv(iris, "Iris")
+
+	iris_x = iris[, -ncol(iris)]
+	iris_y = iris[, ncol(iris)]
+
+	irisNA = cbind(insertNA(iris_x, frac = 0.10), "Species" = iris_y)
+
+	storeCsv(irisNA, "IrisNA")
 }
 
 loadWineQuality = function(color){
@@ -61,16 +89,26 @@ createWineQuality = function(){
 	red_data = loadWineQuality("red")
 	white_data = loadWineQuality("white")
 
-	wine_quality = rbind(red_data, white_data)
+	wine = rbind(red_data, white_data)
 
-	storeCsv(wine_quality, "WineQuality")
+	wine_x = wine[, -ncol(wine)]
+	wine_y = wine[, ncol(wine)]
 
-	wine_color = rbind(red_data, white_data)
-	wine_color$quality = NULL
-	wine_color$color = "white"
-	wine_color$color[1:nrow(red_data)] = "red"
+	wineNA = cbind(insertNA(wine_x), "quality" = wine_y)
 
-	storeCsv(wine_color, "WineColor")
+	storeCsv(wine, "WineQuality")
+	storeCsv(wineNA, "WineQualityNA")
+
+	wine$quality = NULL
+	wineNA$quality = NULL
+
+	wine$color = "white"
+	wine$color[1:nrow(red_data)] = "red"
+	wine$color = as.factor(wine$color)
+	wineNA$color = wine$color
+
+	storeCsv(wine, "WineColor")
+	storeCsv(wineNA, "WineColorNA")
 }
 
 data(audit)
