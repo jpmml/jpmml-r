@@ -135,20 +135,9 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 
 		RExpEncoder termsEncoder = new RExpEncoder();
 
-		FormulaContext formulaContext = new FormulaContext(){
+		FormulaContext context = new EmptyFormulaContext();
 
-			@Override
-			public List<String> getCategories(String variable){
-				return null;
-			}
-
-			@Override
-			public RGenericVector getData(){
-				return null;
-			}
-		};
-
-		Formula formula = FormulaUtil.createFormula(terms, formulaContext, termsEncoder);
+		Formula formula = FormulaUtil.createFormula(terms, context, termsEncoder);
 
 		// Dependent variable
 		int responseIndex = response.asScalar();

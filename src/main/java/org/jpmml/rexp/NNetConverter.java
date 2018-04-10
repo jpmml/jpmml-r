@@ -58,25 +58,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		FormulaContext context = new FormulaContext(){
-
-			@Override
-			public List<String> getCategories(String variable){
-
-				if(xlevels != null && xlevels.hasValue(variable)){
-					RStringVector levels = (RStringVector)xlevels.getValue(variable);
-
-					return levels.getValues();
-				}
-
-				return null;
-			}
-
-			@Override
-			public RGenericVector getData(){
-				return null;
-			}
-		};
+		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 

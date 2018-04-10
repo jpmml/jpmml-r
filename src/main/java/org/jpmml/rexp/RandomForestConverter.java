@@ -96,7 +96,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
-		FormulaContext context = new FormulaContext(){
+		FormulaContext context = new XLevelsFormulaContext(xlevels){
 
 			@Override
 			public List<String> getCategories(String variable){
@@ -104,17 +104,10 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				if(ncat != null && ncat.hasValue(variable)){
 
 					if((ncat.getValue(variable)).doubleValue() > 1d){
-						RStringVector levels = (RStringVector)xlevels.getValue(variable);
-
-						return levels.getValues();
+						return super.getCategories(variable);
 					}
 				}
 
-				return null;
-			}
-
-			@Override
-			public RGenericVector getData(){
 				return null;
 			}
 		};

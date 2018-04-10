@@ -79,25 +79,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		List<String> predictorNames = dirsColumns.getValues();
 
-		FormulaContext context = new FormulaContext(){
-
-			@Override
-			public List<String> getCategories(String variable){
-
-				if(xlevels.hasValue(variable)){
-					RStringVector levels = (RStringVector)xlevels.getValue(variable);
-
-					return levels.getValues();
-				}
-
-				return null;
-			}
-
-			@Override
-			public RGenericVector getData(){
-				return null;
-			}
-		};
+		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
