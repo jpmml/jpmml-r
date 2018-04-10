@@ -56,7 +56,6 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector coefficients = (RDoubleVector)earth.getValue("coefficients");
 		RExp terms = earth.getValue("terms");
 
-		final
 		RGenericVector xlevels;
 
 		try {

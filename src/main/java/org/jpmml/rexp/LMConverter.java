@@ -40,11 +40,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
-		final
 		RGenericVector xlevels = (RGenericVector)lm.getValue("xlevels", true);
-		final
 		RGenericVector model = (RGenericVector)lm.getValue("model");
-		final
 		RGenericVector data = (RGenericVector)lm.getValue("data", true);
 
 		RExp terms = model.getAttributeValue("terms");

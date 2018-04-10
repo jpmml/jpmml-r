@@ -51,7 +51,6 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
 		RDoubleVector scale = (RDoubleVector)mvr.getValue("scale", true);
 		RExp terms = mvr.getValue("terms");
-		final
 		RGenericVector model = (RGenericVector)mvr.getValue("model");
 
 		RStringVector rowNames = coefficients.dimnames(0);

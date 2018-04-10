@@ -168,7 +168,6 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	private MiningModel encodeClassification(RGenericVector ranger, Schema schema){
 		RGenericVector forest = (RGenericVector)ranger.getValue("forest");
 
-		final
 		RStringVector levels = (RStringVector)forest.getValue("levels");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
@@ -196,7 +195,6 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	private MiningModel encodeProbabilityForest(RGenericVector ranger, Schema schema){
 		RGenericVector forest = (RGenericVector)ranger.getValue("forest");
 
-		final
 		RStringVector levels = (RStringVector)forest.getValue("levels");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();

@@ -91,9 +91,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> y = (RNumberVector<?>)randomForest.getValue("y", true);
 		RExp terms = randomForest.getValue("terms");
 
-		final
 		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
-		final
 		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
 
 		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
@@ -203,7 +201,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private MiningModel encodeRegression(RGenericVector forest, final Schema schema){
+	private MiningModel encodeRegression(RGenericVector forest, Schema schema){
 		RNumberVector<?> leftDaughter = (RNumberVector<?>)forest.getValue("leftDaughter");
 		RNumberVector<?> rightDaughter = (RNumberVector<?>)forest.getValue("rightDaughter");
 		RDoubleVector nodepred = (RDoubleVector)forest.getValue("nodepred");
@@ -248,7 +246,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
-	private MiningModel encodeClassification(RGenericVector forest, final Schema schema){
+	private MiningModel encodeClassification(RGenericVector forest, Schema schema){
 		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
 		RNumberVector<?> treemap = (RNumberVector<?>)forest.getValue("treemap");
 		RIntegerVector nodepred = (RIntegerVector)forest.getValue("nodepred");
@@ -259,7 +257,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		int rows = nrnodes.asScalar();
 		int columns = ValueUtil.asInt(ntree.asScalar());
 
-		final
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){

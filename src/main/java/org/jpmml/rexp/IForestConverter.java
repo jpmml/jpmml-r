@@ -101,7 +101,6 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		final
 		RIntegerVector xrow = (RIntegerVector)trees.getValue("xrow");
 
 		Schema segmentSchema = schema.toAnonymousSchema();

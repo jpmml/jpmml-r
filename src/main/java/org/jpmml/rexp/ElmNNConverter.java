@@ -49,7 +49,6 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector elmNN = getObject();
 
-		final
 		RGenericVector model;
 
 		try {

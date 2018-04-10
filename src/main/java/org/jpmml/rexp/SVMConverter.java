@@ -145,7 +145,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RVector<?> levels = (RVector<?>)svm.getValue("levels");
 		RExp terms = svm.getValue("terms");
 
-		final
 		RGenericVector xlevels;
 
 		try {
