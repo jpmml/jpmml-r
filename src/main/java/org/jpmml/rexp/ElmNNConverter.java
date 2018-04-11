@@ -21,7 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Entity;
 import org.dmg.pmml.MiningFunction;
@@ -59,7 +58,6 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		RExp terms = model.getAttributeValue("terms");
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 		RStringVector columns = (RStringVector)terms.getAttributeValue("columns");
 
 		FormulaContext context = new ModelFrameFormulaContext(model);
@@ -67,12 +65,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			encoder.setLabel(dataField);
-		}
+		SchemaUtil.setLabel(formula, terms, null, encoder);
 
 		// Independent variables
 		for(int i = 0; i < columns.size(); i++){

@@ -21,7 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
@@ -50,39 +49,18 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		RGenericVector frame = (RGenericVector)rpart.getValue("frame");
 		RExp terms = rpart.getValue("terms");
-		RStringVector method = (RStringVector)rpart.getValue("method");
 
 		RGenericVector xlevels = (RGenericVector)rpart.getAttributeValue("xlevels", true);
+		RStringVector ylevels = (RStringVector)rpart.getAttributeValue("ylevels", true);
 
 		RIntegerVector var = (RIntegerVector)frame.getValue("var");
-
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			switch(method.asScalar()){
-				case "class":
-					RStringVector ylevels = (RStringVector)rpart.getAttributeValue("ylevels", true);
-
-					dataField = (DataField)encoder.toCategorical(dataField.getName(), ylevels.getValues());
-					break;
-				default:
-					break;
-			}
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.setLabel(formula, terms, ylevels, encoder);
 
 		List<String> varLevels = RExpUtil.getFactorLevels(var);
 

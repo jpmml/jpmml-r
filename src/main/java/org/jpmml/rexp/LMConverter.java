@@ -21,7 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.Model;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
@@ -75,21 +74,10 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	public void encodeSchema(RExp terms, FormulaContext context, RExpEncoder encoder){
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.setLabel(formula, terms, null, encoder);
 
 		String interceptName = getInterceptName();
 

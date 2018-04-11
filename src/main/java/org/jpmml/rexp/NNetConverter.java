@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Entity;
 import org.dmg.pmml.MiningFunction;
@@ -56,27 +55,12 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector xlevels = (RGenericVector)nnet.getValue("xlevels");
 		RStringVector coefnames = (RStringVector)nnet.getValue("coefnames");
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			if(lev != null){
-				dataField = (DataField)encoder.toCategorical(dataField.getName(), lev.getValues());
-			}
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.setLabel(formula, terms, lev, encoder);
 
 		// Independent variables
 		for(int i = 0; i < coefnames.size(); i++){

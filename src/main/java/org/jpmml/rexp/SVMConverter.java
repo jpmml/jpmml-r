@@ -158,51 +158,23 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			switch(svmType){
-				case C_CLASSIFICATION:
-				case NU_CLASSIFICATION:
-					{
-						RStringVector stringLevels = (RStringVector)levels;
-
-						dataField = (DataField)encoder.toCategorical(dataField.getName(), stringLevels.getValues());
-					}
-					break;
-				case ONE_CLASSIFICATION:
-					{
-						OpType opType = dataField.getOpType();
-
-						if(!(OpType.CONTINUOUS).equals(opType)){
-							throw new IllegalArgumentException();
-						}
-					}
-					break;
-				default:
-					break;
-			}
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			switch(svmType){
-				case ONE_CLASSIFICATION:
-					break;
-				default:
-					throw new IllegalArgumentException();
-			}
-
-			encoder.setLabel(new ContinuousLabel(null, DataType.DOUBLE));
+		switch(svmType){
+			case C_CLASSIFICATION:
+			case NU_CLASSIFICATION:
+				SchemaUtil.setLabel(formula, terms, levels, encoder);
+				break;
+			case ONE_CLASSIFICATION:
+				encoder.setLabel(new ContinuousLabel(null, DataType.DOUBLE));
+				break;
+			case EPS_REGRESSION:
+			case NU_REGRESSION:
+				SchemaUtil.setLabel(formula, terms, null, encoder);
+				break;
 		}
 
 		List<Feature> features = new ArrayList<>();

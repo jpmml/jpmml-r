@@ -131,8 +131,6 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 		RExp terms = ada.getValue("terms");
 		RIntegerVector fit = (RIntegerVector)ada.getValue("fit");
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		RExpEncoder termsEncoder = new RExpEncoder();
 
 		FormulaContext context = new EmptyFormulaContext();
@@ -140,20 +138,7 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 		Formula formula = FormulaUtil.createFormula(terms, context, termsEncoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			encoder.addDataField(dataField);
-
-			dataField = (DataField)encoder.toCategorical(dataField.getName(), RExpUtil.getFactorLevels(fit));
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.setLabel(formula, terms, fit, encoder);
 
 		encodeTreeSchemas(encoder);
 	}

@@ -21,7 +21,6 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.regression.RegressionModel;
@@ -48,25 +47,12 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 		RGenericVector xlevels = (RGenericVector)multinom.getValue("xlevels");
 		RStringVector vcoefnames = (RStringVector)multinom.getValue("vcoefnames");
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			dataField = (DataField)encoder.toCategorical(dataField.getName(), lev.getValues());
-
-			encoder.setLabel(dataField);
-		} else
-
-		{
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.setLabel(formula, terms, lev, encoder);
 
 		// Independent variables
 		for(int i = 0; i < vcoefnames.size(); i++){

@@ -94,8 +94,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> ncat = (RNumberVector<?>)forest.getValue("ncat");
 		RGenericVector xlevels = (RGenericVector)forest.getValue("xlevels");
 
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
-
 		FormulaContext context = new XLevelsFormulaContext(xlevels){
 
 			@Override
@@ -115,19 +113,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		// Dependent variable
-		int responseIndex = response.asScalar();
-		if(responseIndex != 0){
-			DataField dataField = (DataField)formula.getField(responseIndex - 1);
-
-			if(y instanceof RIntegerVector){
-				dataField = (DataField)encoder.toCategorical(dataField.getName(), RExpUtil.getFactorLevels(y));
-			}
-
-			encoder.setLabel(dataField);
+		if(y instanceof RIntegerVector){
+			SchemaUtil.setLabel(formula, terms, y, encoder);
 		} else
 
 		{
-			throw new IllegalArgumentException();
+			SchemaUtil.setLabel(formula, terms, null, encoder);
 		}
 
 		RStringVector xlevelNames = xlevels.names();
