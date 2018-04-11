@@ -62,18 +62,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, ylevels, encoder);
 
-		List<String> varLevels = RExpUtil.getFactorLevels(var);
-
-		if(!("<leaf>").equals(varLevels.get(0))){
-			throw new IllegalArgumentException();
-		}
+		List<String> names = SchemaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
 
 		// Independent variables
-		for(int i = 1; i < varLevels.size(); i++){
-			Feature feature = formula.resolveFeature(varLevels.get(i));
-
-			encoder.addFeature(feature);
-		}
+		SchemaUtil.addFeatures(formula, names, false, encoder);
 	}
 
 	@Override

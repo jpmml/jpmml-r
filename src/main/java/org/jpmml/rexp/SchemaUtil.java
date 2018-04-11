@@ -18,8 +18,12 @@
  */
 package org.jpmml.rexp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
+import org.jpmml.converter.Feature;
 
 public class SchemaUtil {
 
@@ -66,5 +70,60 @@ public class SchemaUtil {
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	static
+	public void addFeatures(Formula formula, RStringVector names, boolean allowInteractions, RExpEncoder encoder){
+		addFeatures(formula, names.getValues(), allowInteractions, encoder);
+	}
+
+	static
+	public void addFeatures(Formula formula, List<String> names, boolean allowInteractions, RExpEncoder encoder){
+
+		for(int i = 0; i < names.size(); i++){
+			String name = names.get(i);
+
+			Feature feature;
+
+			if(allowInteractions){
+				feature = formula.resolveFeature(name);
+			} else
+
+			{
+				feature = formula.resolveFeature(FieldName.create(name));
+			}
+
+			encoder.addFeature(feature);
+		}
+	}
+
+	static
+	public List<String> removeSpecialSymbol(List<String> names, String specialName){
+		int index = names.indexOf(specialName);
+
+		if(index > -1){
+			names = new ArrayList<>(names);
+
+			names.remove(index);
+		}
+
+		return names;
+	}
+
+	static
+	public List<String> removeSpecialSymbol(List<String> names, String specialName, int specialNameIndex){
+		String name = names.get(specialNameIndex);
+
+		if((name).equals(specialName)){
+			names = new ArrayList<>(names);
+
+			names.remove(specialNameIndex);
+		} else
+
+		{
+			throw new IllegalArgumentException();
+		}
+
+		return names;
 	}
 }

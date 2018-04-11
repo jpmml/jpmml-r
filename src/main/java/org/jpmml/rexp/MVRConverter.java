@@ -49,7 +49,6 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		RGenericVector mvr = getObject();
 
 		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
-		RDoubleVector scale = (RDoubleVector)mvr.getValue("scale", true);
 		RExp terms = mvr.getValue("terms");
 		RGenericVector model = (RGenericVector)mvr.getValue("model");
 
@@ -70,23 +69,9 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		}
 
 		// Independent variables
-		for(int i = 0; i < rowNames.size(); i++){
-			String rowName = rowNames.getValue(i);
+		SchemaUtil.addFeatures(formula, rowNames, true, encoder);
 
-			Feature feature = formula.resolveFeature(rowName);
-
-			if(scale != null){
-				feature = feature.toContinuousFeature();
-
-				Apply apply = PMMLUtil.createApply("/", feature.ref(), PMMLUtil.createConstant(scale.getValue(i)));
-
-				DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, apply);
-
-				feature = new ContinuousFeature(encoder, derivedField);
-			}
-
-			encoder.addFeature(feature);
-		}
+		scaleFeatures(encoder);
 	}
 
 	@Override
@@ -122,5 +107,30 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, null);
 
 		return generalRegressionModel;
+	}
+
+	private void scaleFeatures(RExpEncoder encoder){
+		RGenericVector mvr = getObject();
+
+		RDoubleVector scale = (RDoubleVector)mvr.getValue("scale", true);
+		if(scale == null){
+			return;
+		}
+
+		List<Feature> features = encoder.getFeatures();
+
+		if(scale.size() != features.size()){
+			throw new IllegalArgumentException();
+		}
+
+		for(int i = 0; i < features.size(); i++){
+			Feature feature = (features.get(i)).toContinuousFeature();
+
+			Apply apply = PMMLUtil.createApply("/", feature.ref(), PMMLUtil.createConstant(scale.getValue(i)));
+
+			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+
+			features.set(i, new ContinuousFeature(encoder, derivedField));
+		}
 	}
 }

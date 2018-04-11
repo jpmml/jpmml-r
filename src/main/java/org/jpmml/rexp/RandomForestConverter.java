@@ -121,16 +121,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			SchemaUtil.setLabel(formula, terms, null, encoder);
 		}
 
-		RStringVector xlevelNames = xlevels.names();
-
 		// Independent variables
-		for(int i = 0; i < xlevelNames.size(); i++){
-			String xlevelName = xlevelNames.getValue(i);
-
-			Feature feature = formula.resolveFeature(FieldName.create(xlevelName));
-
-			encoder.addFeature(feature);
-		}
+		SchemaUtil.addFeatures(formula, xlevels.names(), false, encoder);
 	}
 
 	private void encodeNonFormula(RExpEncoder encoder){

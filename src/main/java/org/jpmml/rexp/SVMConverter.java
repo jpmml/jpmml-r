@@ -18,7 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -177,22 +176,10 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				break;
 		}
 
-		List<Feature> features = new ArrayList<>();
-
 		// Independent variables
-		for(int i = 0; i < columnNames.size(); i++){
-			String columnName = columnNames.getValue(i);
+		SchemaUtil.addFeatures(formula, columnNames, true, encoder);
 
-			Feature feature = formula.resolveFeature(columnName);
-
-			features.add(feature);
-		}
-
-		features = scale(features, encoder);
-
-		for(Feature feature : features){
-			encoder.addFeature(feature);
-		}
+		scaleFeatures(encoder);
 	}
 
 	private void encodeNonFormula(RExpEncoder encoder){
@@ -238,25 +225,19 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			}
 		}
 
-		List<Feature> features = new ArrayList<>();
-
 		// Independent variables
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
 			DataField dataField = encoder.createDataField(FieldName.create(columnName), OpType.CONTINUOUS, DataType.DOUBLE);
 
-			features.add(new ContinuousFeature(encoder, dataField));
+			encoder.addFeature(dataField);
 		}
 
-		features = scale(features, encoder);
-
-		for(Feature feature : features){
-			encoder.addFeature(feature);
-		}
+		scaleFeatures(encoder);
 	}
 
-	private List<Feature> scale(List<Feature> features, RExpEncoder encoder){
+	private void scaleFeatures(RExpEncoder encoder){
 		RGenericVector svm = getObject();
 
 		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
@@ -265,6 +246,8 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
+
+		List<Feature> features = encoder.getFeatures();
 
 		if((scaled.size() != columnNames.size()) || (scaled.size() != features.size())){
 			throw new IllegalArgumentException();
@@ -278,14 +261,11 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			xScaledScale = (RDoubleVector)xScale.getValue("scaled:scale");
 		}
 
-		List<Feature> result = new ArrayList<>();
-
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
-			Feature feature = features.get(i);
 
 			if(scaled.getValue(i)){
-				feature = feature.toContinuousFeature();
+				Feature feature = (features.get(i)).toContinuousFeature();
 
 				FieldName name = FeatureUtil.createName("scale", feature);
 
@@ -299,13 +279,9 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
 				}
 
-				feature = new ContinuousFeature(encoder, derivedField);
+				features.set(i, new ContinuousFeature(encoder, derivedField));
 			}
-
-			result.add(feature);
 		}
-
-		return result;
 	}
 
 	static

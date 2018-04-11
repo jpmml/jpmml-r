@@ -54,18 +54,10 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, lev, encoder);
 
+		List<String> names = SchemaUtil.removeSpecialSymbol(vcoefnames.getValues(), "(Intercept)", 0);
+
 		// Independent variables
-		for(int i = 0; i < vcoefnames.size(); i++){
-			String coefname = vcoefnames.getValue(i);
-
-			if(i == 0 && ("(Intercept)").equals(coefname)){
-				continue;
-			}
-
-			Feature feature = formula.resolveFeature(coefname);
-
-			encoder.addFeature(feature);
-		}
+		SchemaUtil.addFeatures(formula, names, true, encoder);
 	}
 
 	@Override

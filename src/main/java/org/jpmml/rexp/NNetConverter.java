@@ -63,11 +63,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		SchemaUtil.setLabel(formula, terms, lev, encoder);
 
 		// Independent variables
-		for(int i = 0; i < coefnames.size(); i++){
-			Feature feature = formula.resolveFeature(coefnames.getValue(i));
-
-			encoder.addFeature(feature);
-		}
+		SchemaUtil.addFeatures(formula, coefnames, true, encoder);
 	}
 
 	@Override

@@ -64,6 +64,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> var_type = (RNumberVector<?>)gbm.getValue("var.type");
 		RStringVector classes = (RStringVector)gbm.getValue("classes", true);
 
+		RStringVector distributionName = (RStringVector)distribution.getValue("name");
+
 		// Dependent variable
 		{
 			FieldName responseName;
@@ -78,7 +80,6 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			DataField dataField;
 
-			RStringVector distributionName = (RStringVector)distribution.getValue("name");
 			switch(distributionName.asScalar()){
 				case "gaussian":
 					dataField = encoder.createDataField(responseName, OpType.CONTINUOUS, DataType.DOUBLE);
