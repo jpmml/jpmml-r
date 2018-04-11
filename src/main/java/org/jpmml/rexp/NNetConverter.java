@@ -91,9 +91,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector nnet = getObject();
 
 		RDoubleVector n = (RDoubleVector)nnet.getValue("n");
-		RDoubleVector conn = (RDoubleVector)nnet.getValue("conn");
 		RBooleanVector linout = (RBooleanVector)nnet.getValue("linout", true);
-		RBooleanVector entropy = (RBooleanVector)nnet.getValue("entropy", true);
 		RBooleanVector softmax = (RBooleanVector)nnet.getValue("softmax", true);
 		RBooleanVector censored = (RBooleanVector)nnet.getValue("censored", true);
 		RDoubleVector wts = (RDoubleVector)nnet.getValue("wts");
@@ -109,6 +107,11 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		MiningFunction miningFunction;
 
 		if(lev == null){
+
+			if(linout != null && !linout.asScalar()){
+				throw new IllegalArgumentException();
+			}
+
 			miningFunction = MiningFunction.REGRESSION;
 		} else
 

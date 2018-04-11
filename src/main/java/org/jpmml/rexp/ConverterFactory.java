@@ -70,6 +70,7 @@ public class ConverterFactory {
 		converters.put("kmeans", KMeansConverter.class);
 		converters.put("lm", LMConverter.class);
 		converters.put("lrm", LRMConverter.class);
+		converters.put("multinom", MultinomConverter.class);
 		converters.put("mvr", MVRConverter.class);
 		converters.put("nnet.formula", NNetConverter.class);
 		converters.put("ols", OLSConverter.class);

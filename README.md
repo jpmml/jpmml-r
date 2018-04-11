@@ -24,6 +24,7 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`nnet` package](https://cran.r-project.org/package=nnet):
+    * `multinom` - Multinomial log-linear classification
     * `nnet.formula` - Neural Network (NNet) regression and classification
   * [`party` package](https://cran.r-project.org/package=party):
     * `ctree` - Conditional Inference Tree (CIT) classification
