@@ -59,12 +59,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, ylevels, encoder);
 
 		List<String> names = SchemaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, names, false, encoder);
 	}
 

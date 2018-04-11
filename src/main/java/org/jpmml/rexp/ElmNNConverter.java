@@ -64,12 +64,10 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, null, encoder);
 
 		List<String> names = SchemaUtil.removeSpecialSymbol(columns.getValues(), "(Intercept)", 0);
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, names, true, encoder);
 	}
 

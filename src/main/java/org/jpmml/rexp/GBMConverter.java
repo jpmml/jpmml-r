@@ -66,7 +66,6 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector distributionName = (RStringVector)distribution.getValue("name");
 
-		// Dependent variable
 		{
 			FieldName responseName;
 
@@ -98,7 +97,6 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		// Independent variables
 		for(int i = 0; i < var_names.size(); i++){
 			FieldName varName = FieldName.create(var_names.getValue(i));
 

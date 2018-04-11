@@ -73,14 +73,12 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		// Dependent variable
 		{
 			DataField dataField = encoder.createDataField(FieldName.create("pathLength"), OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.setLabel(dataField);
 		}
 
-		// Independent variables
 		for(int i = 0; i < xcols.size(); i++){
 			String xcol = xcols.getValue(i);
 

@@ -77,38 +77,32 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Learner learner = ensureLearner();
 
-		// Dependent variable
-		{
-			ObjFunction obj = learner.getObj();
+		ObjFunction obj = learner.getObj();
 
-			FieldName targetField = FieldName.create("_target");
-			List<String> targetCategories = null;
+		FieldName targetField = FieldName.create("_target");
+		List<String> targetCategories = null;
 
-			if(schema != null){
-				RStringVector responseName = (RStringVector)schema.getValue("response_name", true);
-				RStringVector responseLevels = (RStringVector)schema.getValue("response_levels", true);
+		if(schema != null){
+			RStringVector responseName = (RStringVector)schema.getValue("response_name", true);
+			RStringVector responseLevels = (RStringVector)schema.getValue("response_levels", true);
 
-				if(responseName != null){
-					targetField = FieldName.create(responseName.asScalar());
-				} // End if
+			if(responseName != null){
+				targetField = FieldName.create(responseName.asScalar());
+			} // End if
 
-				if(responseLevels != null){
-					targetCategories = responseLevels.getValues();
-				}
+			if(responseLevels != null){
+				targetCategories = responseLevels.getValues();
 			}
-
-			Label label = obj.encodeLabel(targetField, targetCategories, encoder);
-
-			encoder.setLabel(label);
 		}
 
-		// Independent variables
-		{
-			List<Feature> features = featureMap.encodeFeatures(encoder);
+		Label label = obj.encodeLabel(targetField, targetCategories, encoder);
 
-			for(Feature feature : features){
-				encoder.addFeature(feature);
-			}
+		encoder.setLabel(label);
+
+		List<Feature> features = featureMap.encodeFeatures(encoder);
+
+		for(Feature feature : features){
+			encoder.addFeature(feature);
 		}
 	}
 

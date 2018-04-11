@@ -59,7 +59,6 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		{
 			FieldName name = FieldName.create(columnNames.asScalar());
 
@@ -68,7 +67,6 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, rowNames, true, encoder);
 
 		scaleFeatures(encoder);

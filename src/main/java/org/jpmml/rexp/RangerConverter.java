@@ -71,7 +71,6 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector treeType = (RStringVector)ranger.getValue("treetype");
 
-		// Dependent variable
 		{
 			FieldName name = FieldName.create("_target");
 
@@ -101,7 +100,6 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RBooleanVector isOrdered = (RBooleanVector)forest.getValue("is.ordered");
 		RStringVector independentVariableNames = (RStringVector)forest.getValue("independent.variable.names");
 
-		// Independent variables
 		for(int i = 0; i < independentVariableNames.size(); i++){
 
 			if(!isOrdered.getValue(i + 1)){

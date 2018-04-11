@@ -59,10 +59,8 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, lev, encoder);
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, coefnames, true, encoder);
 	}
 

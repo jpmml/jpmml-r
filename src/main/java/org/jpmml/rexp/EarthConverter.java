@@ -83,7 +83,6 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		{
 			RStringVector yNames = coefficients.dimnames(1);
 
@@ -94,7 +93,6 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		// Independent variables
 		for(int i = 1; i < selectedTerms.size(); i++){
 			int termIndex = ValueUtil.asInt(selectedTerms.getValue(i)) - 1;
 

@@ -76,12 +76,10 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	protected void encodeSchema(RExp terms, FormulaContext context, RExpEncoder encoder){
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, null, encoder);
 
 		List<String> names = SchemaUtil.removeSpecialSymbol(getCoefficientNames(), getInterceptName());
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, names, true, encoder);
 
 		this.formula = formula;

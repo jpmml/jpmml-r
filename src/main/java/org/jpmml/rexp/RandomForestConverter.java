@@ -112,7 +112,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		if(y instanceof RIntegerVector){
 			SchemaUtil.setLabel(formula, terms, y, encoder);
 		} else
@@ -121,7 +120,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			SchemaUtil.setLabel(formula, terms, null, encoder);
 		}
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, xlevels.names(), false, encoder);
 	}
 
@@ -139,7 +137,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			xNames = xlevels.names();
 		}
 
-		// Dependent variable
 		{
 			FieldName name = FieldName.create("_target");
 
@@ -156,7 +153,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		// Independernt variables
 		for(int i = 0; i < ncat.size(); i++){
 			FieldName name = FieldName.create(xNames.getValue(i));
 

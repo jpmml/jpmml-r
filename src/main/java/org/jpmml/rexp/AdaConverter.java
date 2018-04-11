@@ -137,7 +137,6 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, termsEncoder);
 
-		// Dependent variable
 		SchemaUtil.setLabel(formula, terms, fit, encoder);
 
 		encodeTreeSchemas(encoder);

@@ -161,7 +161,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		// Dependent variable
 		switch(svmType){
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
@@ -176,7 +175,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				break;
 		}
 
-		// Independent variables
 		SchemaUtil.addFeatures(formula, columnNames, true, encoder);
 
 		scaleFeatures(encoder);
@@ -194,7 +192,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		// Dependent variable
 		{
 			FieldName name = FieldName.create("_target");
 
@@ -225,7 +222,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			}
 		}
 
-		// Independent variables
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
