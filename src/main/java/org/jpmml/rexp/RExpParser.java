@@ -215,7 +215,7 @@ public class RExpParser {
 
 		RExp tag = readTag(flags);
 		RExp function = readRExp();
-		RPair arguments = (RPair)readRExp();
+		RExp arguments = readRExp();
 
 		return new RFunctionCall(tag, function, arguments, attributes);
 	}

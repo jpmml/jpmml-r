@@ -62,6 +62,7 @@ public class ConverterFactory {
 	static {
 		converters.put("ada", AdaConverter.class);
 		converters.put("BinaryTree", BinaryTreeConverter.class);
+		converters.put("caretEnsemble", CaretEnsembleConverter.class);
 		converters.put("earth", EarthConverter.class);
 		converters.put("elmNN", ElmNNConverter.class);
 		converters.put("gbm", GBMConverter.class);

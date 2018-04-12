@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2018 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,44 +18,17 @@
  */
 package org.jpmml.rexp;
 
-public class RFunctionCall extends RExp {
+import org.junit.Test;
 
-	private RExp tag = null;
+public class CaretEnsembleConverterTest extends ConverterTest {
 
-	private RExp function = null;
-
-	private RExp arguments = null;
-
-
-	public RFunctionCall(RExp tag, RExp function, RExp arguments, RPair attributes){
-		super(attributes);
-
-		setTag(tag);
-		setFunction(function);
-		setArguments(arguments);
+	@Test
+	public void evaluateAuto() throws Exception {
+		evaluate("CaretEnsemble", "Auto");
 	}
 
-	public RExp getTag(){
-		return this.tag;
-	}
-
-	private void setTag(RExp tag){
-		this.tag = tag;
-	}
-
-	public RExp getFunction(){
-		return this.function;
-	}
-
-	private void setFunction(RExp function){
-		this.function = function;
-	}
-
-	public RExp getArguments(){
-		return this.arguments;
-	}
-
-	private void setArguments(RExp arguments){
-		this.arguments = arguments;
+	@Test
+	public void evaluateVersicolor() throws Exception {
+		evaluate("CaretEnsemble", "Versicolor");
 	}
 }

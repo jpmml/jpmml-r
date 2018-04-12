@@ -4,7 +4,7 @@ print(paste(R.version$major, R.version$minor, sep = "."))
 latest_versions = available.packages()
 
 print("R package versions:")
-packages = c("ada", "caret", "e1071", "earth", "elmNN", "gbm", "IsolationForest", "nnet", "party", "pls", "randomForest", "ranger", "rattle", "rms", "rpart", "xgboost")
+packages = c("ada", "caret", "caretEnsemble", "e1071", "earth", "elmNN", "gbm", "IsolationForest", "nnet", "party", "pls", "randomForest", "ranger", "rattle", "rms", "rpart", "xgboost")
 for(package in packages){
 	version = packageVersion(package)
 	if(!(package %in% c("IsolationForest"))){
