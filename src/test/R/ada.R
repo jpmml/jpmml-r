@@ -49,7 +49,7 @@ generateAdaFormulaVersicolor = function(){
 	probabilities = predict(versicolor.ada, newdata = versicolor, type = "prob")
 
 	storeRds(versicolor.ada, "AdaFormulaVersicolor")
-	storeCsv(data.frame("Species" = species, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "AdaFormulaVersicolor")
+	storeCsv(data.frame("Species" = species, "probability(no)" = probabilities[, 1], "probability(yes)" = probabilities[, 2], check.names = FALSE), "AdaFormulaVersicolor")
 }
 
 set.seed(42)
