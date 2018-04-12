@@ -20,6 +20,7 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`elmNN` package](https://cran.r-project.org/package=elmNN):
     * `elmNN` - Extreme Learning Machine (ELM) regression
   * [`e1071` package](https://cran.r-project.org/package=e1071):
+    * `naiveBayes` - Naive Bayes (NB) classification
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
   * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification

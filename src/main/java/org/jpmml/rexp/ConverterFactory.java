@@ -73,6 +73,7 @@ public class ConverterFactory {
 		converters.put("lrm", LRMConverter.class);
 		converters.put("multinom", MultinomConverter.class);
 		converters.put("mvr", MVRConverter.class);
+		converters.put("naiveBayes", NaiveBayesConverter.class);
 		converters.put("nnet.formula", NNetConverter.class);
 		converters.put("ols", OLSConverter.class);
 		converters.put("rpart", RPartConverter.class);
