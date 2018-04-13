@@ -24,6 +24,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
   * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
+  * [`glmnet` package](https://cran.r-project.org/package=glmnet):
+    * `elnet` - Generalized Linear Model with lasso or elasticnet regularization (GLMNet) regression
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`nnet` package](https://cran.r-project.org/package=nnet):
@@ -45,9 +47,9 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`r2pmml` package](https://github.com/jpmml/r2pmml):
     * `scorecard` - Scorecard regression
   * `stats` package:
-    * `glm` - Generalized linear (GLM) regression and classification
+    * `glm` - Generalized Linear Model (GLM) regression and classification
     * `kmeans` - K-Means clustering
-    * `lm` - Linear (LM) regression
+    * `lm` - Linear Model (LM) regression
   * [`xgboost` package](https://cran.r-project.org/package=xgboost):
     * `xgb.Booster` - XGBoost (XGB) regression and classification
 * Production quality:
