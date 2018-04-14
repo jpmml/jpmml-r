@@ -37,8 +37,31 @@ import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
 public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
+	private String type = null;
+
+
 	public GLMNetConverter(RGenericVector glmnet){
 		super(glmnet);
+
+		RStringVector classNames = RExpUtil.getClassNames(glmnet);
+		if(classNames.size() != 2){
+			throw new IllegalArgumentException();
+		}
+
+		String className = classNames.getValue(1);
+		if(!("glmnet").equals(className)){
+			throw new IllegalArgumentException(className);
+		}
+
+		String subclassName = classNames.getValue(0);
+		switch(subclassName){
+			case "elnet":
+			case "fishnet":
+				setType(subclassName);
+				break;
+			default:
+				throw new IllegalArgumentException(subclassName);
+		}
 	}
 
 	@Override
@@ -97,12 +120,35 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		GeneralRegressionModel.Distribution distribution;
+
+		String type = getType();
+		switch(type){
+			case "elnet":
+				distribution = GeneralRegressionModel.Distribution.NORMAL;
+				break;
+			case "fishnet":
+				distribution = GeneralRegressionModel.Distribution.POISSON;
+				break;
+			default:
+				distribution = null;
+				break;
+		}
+
 		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(label), null, null, null)
-			.setDistribution(GeneralRegressionModel.Distribution.NORMAL);
+			.setDistribution(distribution);
 
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, coefficients, null);
 
 		return generalRegressionModel;
+	}
+
+	public String getType(){
+		return this.type;
+	}
+
+	private void setType(String type){
+		this.type = type;
 	}
 
 	static

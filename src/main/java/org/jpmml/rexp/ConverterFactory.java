@@ -28,17 +28,17 @@ public class ConverterFactory {
 	}
 
 	public <R extends RExp> Converter<R> newConverter(R rexp){
-		RStringVector names = (RStringVector)rexp.getAttributeValue("class");
+		RStringVector classNames = RExpUtil.getClassNames(rexp);
 
-		for(String name : names){
-			Class<? extends Converter<?>> clazz = ConverterFactory.converters.get(name);
+		for(String className : classNames){
+			Class<? extends Converter<?>> clazz = ConverterFactory.converters.get(className);
 
 			if(clazz != null){
 				return newConverter(clazz, rexp);
 			}
 		}
 
-		throw new IllegalArgumentException("No built-in converter for class " + names.getValues());
+		throw new IllegalArgumentException("No built-in converter for class " + classNames.getValues());
 	}
 
 	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter<?>> clazz, R rexp){
@@ -65,10 +65,11 @@ public class ConverterFactory {
 		converters.put("caretEnsemble", CaretEnsembleConverter.class);
 		converters.put("earth", EarthConverter.class);
 		converters.put("elmNN", ElmNNConverter.class);
+		converters.put("elnet", GLMNetConverter.class);
+		converters.put("fishnet", GLMNetConverter.class);
 		converters.put("gbm", GBMConverter.class);
 		converters.put("iForest", IForestConverter.class);
 		converters.put("glm", GLMConverter.class);
-		converters.put("glmnet", GLMNetConverter.class);
 		converters.put("kmeans", KMeansConverter.class);
 		converters.put("lm", LMConverter.class);
 		converters.put("lrm", LRMConverter.class);

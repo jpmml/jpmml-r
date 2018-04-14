@@ -47,6 +47,13 @@ public class RExpUtil {
 	}
 
 	static
+	public RStringVector getClassNames(RExp rexp){
+		RStringVector result = (RStringVector)rexp.getAttributeValue("class");
+
+		return result;
+	}
+
+	static
 	public List<String> getFactorLevels(RNumberVector<?> factor){
 		return getFactorLevels((RIntegerVector)factor);
 	}

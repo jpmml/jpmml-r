@@ -111,7 +111,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			RExp targetVariable = variables.getValue(variableName);
 
-			RStringVector targetVariableClass = (RStringVector)targetVariable.getAttributeValue("class");
+			RStringVector targetVariableClass = RExpUtil.getClassNames(targetVariable);
 
 			RStringVector targetCategories = (RStringVector)levels.getValue(variableName);
 

@@ -26,4 +26,9 @@ public class GLMNetConverterTest extends ConverterTest {
 	public void evaluateAuto() throws Exception {
 		evaluate("GLMNet", "Auto");
 	}
+
+	@Test
+	public void evaluateVisit() throws Exception {
+		evaluate("GLMNet", "Visit");
+	}
 }
