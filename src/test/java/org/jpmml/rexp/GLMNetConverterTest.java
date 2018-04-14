@@ -24,11 +24,16 @@ public class GLMNetConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("GLMNet", "Auto");
+		evaluate("ElNet", "Auto");
+	}
+
+	@Test
+	public void evaluateWineQuality() throws Exception {
+		evaluate("ElNet", "WineQuality");
 	}
 
 	@Test
 	public void evaluateVisit() throws Exception {
-		evaluate("GLMNet", "Visit");
+		evaluate("FishNet", "Visit");
 	}
 }

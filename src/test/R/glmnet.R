@@ -6,9 +6,9 @@ auto = loadAutoCsv("Auto")
 auto$origin = as.integer(auto$origin)
 
 auto_x = as.matrix(auto[, -ncol(auto)])
-auto_y = as.matrix(auto[, ncol(auto)])
+auto_y = auto[, ncol(auto)]
 
-generateGLMNetAuto = function(){
+generateElNetAuto = function(){
 	auto.glmnet = glmnet(x = auto_x, y = auto_y, family = "gaussian")
 	print(auto.glmnet)
 
@@ -16,21 +16,42 @@ generateGLMNetAuto = function(){
 
 	mpg = predict(auto.glmnet, newx = auto_x, s = auto.glmnet$lambda.s, exact = TRUE)
 
-	storeRds(auto.glmnet, "GLMNetAuto")
-	storeCsv(data.frame("_target" = mpg[, 1]), "GLMNetAuto")
+	storeRds(auto.glmnet, "ElNetAuto")
+	storeCsv(data.frame("_target" = mpg[, 1]), "ElNetAuto")
 }
 
 set.seed(42)
 
-generateGLMNetAuto()
+generateElNetAuto()
+
+wine_quality = loadWineQualityCsv("WineQuality")
+
+wine_quality_x = as.matrix(wine_quality[, -ncol(wine_quality)])
+wine_quality_y = wine_quality[, ncol(wine_quality)]
+
+generateElNetWineQuality = function(){
+	wine_quality.glmnet = glmnet(x = wine_quality_x, y = wine_quality_y, family = "gaussian")
+	print(wine_quality.glmnet)
+
+	wine_quality.glmnet$lambda.s = wine_quality.glmnet$lambda[29]
+
+	wine_quality = predict(wine_quality.glmnet, newx = wine_quality_x, s = wine_quality.glmnet$lambda.s, exact = TRUE)
+
+	storeRds(wine_quality.glmnet, "ElNetWineQuality")
+	storeCsv(data.frame("_target" = wine_quality[, 1]), "ElNetWineQuality")
+}
+
+set.seed(42)
+
+generateElNetWineQuality()
 
 visit = loadVisitCsv("Visit")
 visit$edlevel = NULL
 
 visit_x = as.matrix(visit[, -ncol(visit)])
-visit_y = as.matrix(visit[, ncol(visit)])
+visit_y = visit[, ncol(visit)]
 
-generateGLMNetVisit = function(){
+generateFishNetVisit = function(){
 	visit.glmnet = glmnet(x = visit_x, y = visit_y, family = "poisson")
 	print(visit.glmnet)
 
@@ -38,10 +59,10 @@ generateGLMNetVisit = function(){
 
 	docvis = predict(visit.glmnet, newx = visit_x, s = visit.glmnet$lambda.s, exact = TRUE)
 
-	storeRds(visit.glmnet, "GLMNetVisit")
-	storeCsv(data.frame("_target" = docvis[, 1]), "GLMNetVisit")
+	storeRds(visit.glmnet, "FishNetVisit")
+	storeCsv(data.frame("_target" = docvis[, 1]), "FishNetVisit")
 }
 
 set.seed(42)
 
-generateGLMNetVisit()
+generateFishNetVisit()

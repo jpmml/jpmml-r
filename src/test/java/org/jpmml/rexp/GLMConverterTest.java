@@ -27,54 +27,54 @@ public class GLMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("GeneralRegressionFormula", "Audit");
+		evaluate("GLMFormula", "Audit");
 	}
 
 	@Test
 	public void evaluateCustFormulaAudit() throws Exception {
-		evaluate("GeneralRegressionCustFormula", "Audit");
+		evaluate("GLMCustFormula", "Audit");
 	}
 
 	@Test
 	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		evaluate("TrainGeneralRegressionFormula", "AuditMatrix");
+		evaluate("TrainGLMFormula", "AuditMatrix");
 	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("GeneralRegressionFormula", "Auto");
+		evaluate("GLMFormula", "Auto");
 
-		try(Batch batch = createBatch("GeneralRegressionFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+		try(Batch batch = createBatch("GLMFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
 			evaluate(batch, null);
 		}
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("GeneralRegressionCustFormula", "Auto");
+		evaluate("GLMCustFormula", "Auto");
 
-		try(Batch batch = createBatch("GeneralRegressionCustFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+		try(Batch batch = createBatch("GLMCustFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
 			evaluate(batch, null);
 		}
 	}
 
 	@Test
 	public void evaluateCaretFormulaAuto() throws Exception {
-		evaluate("TrainGeneralRegressionFormula", "Auto");
+		evaluate("TrainGLMFormula", "Auto");
 	}
 
 	@Test
 	public void evaluateFormulaVisit() throws Exception {
-		evaluate("GeneralRegressionFormula", "Visit");
+		evaluate("GLMFormula", "Visit");
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("GeneralRegressionFormula", "WineQuality");
+		evaluate("GLMFormula", "WineQuality");
 	}
 
 	@Test
 	public void evaluateCustFormulaWineQuality() throws Exception {
-		evaluate("GeneralRegressionCustFormula", "WineQuality");
+		evaluate("GLMCustFormula", "WineQuality");
 	}
 }

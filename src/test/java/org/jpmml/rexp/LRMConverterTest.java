@@ -24,6 +24,6 @@ public class LRMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("LogisticRegressionFormula", "Audit");
+		evaluate("LRMFormula", "Audit");
 	}
 }

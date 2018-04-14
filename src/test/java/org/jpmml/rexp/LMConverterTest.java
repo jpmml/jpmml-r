@@ -24,16 +24,16 @@ public class LMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("LinearRegressionFormula", "Auto");
+		evaluate("LMFormula", "Auto");
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("LinearRegressionCustFormula", "Auto");
+		evaluate("LMCustFormula", "Auto");
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("LinearRegressionFormula", "WineQuality");
+		evaluate("LMFormula", "WineQuality");
 	}
 }
