@@ -25,52 +25,36 @@ import com.google.common.primitives.Doubles;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
-import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
-import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
+abstract
 public class GLMNetConverter extends ModelConverter<RGenericVector> {
-
-	private String type = null;
-
 
 	public GLMNetConverter(RGenericVector glmnet){
 		super(glmnet);
-
-		RStringVector classNames = RExpUtil.getClassNames(glmnet);
-		if(classNames.size() != 2){
-			throw new IllegalArgumentException();
-		}
-
-		String className = classNames.getValue(1);
-		if(!("glmnet").equals(className)){
-			throw new IllegalArgumentException(className);
-		}
-
-		String subclassName = classNames.getValue(0);
-		switch(subclassName){
-			case "elnet":
-			case "fishnet":
-				setType(subclassName);
-				break;
-			default:
-				throw new IllegalArgumentException(subclassName);
-		}
 	}
+
+	abstract
+	public Model encodeModel(Label label, List<? extends Feature> features, List<Double> coefficients, Double intercept);
 
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector glmnet = getObject();
 
 		S4Object beta = (S4Object)glmnet.getValue("beta");
+		RStringVector classnames = (RStringVector)glmnet.getValue("classnames", true);
 
 		RGenericVector dimnames = (RGenericVector)beta.getAttributeValue("Dimnames");
+
+		if(classnames != null){
+			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, classnames.getValues());
+
+			encoder.setLabel(dataField);
+		} else
 
 		{
 			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CONTINUOUS, DataType.DOUBLE);
@@ -114,45 +98,17 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
 		Double intercept = a0.getValue(column);
 
-		List<Double> coefficients = getColumn(beta, column);
+		List<Double> coefficients = getCoefficients(beta, column);
 
 		if(coefficients.size() != features.size()){
 			throw new IllegalArgumentException();
 		}
 
-		GeneralRegressionModel.Distribution distribution;
-
-		String type = getType();
-		switch(type){
-			case "elnet":
-				distribution = GeneralRegressionModel.Distribution.NORMAL;
-				break;
-			case "fishnet":
-				distribution = GeneralRegressionModel.Distribution.POISSON;
-				break;
-			default:
-				distribution = null;
-				break;
-		}
-
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(label), null, null, null)
-			.setDistribution(distribution);
-
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, coefficients, null);
-
-		return generalRegressionModel;
-	}
-
-	public String getType(){
-		return this.type;
-	}
-
-	private void setType(String type){
-		this.type = type;
+		return encodeModel(label, features, coefficients, intercept);
 	}
 
 	static
-	private List<Double> getColumn(S4Object beta, int column){
+	private List<Double> getCoefficients(S4Object beta, int column){
 		RIntegerVector i = (RIntegerVector)beta.getAttributeValue("i");
 		RIntegerVector p = (RIntegerVector)beta.getAttributeValue("p");
 		RIntegerVector dim = (RIntegerVector)beta.getAttributeValue("Dim");

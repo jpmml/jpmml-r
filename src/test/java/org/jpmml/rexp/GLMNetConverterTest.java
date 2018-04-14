@@ -36,4 +36,9 @@ public class GLMNetConverterTest extends ConverterTest {
 	public void evaluateVisit() throws Exception {
 		evaluate("FishNet", "Visit");
 	}
+
+	@Test
+	public void evaluateLogNetWineColor() throws Exception {
+		evaluate("LogNet", "WineColor");
+	}
 }

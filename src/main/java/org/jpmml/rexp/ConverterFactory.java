@@ -65,13 +65,14 @@ public class ConverterFactory {
 		converters.put("caretEnsemble", CaretEnsembleConverter.class);
 		converters.put("earth", EarthConverter.class);
 		converters.put("elmNN", ElmNNConverter.class);
-		converters.put("elnet", GLMNetConverter.class);
-		converters.put("fishnet", GLMNetConverter.class);
+		converters.put("elnet", ElNetConverter.class);
+		converters.put("fishnet", FishNetConverter.class);
 		converters.put("gbm", GBMConverter.class);
 		converters.put("iForest", IForestConverter.class);
 		converters.put("glm", GLMConverter.class);
 		converters.put("kmeans", KMeansConverter.class);
 		converters.put("lm", LMConverter.class);
+		converters.put("lognet", LogNetConverter.class);
 		converters.put("lrm", LRMConverter.class);
 		converters.put("multinom", MultinomConverter.class);
 		converters.put("mvr", MVRConverter.class);

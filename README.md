@@ -25,7 +25,7 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`glmnet` package](https://cran.r-project.org/package=glmnet):
-    * `glmnet` (`elnet` and `fishnet` subtypes) - Generalized Linear Model with regularization (GLMNet) regression
+    * `glmnet` (`elnet`, `fishnet` and `lognet` subtypes) - Generalized Linear Model with regularization (GLMNet) regression amd classification
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`nnet` package](https://cran.r-project.org/package=nnet):

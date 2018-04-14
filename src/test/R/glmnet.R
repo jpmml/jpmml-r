@@ -66,3 +66,25 @@ generateFishNetVisit = function(){
 set.seed(42)
 
 generateFishNetVisit()
+
+wine_color = loadWineColorCsv("WineColor")
+
+wine_color_x = as.matrix(wine_color[, -ncol(wine_color)])
+wine_color_y = wine_color[, ncol(wine_color)]
+
+generateLogNetWineColor = function(){
+	wine_color.glmnet = glmnet(x = wine_color_x, y = wine_color_y, family = "binomial")
+	print(wine_color.glmnet)
+
+	wine_color.glmnet$lambda.s = wine_color.glmnet$lambda[56]
+
+	color = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "class")
+	probability = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "response")
+
+	storeRds(wine_color.glmnet, "LogNetWineColor")
+	storeCsv(data.frame("_target" = color[, 1], "probability(red)" = (1 - probability[, 1]), "probability(white)" = probability[, 1], check.names = FALSE), "LogNetWineColor")
+}
+
+set.seed(42)
+
+generateLogNetWineColor()
