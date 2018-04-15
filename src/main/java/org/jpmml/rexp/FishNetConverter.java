@@ -23,9 +23,8 @@ import java.util.List;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
-import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.Schema;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
 public class FishNetConverter extends GLMNetConverter {
@@ -35,11 +34,14 @@ public class FishNetConverter extends GLMNetConverter {
 	}
 
 	@Override
-	public Model encodeModel(Label label, List<? extends Feature> features, List<Double> coefficients, Double intercept){
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(label), null, null, null)
+	public Model encodeModel(RDoubleVector a0, RExp beta, int column, Schema schema){
+		Double intercept = a0.getValue(column);
+		List<Double> coefficients = getCoefficients((S4Object)beta, column);
+
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), null, null, null)
 			.setDistribution(GeneralRegressionModel.Distribution.POISSON);
 
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, coefficients, null);
+		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, schema.getFeatures(), intercept, coefficients, null);
 
 		return generalRegressionModel;
 	}

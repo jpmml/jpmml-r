@@ -88,3 +88,39 @@ generateLogNetWineColor = function(){
 set.seed(42)
 
 generateLogNetWineColor()
+
+iris = loadIrisCsv("Iris")
+
+iris_x = as.matrix(iris[, -ncol(iris)])
+iris_y = iris[, ncol(iris)]
+
+generateMultNetIris = function(){
+	iris.glmnet = glmnet(x = iris_x, y = iris_y, family = "multinomial")
+	print(iris.glmnet)
+
+	iris.glmnet$lambda.s = iris.glmnet$lambda[49]
+
+	species = predict(iris.glmnet, newx = iris_x, s = iris.glmnet$lambda.s, exact = TRUE, type = "class")
+	probability = predict(iris.glmnet, newx = iris_x, s = iris.glmnet$lambda.s, exact = TRUE, type = "response")
+
+	storeRds(iris.glmnet, "MultNetIris")
+	storeCsv(data.frame("_target" = species[, 1], "probability(setosa)" = probability[, 1, 1], "probability(versicolor)" = probability[, 2, 1], "probability(virginica)" = probability[, 3, 1], check.names = FALSE), "MultNetIris")
+}
+
+generateMultNetWineColor = function(){
+	wine_color.glmnet = glmnet(x = wine_color_x, y = wine_color_y, family = "multinomial")
+	print(wine_color.glmnet)
+
+	wine_color.glmnet$lambda.s = wine_color.glmnet$lambda[58]
+
+	color = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "class")
+	probability = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "response")
+
+	storeRds(wine_color.glmnet, "MultNetWineColor")
+	storeCsv(data.frame("_target" = color[, 1], "probability(red)" = probability[, 1, 1], "probability(white)" = probability[, 2, 1], check.names = FALSE), "MultNetWineColor")
+}
+
+set.seed(42)
+
+generateMultNetIris()
+generateMultNetWineColor()

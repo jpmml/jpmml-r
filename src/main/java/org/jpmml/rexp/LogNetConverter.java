@@ -20,15 +20,10 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
-import org.dmg.pmml.DataType;
-import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.general_regression.GeneralRegressionModel;
-import org.jpmml.converter.CategoricalLabel;
-import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
-import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
+import org.dmg.pmml.regression.RegressionModel;
+import org.jpmml.converter.Schema;
+import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class LogNetConverter extends GLMNetConverter {
 
@@ -37,21 +32,10 @@ public class LogNetConverter extends GLMNetConverter {
 	}
 
 	@Override
-	public Model encodeModel(Label label, List<? extends Feature> features, List<Double> coefficients, Double intercept){
-		CategoricalLabel categoricalLabel = (CategoricalLabel)label;
+	public Model encodeModel(RDoubleVector a0, RExp beta, int column, Schema schema){
+		Double intercept = a0.getValue(column);
+		List<Double> coefficients = getCoefficients((S4Object)beta, column);
 
-		if(categoricalLabel.size() != 2){
-			throw new IllegalArgumentException();
-		}
-
-		String targetCategory = categoricalLabel.getValue(1);
-
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(label), null, null, null)
-			.setLinkFunction(GeneralRegressionModel.LinkFunction.LOGIT)
-			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
-
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, coefficients, targetCategory);
-
-		return generalRegressionModel;
+		return RegressionModelUtil.createBinaryLogisticClassification(schema.getFeatures(), coefficients, intercept, RegressionModel.NormalizationMethod.LOGIT, true, schema);
 	}
 }

@@ -27,8 +27,6 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
 
 abstract
@@ -39,14 +37,20 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	}
 
 	abstract
-	public Model encodeModel(Label label, List<? extends Feature> features, List<Double> coefficients, Double intercept);
+	public Model encodeModel(RDoubleVector a0, RExp beta, int column, Schema schema);
 
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector glmnet = getObject();
 
-		S4Object beta = (S4Object)glmnet.getValue("beta");
+		RExp beta = glmnet.getValue("beta");
 		RStringVector classnames = (RStringVector)glmnet.getValue("classnames", true);
+
+		if((classnames != null && classnames.size() > 1) && (beta instanceof RGenericVector)){
+			RGenericVector classBetas = (RGenericVector)beta;
+
+			beta = (S4Object)classBetas.getValue(0);
+		} // End if
 
 		RGenericVector dimnames = (RGenericVector)beta.getAttributeValue("Dimnames");
 
@@ -77,7 +81,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector glmnet = getObject();
 
 		RDoubleVector a0 = (RDoubleVector)glmnet.getValue("a0");
-		S4Object beta = (S4Object)glmnet.getValue("beta");
+		RExp beta = glmnet.getValue("beta");
 		RDoubleVector lambda = (RDoubleVector)glmnet.getValue("lambda");
 
 		RNumberVector<?> lambdaS;
@@ -93,22 +97,11 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		Label label = schema.getLabel();
-		List<? extends Feature> features = schema.getFeatures();
-
-		Double intercept = a0.getValue(column);
-
-		List<Double> coefficients = getCoefficients(beta, column);
-
-		if(coefficients.size() != features.size()){
-			throw new IllegalArgumentException();
-		}
-
-		return encodeModel(label, features, coefficients, intercept);
+		return encodeModel(a0, beta, column, schema);
 	}
 
 	static
-	private List<Double> getCoefficients(S4Object beta, int column){
+	public List<Double> getCoefficients(S4Object beta, int column){
 		RIntegerVector i = (RIntegerVector)beta.getAttributeValue("i");
 		RIntegerVector p = (RIntegerVector)beta.getAttributeValue("p");
 		RIntegerVector dim = (RIntegerVector)beta.getAttributeValue("Dim");

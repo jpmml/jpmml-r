@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.evaluator.PMMLEquivalence;
 import org.junit.Test;
 
 public class GLMNetConverterTest extends ConverterTest {
@@ -39,6 +40,16 @@ public class GLMNetConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateLogNetWineColor() throws Exception {
-		evaluate("LogNet", "WineColor");
+		evaluate("LogNet", "WineColor", new PMMLEquivalence(5e-11, 5e-11));
+	}
+
+	@Test
+	public void evaluateMultNetIris() throws Exception {
+		evaluate("MultNet", "Iris");
+	}
+
+	@Test
+	public void evaluateMultNetWineColor() throws Exception {
+		evaluate("MultNet", "WineColor", new PMMLEquivalence(5e-10, 5e-10));
 	}
 }
