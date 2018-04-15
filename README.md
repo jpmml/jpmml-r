@@ -25,7 +25,8 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`glmnet` package](https://cran.r-project.org/package=glmnet):
-    * `glmnet` (`elnet`, `fishnet`, `lognet` and `multnet` subtypes) - Generalized Linear Model with regularization (GLMNet) regression amd classification
+    * `glmnet` (`elnet`, `fishnet`, `lognet` and `multnet` subtypes) - Generalized Linear Model with lasso or elasticnet regularization (GLMNet) regression amd classification
+    * `cv.glmnet` - Cross-validated GLMNet regression and calculation
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`nnet` package](https://cran.r-project.org/package=nnet):
@@ -38,7 +39,7 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`randomForest` package](https://cran.r-project.org/package=randomForest):
     * `randomForest` - Random Forest (RF) regression and classification
   * [`ranger` package](https://cran.r-project.org/package=ranger):
-    * `ranger` - Random Forest regression and classification
+    * `ranger` - Random Forest (RF) regression and classification
   * [`rms` package](https://cran.r-project.org/package=rms):
     * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression

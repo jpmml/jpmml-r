@@ -63,6 +63,7 @@ public class ConverterFactory {
 		converters.put("ada", AdaConverter.class);
 		converters.put("BinaryTree", BinaryTreeConverter.class);
 		converters.put("caretEnsemble", CaretEnsembleConverter.class);
+		converters.put("cv.glmnet", CrossValGLMNetConverter.class);
 		converters.put("earth", EarthConverter.class);
 		converters.put("elmNN", ElmNNConverter.class);
 		converters.put("elnet", ElNetConverter.class);

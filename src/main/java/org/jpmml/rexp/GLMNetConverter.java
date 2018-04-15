@@ -32,6 +32,9 @@ import org.jpmml.converter.Schema;
 abstract
 public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
+	private Double lambdaS = null;
+
+
 	public GLMNetConverter(RGenericVector glmnet){
 		super(glmnet);
 	}
@@ -84,6 +87,22 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RExp beta = glmnet.getValue("beta");
 		RDoubleVector lambda = (RDoubleVector)glmnet.getValue("lambda");
 
+		Double lambdaS = getLambdaS();
+		if(lambdaS == null){
+			lambdaS = loadLambdaS();
+		}
+
+		int column = (lambda.getValues()).indexOf(lambdaS);
+		if(column < 0){
+			throw new IllegalArgumentException();
+		}
+
+		return encodeModel(a0, beta, column, schema);
+	}
+
+	private Double loadLambdaS(){
+		RGenericVector glmnet = getObject();
+
 		RNumberVector<?> lambdaS;
 
 		try {
@@ -92,12 +111,15 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException("No lambda value information. Please initialize the \'lambda.s\' element", iae);
 		}
 
-		int column = (lambda.getValues()).indexOf((lambdaS.asScalar()).doubleValue());
-		if(column < 0){
-			throw new IllegalArgumentException();
-		}
+		return (lambdaS.asScalar()).doubleValue();
+	}
 
-		return encodeModel(a0, beta, column, schema);
+	public Double getLambdaS(){
+		return this.lambdaS;
+	}
+
+	void setLambdaS(Double lambdaS){
+		this.lambdaS = lambdaS;
 	}
 
 	static

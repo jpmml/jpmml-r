@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2018 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -20,33 +20,26 @@ package org.jpmml.rexp;
 
 import org.dmg.pmml.PMML;
 
-public class TrainConverter extends Converter<RGenericVector> {
+public class CrossValGLMNetConverter extends Converter<RGenericVector> {
 
 	private ConverterFactory converterFactory = ConverterFactory.newInstance();
 
 
-	public TrainConverter(RGenericVector train){
-		super(train);
+	public CrossValGLMNetConverter(RGenericVector cvGlmnet){
+		super(cvGlmnet);
 	}
 
 	@Override
 	public PMML encodePMML(){
-		RGenericVector train = getObject();
+		RGenericVector cvGlmnet = getObject();
 
-		RExp finalModel = train.getValue("finalModel");
-		RGenericVector preProcess = (RGenericVector)train.getValue("preProcess");
+		RGenericVector glmnetFit = (RGenericVector)cvGlmnet.getValue("glmnet.fit");
+		RDoubleVector lambda1SE = (RDoubleVector)cvGlmnet.getValue("lambda.1se");
 
-		ModelConverter<RExp> converter = (ModelConverter<RExp>)this.converterFactory.newConverter(finalModel);
+		GLMNetConverter converter = (GLMNetConverter)this.converterFactory.newConverter(glmnetFit);
+		converter.setLambdaS(lambda1SE.asScalar());
 
-		RExpEncoder encoder;
-
-		if(preProcess != null){
-			encoder = new PreProcessEncoder(preProcess);
-		} else
-
-		{
-			encoder = new RExpEncoder();
-		}
+		RExpEncoder encoder = new RExpEncoder();
 
 		return converter.encodePMML(encoder);
 	}
