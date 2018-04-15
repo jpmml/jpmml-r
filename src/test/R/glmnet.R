@@ -1,4 +1,5 @@
 library("glmnet")
+library("r2pmml")
 
 source("util.R")
 
@@ -10,9 +11,8 @@ auto_y = auto[, ncol(auto)]
 
 generateElNetAuto = function(){
 	auto.glmnet = glmnet(x = auto_x, y = auto_y, family = "gaussian")
+	auto.glmnet = decorate(auto.glmnet, lambda.s = auto.glmnet$lambda[23])
 	print(auto.glmnet)
-
-	auto.glmnet$lambda.s = auto.glmnet$lambda[23]
 
 	mpg = predict(auto.glmnet, newx = auto_x, s = auto.glmnet$lambda.s, exact = TRUE)
 
@@ -31,9 +31,8 @@ wine_quality_y = wine_quality[, ncol(wine_quality)]
 
 generateElNetWineQuality = function(){
 	wine_quality.glmnet = glmnet(x = wine_quality_x, y = wine_quality_y, family = "gaussian")
+	wine_quality.glmnet = decorate(wine_quality.glmnet, lambda.s = wine_quality.glmnet$lambda[29])
 	print(wine_quality.glmnet)
-
-	wine_quality.glmnet$lambda.s = wine_quality.glmnet$lambda[29]
 
 	wine_quality = predict(wine_quality.glmnet, newx = wine_quality_x, s = wine_quality.glmnet$lambda.s, exact = TRUE)
 
@@ -53,9 +52,8 @@ visit_y = visit[, ncol(visit)]
 
 generateFishNetVisit = function(){
 	visit.glmnet = glmnet(x = visit_x, y = visit_y, family = "poisson")
+	visit.glmnet = decorate(visit.glmnet, lambda.s = visit.glmnet$lambda[18])
 	print(visit.glmnet)
-
-	visit.glmnet$lambda.s = visit.glmnet$lambda[18]
 
 	docvis = predict(visit.glmnet, newx = visit_x, s = visit.glmnet$lambda.s, exact = TRUE)
 
@@ -74,9 +72,8 @@ wine_color_y = wine_color[, ncol(wine_color)]
 
 generateLogNetWineColor = function(){
 	wine_color.glmnet = glmnet(x = wine_color_x, y = wine_color_y, family = "binomial")
+	wine_color.glmnet = decorate(wine_color.glmnet, lambda.s = wine_color.glmnet$lambda[56])
 	print(wine_color.glmnet)
-
-	wine_color.glmnet$lambda.s = wine_color.glmnet$lambda[56]
 
 	color = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "class")
 	probability = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "response")
@@ -96,9 +93,8 @@ iris_y = iris[, ncol(iris)]
 
 generateMultNetIris = function(){
 	iris.glmnet = glmnet(x = iris_x, y = iris_y, family = "multinomial")
+	iris.glmnet = decorate(iris.glmnet, lambda.s = iris.glmnet$lambda[49])
 	print(iris.glmnet)
-
-	iris.glmnet$lambda.s = iris.glmnet$lambda[49]
 
 	species = predict(iris.glmnet, newx = iris_x, s = iris.glmnet$lambda.s, exact = TRUE, type = "class")
 	probability = predict(iris.glmnet, newx = iris_x, s = iris.glmnet$lambda.s, exact = TRUE, type = "response")
@@ -109,9 +105,8 @@ generateMultNetIris = function(){
 
 generateMultNetWineColor = function(){
 	wine_color.glmnet = glmnet(x = wine_color_x, y = wine_color_y, family = "multinomial")
+	wine_color.glmnet = decorate(wine_color.glmnet, lambda.s = wine_color.glmnet$lambda[58])
 	print(wine_color.glmnet)
-
-	wine_color.glmnet$lambda.s = wine_color.glmnet$lambda[58]
 
 	color = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "class")
 	probability = predict(wine_color.glmnet, newx = wine_color_x, s = wine_color.glmnet$lambda.s, exact = TRUE, type = "response")
