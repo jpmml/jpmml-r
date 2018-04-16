@@ -179,7 +179,7 @@ public class RExpParser {
 		RPair parameters = (RPair)readRExp();
 		RExp body = readRExp();
 
-		return null;
+		return new RClosure(attributes, environment, parameters, body);
 	}
 
 	private RExp readEnvironment(int flags) throws IOException {
