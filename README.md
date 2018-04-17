@@ -10,6 +10,8 @@ Java library and command-line application for converting [R](https://www.r-proje
 * Supported model and transformation types:
   * [`ada` package](https://cran.r-project.org/package=ada):
     * `ada` - Stochastic Boosting (SB) classification
+  * [`adabag` package](https://cran.r-project.org/package=adabag):
+    * `bagging` - Bagging classification
   * [`caret` package](https://cran.r-project.org/package=caret):
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train` - Selected JPMML-R model types

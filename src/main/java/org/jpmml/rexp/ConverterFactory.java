@@ -61,6 +61,7 @@ public class ConverterFactory {
 
 	static {
 		converters.put("ada", AdaConverter.class);
+		converters.put("bagging", BaggingConverter.class);
 		converters.put("BinaryTree", BinaryTreeConverter.class);
 		converters.put("caretEnsemble", CaretEnsembleConverter.class);
 		converters.put("cv.glmnet", CrossValGLMNetConverter.class);
