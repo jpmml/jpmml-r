@@ -18,8 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.dmg.pmml.DataField;
@@ -28,26 +26,18 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.VisitorAction;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
-import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.CategoricalLabel;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SigmoidTransformation;
 import org.jpmml.converter.mining.MiningModelUtil;
-import org.jpmml.model.visitors.AbstractVisitor;
 
-public class AdaConverter extends TreeModelConverter<RGenericVector> {
-
-	private List<Schema> schemas = new ArrayList<>();
-
+public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 	public AdaConverter(RGenericVector ada){
 		super(ada);
@@ -77,46 +67,7 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector trees = (RGenericVector)model.getValue("trees");
 		RDoubleVector alpha = (RDoubleVector)model.getValue("alpha");
 
-		List<TreeModel> treeModels = new ArrayList<>();
-
-		// Transforms classification-type tree models to regression-type tree models
-		Visitor treeModelTransformer = new AbstractVisitor(){
-
-			@Override
-			public VisitorAction visit(TreeModel treeModel){
-				treeModel
-					.setMiningFunction(MiningFunction.REGRESSION)
-					.setOutput(null);
-
-				return super.visit(treeModel);
-			}
-
-			@Override
-			public VisitorAction visit(Node node){
-
-				if(node.hasScoreDistributions()){
-					List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
-
-					scoreDistributions.clear();
-				}
-
-				return super.visit(node);
-			}
-		};
-
-		for(int i = 0; i < trees.size(); i++){
-			RGenericVector rpart = (RGenericVector)trees.getValue(i);
-
-			RPartConverter treeConverter = new RPartConverter(rpart);
-
-			Schema segmentSchema = this.schemas.get(i);
-
-			TreeModel treeModel = treeConverter.encodeModel(segmentSchema);
-
-			treeModelTransformer.applyTo(treeModel);
-
-			treeModels.add(treeModel);
-		}
+		List<TreeModel> treeModels = encodeTreeModels(trees);
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(null))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_SUM, treeModels, alpha.getValues()))
@@ -125,11 +76,27 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 1d, 0d, RegressionModel.NormalizationMethod.NONE, true, schema);
 	}
 
+	@Override
+	protected Visitor getTreeModelTransformer(){
+		return new TreeModelTransformer(){
+
+			@Override
+			public VisitorAction visit(TreeModel treeModel){
+				treeModel.setMiningFunction(MiningFunction.REGRESSION);
+
+				return super.visit(treeModel);
+			}
+		};
+	}
+
 	private void encodeFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
+		RGenericVector model = (RGenericVector)ada.getValue("model");
 		RExp terms = ada.getValue("terms");
 		RIntegerVector fit = (RIntegerVector)ada.getValue("fit");
+
+		RGenericVector trees = (RGenericVector)model.getValue("trees");
 
 		RExpEncoder termsEncoder = new RExpEncoder();
 
@@ -139,44 +106,21 @@ public class AdaConverter extends TreeModelConverter<RGenericVector> {
 
 		SchemaUtil.setLabel(formula, terms, fit, encoder);
 
-		encodeTreeSchemas(encoder);
+		encodeTreeSchemas(trees, encoder);
 	}
 
 	private void encodeNonFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
+		RGenericVector model = (RGenericVector)ada.getValue("model");
 		RIntegerVector fit = (RIntegerVector)ada.getValue("fit");
+
+		RGenericVector trees = (RGenericVector)model.getValue("trees");
 
 		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, RExpUtil.getFactorLevels(fit));
 
 		encoder.setLabel(dataField);
 
-		encodeTreeSchemas(encoder);
-	}
-
-	private void encodeTreeSchemas(RExpEncoder encoder){
-		RGenericVector ada = getObject();
-
-		RGenericVector model = (RGenericVector)ada.getValue("model");
-
-		RGenericVector trees = (RGenericVector)model.getValue("trees");
-
-		Label signLabel = new CategoricalLabel(null, DataType.INTEGER, Arrays.asList("-1", "1"));
-
-		for(int i = 0; i < trees.size(); i++){
-			RGenericVector rpart = (RGenericVector)trees.getValue(i);
-
-			RPartConverter treeConverter = new RPartConverter(rpart);
-
-			RExpEncoder treeEncoder = new RExpEncoder();
-
-			treeConverter.encodeSchema(treeEncoder);
-
-			encoder.addFields(treeEncoder);
-
-			Schema segmentSchema = new Schema(signLabel, treeEncoder.getFeatures());
-
-			this.schemas.add(segmentSchema);
-		}
+		encodeTreeSchemas(trees, encoder);
 	}
 }

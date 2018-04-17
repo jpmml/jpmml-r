@@ -18,30 +18,21 @@
  */
 package org.jpmml.rexp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.Visitor;
-import org.dmg.pmml.VisitorAction;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
-import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalLabel;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.mining.MiningModelUtil;
-import org.jpmml.model.visitors.AbstractVisitor;
 
-public class BaggingConverter extends ModelConverter<RGenericVector> {
-
-	private List<Schema> schemas = new ArrayList<>();
-
+public class BaggingConverter extends RPartEnsembleConverter<RGenericVector> {
 
 	public BaggingConverter(RGenericVector bagging){
 		super(bagging);
@@ -63,23 +54,7 @@ public class BaggingConverter extends ModelConverter<RGenericVector> {
 
 		SchemaUtil.setLabel(formula, terms, vardepSummary.names(), encoder);
 
-		Label label = encoder.getLabel();
-
-		for(int i = 0; i < trees.size(); i++){
-			RGenericVector rpart = (RGenericVector)trees.getValue(i);
-
-			RPartConverter treeConverter = new RPartConverter(rpart);
-
-			RExpEncoder treeEncoder = new RExpEncoder();
-
-			treeConverter.encodeSchema(treeEncoder);
-
-			encoder.addFields(treeEncoder);
-
-			Schema segmentSchema = new Schema(label.toAnonymousLabel(), treeEncoder.getFeatures());
-
-			this.schemas.add(segmentSchema);
-		}
+		encodeTreeSchemas(trees, encoder);
 	}
 
 	@Override
@@ -90,48 +65,17 @@ public class BaggingConverter extends ModelConverter<RGenericVector> {
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-		List<TreeModel> treeModels = new ArrayList<>();
-
-		Visitor treeModelTransformer = new AbstractVisitor(){
-
-			@Override
-			public VisitorAction visit(TreeModel treeModel){
-				treeModel.setOutput(null);
-
-				return super.visit(treeModel);
-			}
-
-			@Override
-			public VisitorAction visit(Node node){
-
-				if(node.hasScoreDistributions()){
-					List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
-
-					scoreDistributions.clear();
-				}
-
-				return super.visit(node);
-			}
-		};
-
-		for(int i = 0; i < trees.size(); i++){
-			RGenericVector rpart = (RGenericVector)trees.getValue(i);
-
-			RPartConverter treeConverter = new RPartConverter(rpart);
-
-			Schema segmentSchema = this.schemas.get(i);
-
-			TreeModel treeModel = treeConverter.encodeModel(segmentSchema);
-
-			treeModelTransformer.applyTo(treeModel);
-
-			treeModels.add(treeModel);
-		}
+		List<TreeModel> treeModels = encodeTreeModels(trees);
 
 		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels))
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return miningModel;
+	}
+
+	@Override
+	protected Visitor getTreeModelTransformer(){
+		return new TreeModelTransformer();
 	}
 }
