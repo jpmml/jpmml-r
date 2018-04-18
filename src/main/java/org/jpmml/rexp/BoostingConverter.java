@@ -31,24 +31,25 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.mining.MiningModelUtil;
 
-public class BaggingConverter extends AdaBagConverter {
+public class BoostingConverter extends AdaBagConverter {
 
-	public BaggingConverter(RGenericVector bagging){
-		super(bagging);
+	public BoostingConverter(RGenericVector boosting){
+		super(boosting);
 	}
 
 	@Override
 	public Model encodeModel(Schema schema){
-		RGenericVector bagging = getObject();
+		RGenericVector boosting = getObject();
 
-		RGenericVector trees = (RGenericVector)bagging.getValue("trees");
+		RGenericVector trees = (RGenericVector)boosting.getValue("trees");
+		RDoubleVector weights = (RDoubleVector)boosting.getValue("weights");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 		List<TreeModel> treeModels = encodeTreeModels(trees);
 
 		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel))
-			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, treeModels))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_MAJORITY_VOTE, treeModels, weights.getValues()))
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return miningModel;

@@ -35,8 +35,8 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 	private List<Schema> schemas = new ArrayList<>();
 
 
-	public RPartEnsembleConverter(R model){
-		super(model);
+	public RPartEnsembleConverter(R object){
+		super(object);
 	}
 
 	public void encodeTreeSchemas(RGenericVector trees, RExpEncoder encoder){

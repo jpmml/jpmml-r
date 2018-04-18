@@ -82,6 +82,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		RIntegerVector rowNames = (RIntegerVector)frame.getAttributeValue("row.names");
 
+		if((rowNames.getValues()).indexOf(Integer.MIN_VALUE) > -1){
+			throw new IllegalArgumentException();
+		}
+
 		int[] splitOffsets = new int[1 + rowNames.size()];
 
 		for(int offset = 0; offset < rowNames.size(); offset++){
