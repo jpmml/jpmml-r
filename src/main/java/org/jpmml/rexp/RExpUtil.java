@@ -54,6 +54,18 @@ public class RExpUtil {
 	}
 
 	static
+	public boolean isFactor(RExp rexp){
+
+		if(rexp instanceof RIntegerVector){
+			RIntegerVector factor = (RIntegerVector)rexp;
+
+			return factor.isFactor();
+		}
+
+		return false;
+	}
+
+	static
 	public List<String> getFactorLevels(RNumberVector<?> factor){
 		return getFactorLevels((RIntegerVector)factor);
 	}

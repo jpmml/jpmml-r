@@ -36,12 +36,10 @@ public class ModelFrameFormulaContext implements FormulaContext {
 		if(model.hasValue(variable)){
 			RVector<?> vector = (RVector<?>)model.getValue(variable);
 
-			if(vector instanceof RIntegerVector){
+			if(RExpUtil.isFactor(vector)){
 				RIntegerVector factor = (RIntegerVector)vector;
 
-				if(factor.isFactor()){
-					return factor.getLevelValues();
-				}
+				return factor.getLevelValues();
 			}
 		}
 

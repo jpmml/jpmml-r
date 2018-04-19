@@ -84,6 +84,7 @@ public class ConverterFactory {
 		converters.put("nn", NNConverter.class);
 		converters.put("nnet.formula", NNetConverter.class);
 		converters.put("ols", OLSConverter.class);
+		converters.put("party", PartyConverter.class);
 		converters.put("rpart", RPartConverter.class);
 		converters.put("randomForest", RandomForestConverter.class);
 		converters.put("ranger", RangerConverter.class);

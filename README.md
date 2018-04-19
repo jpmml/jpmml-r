@@ -22,13 +22,15 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
   * [`elmNN` package](https://cran.r-project.org/package=elmNN):
     * `elmNN` - Extreme Learning Machine (ELM) regression
+  * [`evtree` package](https://cran.r-project.org/package=evtree):
+    * `party` - Evolutionary Learning of Trees (EvTree) regression and classification
   * [`e1071` package](https://cran.r-project.org/package=e1071):
     * `naiveBayes` - Naive Bayes (NB) classification
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
   * [`gbm` package](https://cran.r-project.org/package=gbm):
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
   * [`glmnet` package](https://cran.r-project.org/package=glmnet):
-    * `glmnet` (`elnet`, `fishnet`, `lognet` and `multnet` subtypes) - Generalized Linear Model with lasso or elasticnet regularization (GLMNet) regression amd classification
+    * `glmnet` (`elnet`, `fishnet`, `lognet` and `multnet` subtypes) - Generalized Linear Model with lasso or elasticnet regularization (GLMNet) regression and classification
     * `cv.glmnet` - Cross-validated GLMNet regression and calculation
   * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
     * `iForest` - Isolation Forest (IF) anomaly detection
@@ -39,6 +41,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `nnet.formula` - Neural Network (NNet) regression and classification
   * [`party` package](https://cran.r-project.org/package=party):
     * `ctree` - Conditional Inference Tree (CIT) classification
+  * [`partykit` package](https://cran.r-project.org/package=partykit):
+    * `party` - Recursive Partytioning (Party) regression and classification
   * [`pls` package](https://cran.r-project.org/package=pls)
     * `mvr` - Multivariate Regression (MVR) regression
   * [`randomForest` package](https://cran.r-project.org/package=randomForest):
