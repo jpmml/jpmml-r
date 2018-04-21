@@ -19,9 +19,12 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.dmg.pmml.CompoundPredicate;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
@@ -39,8 +42,28 @@ import org.jpmml.converter.ValueUtil;
 
 public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
+	private int useSurrogate = 0;
+
+	private Formula formula = null;
+
+
 	public RPartConverter(RGenericVector rpart){
 		super(rpart);
+
+		RGenericVector control = (RGenericVector)rpart.getValue("control");
+
+		RNumberVector<?> useSurrogate = (RNumberVector<?>)control.getValue("usesurrogate");
+
+		this.useSurrogate = ValueUtil.asInt(useSurrogate.asScalar());
+
+		switch(this.useSurrogate){
+			case 0:
+			case 1:
+			case 2:
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 
 	@Override
@@ -64,6 +87,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		List<String> names = SchemaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
 
 		SchemaUtil.addFeatures(formula, names, false, encoder);
+
+		this.formula = formula;
 	}
 
 	@Override
@@ -86,23 +111,26 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		int[] splitOffsets = new int[1 + rowNames.size()];
+		int[][] splitInfo = new int[1 + rowNames.size()][3];
 
 		for(int offset = 0; offset < rowNames.size(); offset++){
-			splitOffsets[offset + 1] = splitOffsets[offset] + ncompete.getValue(offset) + nsurrogate.getValue(offset) + (var.getValue(offset) != 1 ? 1 : 0);
+			splitInfo[offset][1] = ncompete.getValue(offset);
+			splitInfo[offset][2] = nsurrogate.getValue(offset);
+
+			splitInfo[offset + 1][0] = splitInfo[offset][0] + splitInfo[offset][1] + splitInfo[offset][2] + (var.getValue(offset) != 1 ? 1 : 0);
 		}
 
 		switch(method.asScalar()){
 			case "anova":
-				return encodeRegression(frame, rowNames, var, n, splitOffsets, splits, csplit, schema);
+				return encodeRegression(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			case "class":
-				return encodeClassification(frame, rowNames, var, n, splitOffsets, splits, csplit, schema);
+				return encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			default:
 				throw new IllegalArgumentException();
 		}
 	}
 
-	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RNumberVector<?> yval = (RNumberVector<?>)frame.getValue("yval");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
@@ -121,16 +149,14 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
+		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
-		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root)
-			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT)
-			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION);
+		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
-		return treeModel;
+		return configureTreeModel(treeModel);
 	}
 
-	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RDoubleVector yval2 = (RDoubleVector)frame.getValue("yval2");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
@@ -183,21 +209,41 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
+		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root)
-			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT)
-			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
+
+		return configureTreeModel(treeModel);
+	}
+
+	private TreeModel configureTreeModel(TreeModel treeModel){
+		TreeModel.NoTrueChildStrategy noTrueChildStrategy = TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION;
+		TreeModel.MissingValueStrategy missingValueStrategy;
+
+		switch(this.useSurrogate){
+			case 0:
+				missingValueStrategy = TreeModel.MissingValueStrategy.NULL_PREDICTION; // XXX
+				break;
+			case 1:
+				missingValueStrategy = TreeModel.MissingValueStrategy.LAST_PREDICTION;
+				break;
+			case 2:
+				missingValueStrategy = null;
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		treeModel
+			.setNoTrueChildStrategy(noTrueChildStrategy)
+			.setMissingValueStrategy(missingValueStrategy);
 
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[] splitOffsets, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
-		int offset = rowNames.indexOf(rowName);
-		if(offset < 0){
-			throw new IllegalArgumentException();
-		}
+	private void encodeNode(Node node, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
+		int offset = getIndex(rowNames, rowName);
 
 		node.setId(String.valueOf(rowName));
 
@@ -208,7 +254,85 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			return;
 		}
 
+		int leftRowName = rowName * 2;
+		int rightRowName = (rowName * 2) + 1;
+
+		Integer majorityDir = null;
+
+		if(this.useSurrogate == 2){
+			int leftOffset = getIndex(rowNames, leftRowName);
+			int rightOffset = getIndex(rowNames, rightRowName);
+
+			majorityDir = Double.compare(n.getValue(leftOffset), n.getValue(rightOffset));
+		}
+
 		Feature feature = schema.getFeature(splitVar - 1);
+
+		int splitOffset = splitInfo[offset][0];
+
+		int splitNumCompete = splitInfo[offset][1];
+		int splitNumSurrogate = splitInfo[offset][2];
+
+		List<Predicate> predicates = encodePredicates(feature, splitOffset, splits, csplit);
+
+		Predicate leftPredicate = predicates.get(0);
+		Predicate rightPredicate = predicates.get(1);
+
+		if(this.useSurrogate > 0 && splitNumSurrogate > 0){
+			CompoundPredicate leftCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+				.addPredicates(leftPredicate);
+
+			CompoundPredicate rightCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+				.addPredicates(rightPredicate);
+
+			RStringVector splitRowNames = splits.dimnames(0);
+
+			for(int i = 0; i < splitNumSurrogate; i++){
+				int surrogateSplitOffset = (splitOffset + 1) + splitNumCompete + i;
+
+				feature = getFeature(FieldName.create(splitRowNames.getValue(surrogateSplitOffset)));
+
+				predicates = encodePredicates(feature, surrogateSplitOffset, splits, csplit);
+
+				leftCompoundPredicate.addPredicates(predicates.get(0));
+				rightCompoundPredicate.addPredicates(predicates.get(1));
+			}
+
+			leftPredicate = leftCompoundPredicate;
+			rightPredicate = rightCompoundPredicate;
+		}
+
+		Node leftChild = new Node()
+			.setPredicate(leftPredicate);
+
+		Node rightChild = new Node()
+			.setPredicate(rightPredicate);
+
+		encodeNode(leftChild, leftRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		encodeNode(rightChild, rightRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+
+		if(this.useSurrogate == 2){
+
+			if(majorityDir < 0){
+				makeDefault(rightChild);
+			} else
+
+			if(majorityDir > 0){
+				Node tmp = leftChild;
+
+				makeDefault(leftChild);
+
+				leftChild = rightChild;
+				rightChild = tmp;
+			}
+		}
+
+		node.addNodes(leftChild, rightChild);
+	}
+
+	private List<Predicate> encodePredicates(Feature feature, int splitOffset, RNumberVector<?> splits, RIntegerVector csplit){
+		Predicate leftPredicate;
+		Predicate rightPredicate;
 
 		RIntegerVector splitsDim = splits.dim();
 
@@ -218,34 +342,28 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		List<? extends Number> ncat = FortranMatrixUtil.getColumn(splits.getValues(), splitRows, splitColumns, 1);
 		List<? extends Number> index = FortranMatrixUtil.getColumn(splits.getValues(), splitRows, splitColumns, 3);
 
-		int splitOffset = splitOffsets[offset];
-
-		Node leftChild = new Node();
-		Node rightChild = new Node();
-
-		encodeNode(leftChild, rowName * 2, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
-		encodeNode(rightChild, (rowName * 2) + 1, rowNames, var, n, splitOffsets, splits, csplit, scoreEncoder, schema);
-
-		boolean leftIsMajority = (leftChild.getRecordCount() > rightChild.getRecordCount());
-
-		Predicate leftPredicate;
-		Predicate rightPredicate;
+		int splitType = ValueUtil.asInt(ncat.get(splitOffset));
 
 		Number splitValue = index.get(splitOffset);
 
-		int splitType = ValueUtil.asInt(ncat.get(splitOffset));
-		if(splitType == -1){
+		if(Math.abs(splitType) == 1){
+			SimplePredicate.Operator leftOperator;
+			SimplePredicate.Operator rightOperator;
+
+			if(splitType == -1){
+				leftOperator = SimplePredicate.Operator.LESS_THAN;
+				rightOperator = SimplePredicate.Operator.GREATER_OR_EQUAL;
+			} else
+
+			{
+				leftOperator = SimplePredicate.Operator.GREATER_OR_EQUAL;
+				rightOperator = SimplePredicate.Operator.LESS_THAN;
+			}
+
 			String value = ValueUtil.formatValue(splitValue);
 
-			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
-			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
-		} else
-
-		if(splitType == 1){
-			String value = ValueUtil.formatValue(splitValue);
-
-			leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
+			leftPredicate = createSimplePredicate(feature, leftOperator, value);
+			rightPredicate = createSimplePredicate(feature, rightOperator, value);
 		} else
 
 		{
@@ -264,10 +382,40 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
 		}
 
-		leftChild.setPredicate(leftPredicate);
-		rightChild.setPredicate(rightPredicate);
+		return Arrays.asList(leftPredicate, rightPredicate);
+	}
 
-		node.addNodes(leftChild, rightChild);
+	private void makeDefault(Node node){
+		Predicate predicate = node.getPredicate();
+
+		CompoundPredicate compoundPredicate;
+
+		if(predicate instanceof CompoundPredicate){
+			compoundPredicate = (CompoundPredicate)predicate;
+		} else
+
+		{
+			compoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+				.addPredicates(predicate);
+
+			node.setPredicate(compoundPredicate);
+		}
+
+		compoundPredicate.addPredicates(new True());
+	}
+
+	private Feature getFeature(FieldName name){
+		return this.formula.resolveFeature(name);
+	}
+
+	static
+	private int getIndex(RIntegerVector rowNames, int rowName){
+		int index = rowNames.indexOf(rowName);
+		if(index < 0){
+			throw new IllegalArgumentException();
+		}
+
+		return index;
 	}
 
 	static

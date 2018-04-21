@@ -19,7 +19,9 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.Visitor;
@@ -31,6 +33,8 @@ import org.jpmml.model.visitors.AbstractVisitor;
 
 abstract
 public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
+
+	private Map<RGenericVector, RPartConverter> converters = new HashMap<>();
 
 	private List<Schema> schemas = new ArrayList<>();
 
@@ -50,6 +54,8 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 			RPartConverter converter = new RPartConverter(tree);
 
 			converter.encodeSchema(treeEncoder);
+
+			this.converters.put(tree, converter);
 
 			encoder.addFields(treeEncoder);
 
@@ -72,7 +78,10 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 			RGenericVector tree = (RGenericVector)trees.getValue(i);
 			Schema schema = this.schemas.get(i);
 
-			RPartConverter converter = new RPartConverter(tree);
+			RPartConverter converter = this.converters.get(tree);
+			if(converter == null){
+				throw new IllegalArgumentException();
+			}
 
 			Schema segmentSchema = schema.toAnonymousSchema();
 

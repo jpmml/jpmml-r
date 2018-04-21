@@ -28,13 +28,28 @@ public class RPartConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateAuditNA() throws Exception {
+		evaluate("RPart", "AuditNA");
+	}
+
+	@Test
 	public void evaluateAuto() throws Exception {
 		evaluate("RPart", "Auto");
 	}
 
 	@Test
+	public void evaluateAutoNA() throws Exception {
+		evaluate("RPart", "AutoNA");
+	}
+
+	@Test
 	public void evaluateIris() throws Exception {
 		evaluate("RPart", "Iris");
+	}
+
+	@Test
+	public void evaluateIrisNA() throws Exception {
+		evaluate("RPart", "IrisNA");
 	}
 
 	@Test
@@ -48,7 +63,17 @@ public class RPartConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateWineQualityNA() throws Exception {
+		evaluate("RPart", "WineQualityNA");
+	}
+
+	@Test
 	public void evaluateWineColor() throws Exception {
 		evaluate("RPart", "WineColor");
+	}
+
+	@Test
+	public void evaluateWineColorNA() throws Exception {
+		evaluate("RPart", "WineColorNA");
 	}
 }
