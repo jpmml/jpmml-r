@@ -103,13 +103,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	private Double loadLambdaS(){
 		RGenericVector glmnet = getObject();
 
-		RNumberVector<?> lambdaS;
-
-		try {
-			lambdaS = (RNumberVector<?>)glmnet.getValue("lambda.s");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No lambda value information. Please initialize the \'lambda.s\' element", iae);
-		}
+		RNumberVector<?> lambdaS = (RNumberVector<?>)DecorationUtil.getValue(glmnet, "lambda.s");
 
 		return (lambdaS.asScalar()).doubleValue();
 	}

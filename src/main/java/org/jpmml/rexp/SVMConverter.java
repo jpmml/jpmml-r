@@ -143,14 +143,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
 		RVector<?> levels = (RVector<?>)svm.getValue("levels");
 		RExp terms = svm.getValue("terms");
-
-		RGenericVector xlevels;
-
-		try {
-			xlevels = (RGenericVector)svm.getValue("xlevels");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No variable levels information. Please initialize the \'xlevels\' element", iae);
-		}
+		RGenericVector xlevels = (RGenericVector)DecorationUtil.getValue(svm, "xlevels");
 
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
 

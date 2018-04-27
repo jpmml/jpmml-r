@@ -102,14 +102,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector party = getObject();
 
 		RGenericVector partyNode = (RGenericVector)party.getValue("node");
-
-		RVector<?> scores;
-
-		try {
-			scores = (RVector<?>)party.getValue("scores");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No node scores information. Please initialize the \'scores\' element", iae);
-		}
+		RVector<?> scores = (RVector<?>)DecorationUtil.getValue(party, "scores");
 
 		Node root = new Node()
 			.setPredicate(new True());

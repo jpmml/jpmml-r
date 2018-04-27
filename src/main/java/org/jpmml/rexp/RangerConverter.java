@@ -53,23 +53,13 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector ranger = getObject();
 
-		RGenericVector forest;
-
-		try {
-			forest = (RGenericVector)ranger.getValue("forest");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No forest information. Please initialize the \'forest\' element", iae);
-		}
-
-		RGenericVector variableLevels;
-
-		try {
-			variableLevels = (RGenericVector)ranger.getValue("variable.levels");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No variable levels information. Please initialize the \'variable.levels\' element", iae);
+		RGenericVector forest = (RGenericVector)ranger.getValue("forest", true);
+		if(forest == null){
+			throw new IllegalArgumentException("Missing \'forest\' element. Please re-train the model object with \'write.forest\' argument set to TRUE");
 		}
 
 		RStringVector treeType = (RStringVector)ranger.getValue("treetype");
+		RGenericVector variableLevels = (RGenericVector)DecorationUtil.getValue(ranger, "variable.levels");
 
 		{
 			FieldName name = FieldName.create("_target");

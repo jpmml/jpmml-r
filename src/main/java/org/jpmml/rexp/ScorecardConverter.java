@@ -49,14 +49,7 @@ public class ScorecardConverter extends GLMConverter {
 
 		RDoubleVector coefficients = (RDoubleVector)glm.getValue("coefficients");
 		RGenericVector family = (RGenericVector)glm.getValue("family");
-
-		RGenericVector scConf;
-
-		try {
-			scConf = (RGenericVector)glm.getValue("sc.conf");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No scorecard configuration information. Please initialize the \'sc.conf\' element", iae);
-		}
+		RGenericVector scConf = (RGenericVector)DecorationUtil.getValue(glm, "sc.conf");
 
 		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);
 

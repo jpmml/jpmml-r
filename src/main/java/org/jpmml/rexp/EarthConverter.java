@@ -55,14 +55,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector selectedTerms = (RDoubleVector)earth.getValue("selected.terms");
 		RDoubleVector coefficients = (RDoubleVector)earth.getValue("coefficients");
 		RExp terms = earth.getValue("terms");
-
-		RGenericVector xlevels;
-
-		try {
-			xlevels = (RGenericVector)earth.getValue("xlevels");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No variable levels information. Please initialize the \'xlevels\' element", iae);
-		}
+		RGenericVector xlevels = (RGenericVector)DecorationUtil.getValue(earth, "xlevels");
 
 		RStringVector dirsRows = dirs.dimnames(0);
 		RStringVector dirsColumns = dirs.dimnames(1);

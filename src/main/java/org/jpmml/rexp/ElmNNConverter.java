@@ -48,13 +48,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector elmNN = getObject();
 
-		RGenericVector model;
-
-		try {
-			model = (RGenericVector)elmNN.getValue("model");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No model frame information. Please initialize the \'model\' element", iae);
-		}
+		RGenericVector model = (RGenericVector)DecorationUtil.getValue(elmNN, "model");
 
 		RExp terms = model.getAttributeValue("terms");
 

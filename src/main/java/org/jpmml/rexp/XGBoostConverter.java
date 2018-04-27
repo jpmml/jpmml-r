@@ -49,15 +49,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
+		RVector<?> fmap = (RVector<?>)DecorationUtil.getValue(booster, "fmap");
 		RGenericVector schema = (RGenericVector)booster.getValue("schema", true);
-
-		RVector<?> fmap;
-
-		try {
-			fmap = (RVector<?>)booster.getValue("fmap");
-		} catch(IllegalArgumentException iae){
-			throw new IllegalArgumentException("No feature map information. Please initialize the \'fmap\' element");
-		}
 
 		FeatureMap featureMap;
 
