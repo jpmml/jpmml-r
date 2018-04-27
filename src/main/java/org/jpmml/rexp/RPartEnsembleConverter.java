@@ -23,13 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.dmg.pmml.ScoreDistribution;
-import org.dmg.pmml.Visitor;
-import org.dmg.pmml.VisitorAction;
-import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.Schema;
-import org.jpmml.model.visitors.AbstractVisitor;
 
 abstract
 public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
@@ -43,6 +38,10 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 		super(object);
 	}
 
+	public RPartConverter createConverter(RGenericVector rpart){
+		return new RPartConverter(rpart);
+	}
+
 	public void encodeTreeSchemas(RGenericVector trees, RExpEncoder encoder){
 		this.schemas.clear();
 
@@ -51,7 +50,7 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 
 			RExpEncoder treeEncoder = new RExpEncoder();
 
-			RPartConverter converter = new RPartConverter(tree);
+			RPartConverter converter = createConverter(tree);
 
 			converter.encodeSchema(treeEncoder);
 
@@ -72,8 +71,6 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 			throw new IllegalArgumentException();
 		}
 
-		Visitor treeModelTransformer = getTreeModelTransformer();
-
 		for(int i = 0; i < trees.size(); i++){
 			RGenericVector tree = (RGenericVector)trees.getValue(i);
 			Schema schema = this.schemas.get(i);
@@ -87,40 +84,9 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 
 			TreeModel treeModel = converter.encodeModel(segmentSchema);
 
-			if(treeModelTransformer != null){
-				treeModelTransformer.applyTo(treeModel);
-			}
-
 			result.add(treeModel);
 		}
 
 		return result;
-	}
-
-	protected Visitor getTreeModelTransformer(){
-		return null;
-	}
-
-	static
-	protected class TreeModelTransformer extends AbstractVisitor {
-
-		@Override
-		public VisitorAction visit(TreeModel treeModel){
-			treeModel.setOutput(null);
-
-			return super.visit(treeModel);
-		}
-
-		@Override
-		public VisitorAction visit(Node node){
-
-			if(node.hasScoreDistributions()){
-				List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
-
-				scoreDistributions.clear();
-			}
-
-			return super.visit(node);
-		}
 	}
 }

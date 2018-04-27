@@ -66,6 +66,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
+	public boolean hasScoreDistribution(){
+		return true;
+	}
+
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector rpart = getObject();
@@ -163,11 +167,14 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		List<String> categories = categoricalLabel.getValues();
 
+		final
+		boolean hasScoreDistribution = hasScoreDistribution();
+
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			private List<Integer> classes = null;
 
-			private List<List<? extends Number>> recordCounts = new ArrayList<>();
+			private List<List<? extends Number>> recordCounts = null;
 
 
 			{
@@ -178,10 +185,14 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 				this.classes = new ArrayList<>(classes);
 
-				for(int i = 0; i < categories.size(); i++){
-					List<? extends Number> recordCounts = FortranMatrixUtil.getColumn(yval2.getValues(), rows, columns, 1 + i);
+				if(hasScoreDistribution){
+					this.recordCounts = new ArrayList<>();
 
-					this.recordCounts.add(new ArrayList<>(recordCounts));
+					for(int i = 0; i < categories.size(); i++){
+						List<? extends Number> recordCounts = FortranMatrixUtil.getColumn(yval2.getValues(), rows, columns, 1 + i);
+
+						this.recordCounts.add(new ArrayList<>(recordCounts));
+					}
 				}
 			}
 
@@ -194,14 +205,17 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 					.setScore(score)
 					.setRecordCount(recordCount.doubleValue());
 
-				for(int i = 0; i < categories.size(); i++){
-					List<? extends Number> recordCounts = this.recordCounts.get(i);
+				if(hasScoreDistribution){
 
-					ScoreDistribution scoreDistribution = new ScoreDistribution()
-						.setValue(categories.get(i))
-						.setRecordCount(recordCounts.get(offset).doubleValue());
+					for(int i = 0; i < categories.size(); i++){
+						List<? extends Number> recordCounts = this.recordCounts.get(i);
 
-					node.addScoreDistributions(scoreDistribution);
+						ScoreDistribution scoreDistribution = new ScoreDistribution()
+							.setValue(categories.get(i))
+							.setRecordCount(recordCounts.get(offset).doubleValue());
+
+						node.addScoreDistributions(scoreDistribution);
+					}
 				}
 			}
 		};
@@ -211,8 +225,11 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
-		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root)
-			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
+		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root);
+
+		if(hasScoreDistribution){
+			treeModel.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
+		}
 
 		return configureTreeModel(treeModel);
 	}

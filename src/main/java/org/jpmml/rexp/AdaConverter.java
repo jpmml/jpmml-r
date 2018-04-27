@@ -26,8 +26,6 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Visitor;
-import org.dmg.pmml.VisitorAction;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
@@ -41,6 +39,25 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 	public AdaConverter(RGenericVector ada){
 		super(ada);
+	}
+
+	@Override
+	public RPartConverter createConverter(RGenericVector rpart){
+		return new RPartConverter(rpart){
+
+			@Override
+			public boolean hasScoreDistribution(){
+				return false;
+			}
+
+			@Override
+			public TreeModel encodeModel(Schema schema){
+				TreeModel treeModel = super.encodeModel(schema)
+					.setMiningFunction(MiningFunction.REGRESSION);
+
+				return treeModel;
+			}
+		};
 	}
 
 	@Override
@@ -74,19 +91,6 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("adaValue"), OpType.CONTINUOUS, DataType.DOUBLE, new SigmoidTransformation(-2d)));
 
 		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 1d, 0d, RegressionModel.NormalizationMethod.NONE, true, schema);
-	}
-
-	@Override
-	protected Visitor getTreeModelTransformer(){
-		return new TreeModelTransformer(){
-
-			@Override
-			public VisitorAction visit(TreeModel treeModel){
-				treeModel.setMiningFunction(MiningFunction.REGRESSION);
-
-				return super.visit(treeModel);
-			}
-		};
 	}
 
 	private void encodeFormula(RExpEncoder encoder){

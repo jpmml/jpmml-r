@@ -18,13 +18,22 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.Visitor;
-
 abstract
 public class AdaBagConverter extends RPartEnsembleConverter<RGenericVector> {
 
 	public AdaBagConverter(RGenericVector object){
 		super(object);
+	}
+
+	@Override
+	public RPartConverter createConverter(RGenericVector rpart){
+		return new RPartConverter(rpart){
+
+			@Override
+			public boolean hasScoreDistribution(){
+				return false;
+			}
+		};
 	}
 
 	@Override
@@ -44,10 +53,5 @@ public class AdaBagConverter extends RPartEnsembleConverter<RGenericVector> {
 		SchemaUtil.setLabel(formula, terms, vardepSummary.names(), encoder);
 
 		encodeTreeSchemas(trees, encoder);
-	}
-
-	@Override
-	protected Visitor getTreeModelTransformer(){
-		return new TreeModelTransformer();
 	}
 }
