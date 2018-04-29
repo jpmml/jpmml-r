@@ -29,12 +29,12 @@ public class FunctionExpressionTest {
 
 	@Test
 	public void checkId(){
-		FunctionExpression expression = new FunctionExpression(null, "c", Collections.<FunctionExpression.Argument>emptyList());
+		FunctionExpression expression = new FunctionExpression(null, "c", Collections.emptyList());
 
 		assertTrue(expression.hasId("base", "c"));
 		assertFalse(expression.hasId("base", "if"));
 
-		expression = new FunctionExpression("base", "c", Collections.<FunctionExpression.Argument>emptyList());
+		expression = new FunctionExpression("base", "c", Collections.emptyList());
 
 		assertTrue(expression.hasId("base", "c"));
 		assertFalse(expression.hasId("base", "if"));
