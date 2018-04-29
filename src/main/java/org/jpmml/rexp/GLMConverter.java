@@ -111,7 +111,7 @@ public class GLMConverter extends LMConverter {
 			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
 			.setLinkParameter(parseLinkParameter(familyLink.asScalar()));
 
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, targetCategory);
+		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, featureCoefficients, intercept, targetCategory);
 
 		switch(miningFunction){
 			case CLASSIFICATION:

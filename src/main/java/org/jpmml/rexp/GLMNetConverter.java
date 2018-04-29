@@ -18,7 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.primitives.Doubles;
@@ -124,8 +123,6 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector x = (RDoubleVector)beta.getAttributeValue("x");
 
 		double[] result = new double[dim.getValue(0)];
-
-		Arrays.fill(result, Double.NaN);
 
 		int begin = p.getValue(column);
 		int end = p.getValue(column + 1);

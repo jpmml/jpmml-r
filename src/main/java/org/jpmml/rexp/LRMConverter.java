@@ -83,7 +83,7 @@ public class LRMConverter extends RMSConverter {
 			.setLinkFunction(GeneralRegressionModel.LinkFunction.LOGIT)
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, intercept, featureCoefficients, targetCategory);
+		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, features, featureCoefficients, intercept, targetCategory);
 
 		return generalRegressionModel;
 	}

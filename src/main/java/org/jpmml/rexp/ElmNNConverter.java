@@ -119,7 +119,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		for(int column = 0; column < columns; column++){
 			List<Double> weights = FortranMatrixUtil.getColumn(outweight.getValues(), rows, columns, column);
-			Double bias = Double.NaN;
+			Double bias = null;
 
 			Neuron neuron = NeuralNetworkUtil.createNeuron(entities, weights, bias)
 				.setId("output/" + String.valueOf(column + 1));

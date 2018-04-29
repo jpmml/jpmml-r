@@ -26,7 +26,6 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.Entity;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
-import org.dmg.pmml.neural_network.Connection;
 import org.dmg.pmml.neural_network.NeuralInputs;
 import org.dmg.pmml.neural_network.NeuralLayer;
 import org.dmg.pmml.neural_network.NeuralNetwork;
@@ -130,23 +129,23 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 			neuralLayers.add(neuralLayer);
 
+			entities = neuralLayer.getNeurons();
+
 			switch(miningFunction){
 				case REGRESSION:
 					break;
 				case CLASSIFICATION:
 					{
-						neuralLayer = encodeLogisticTransform(getOnlyNeuron(neuralLayer));
+						List<NeuralLayer> transformationNeuralLayers = NeuralNetworkUtil.createBinaryLogisticTransformation(Iterables.getOnlyElement(entities));
 
-						neuralLayers.add(neuralLayer);
+						neuralLayers.addAll(transformationNeuralLayers);
 
-						neuralLayer = encodeLabelBinarizerTransform(getOnlyNeuron(neuralLayer));
+						neuralLayer = Iterables.getLast(transformationNeuralLayers);
 
-						neuralLayers.add(neuralLayer);
+						entities = neuralLayer.getNeurons();
 					}
 					break;
 			}
-
-			entities = neuralLayer.getNeurons();
 		} else
 
 		if(nOutput > 1){
@@ -206,46 +205,5 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		}
 
 		return neuralLayer;
-	}
-
-	static
-	private NeuralLayer encodeLogisticTransform(Entity entity){
-		NeuralLayer neuralLayer = new NeuralLayer()
-			.setActivationFunction(NeuralNetwork.ActivationFunction.LOGISTIC);
-
-		Neuron neuron = new Neuron()
-			.setId("logistic/1")
-			.setBias(0d)
-			.addConnections(new Connection(entity.getId(), 1d));
-
-		neuralLayer.addNeurons(neuron);
-
-		return neuralLayer;
-	}
-
-	static
-	private NeuralLayer encodeLabelBinarizerTransform(Entity entity){
-		NeuralLayer neuralLayer = new NeuralLayer();
-
-		Neuron noEventNeuron = new Neuron()
-			.setId("event/false")
-			.setBias(1d)
-			.addConnections(new Connection(entity.getId(), -1d));
-
-		Neuron eventNeuron = new Neuron()
-			.setId("event/true")
-			.setBias(0d)
-			.addConnections(new Connection(entity.getId(), 1d));
-
-		neuralLayer.addNeurons(noEventNeuron, eventNeuron);
-
-		return neuralLayer;
-	}
-
-	static
-	private Neuron getOnlyNeuron(NeuralLayer neuralLayer){
-		List<Neuron> neurons = neuralLayer.getNeurons();
-
-		return Iterables.getOnlyElement(neurons);
 	}
 }

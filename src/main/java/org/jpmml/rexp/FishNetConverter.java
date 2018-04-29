@@ -41,7 +41,7 @@ public class FishNetConverter extends GLMNetConverter {
 		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), null, null, null)
 			.setDistribution(GeneralRegressionModel.Distribution.POISSON);
 
-		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, schema.getFeatures(), intercept, coefficients, null);
+		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, schema.getFeatures(), coefficients, intercept, null);
 
 		return generalRegressionModel;
 	}
