@@ -24,6 +24,11 @@ import org.junit.Test;
 public class CrossValGLMNetConverterTest extends ConverterTest {
 
 	@Test
+	public void evaluateVersicolor() throws Exception {
+		evaluate("CrossValLogNet", "Versicolor");
+	}
+
+	@Test
 	public void evaluateWineQuality() throws Exception {
 		evaluate("CrossValElNet", "WineQuality");
 	}

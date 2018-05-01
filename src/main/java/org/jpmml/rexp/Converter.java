@@ -31,7 +31,47 @@ public class Converter<R extends RExp> {
 	}
 
 	abstract
-	public PMML encodePMML();
+	public PMML encodePMML(RExpEncoder encoder);
+
+	public PMML encodePMML(){
+		RExpEncoder encoder = createEncoder();
+
+		return encodePMML(encoder);
+	}
+
+	public RExpEncoder createEncoder(){
+		RExp object = getObject();
+
+		RGenericVector preProcess;
+
+		if(object instanceof S4Object){
+			S4Object model = (S4Object)object;
+
+			preProcess = (RGenericVector)model.getAttributeValue("preProcess", true);
+		} else
+
+		if(object instanceof RGenericVector){
+			RGenericVector model = (RGenericVector)object;
+
+			preProcess = (RGenericVector)model.getValue("preProcess", true);
+		} else
+
+		{
+			preProcess = null;
+		}
+
+		RExpEncoder encoder;
+
+		if(preProcess != null){
+			encoder = new PreProcessEncoder(preProcess);
+		} else
+
+		{
+			encoder = new RExpEncoder();
+		}
+
+		return encoder;
+	}
 
 	public R getObject(){
 		return this.object;

@@ -48,15 +48,13 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 	}
 
 	@Override
-	public PMML encodePMML(){
+	public PMML encodePMML(RExpEncoder encoder){
 		RGenericVector caretEnsemble = getObject();
 
 		RGenericVector models = (RGenericVector)caretEnsemble.getValue("models");
 		RGenericVector ensModel = (RGenericVector)caretEnsemble.getValue("ens_model");
 
 		RStringVector modelNames = models.names();
-
-		RExpEncoder encoder = new RExpEncoder();
 
 		List<Model> segmentationModels = new ArrayList<>();
 

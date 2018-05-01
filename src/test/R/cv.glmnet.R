@@ -1,6 +1,34 @@
+library("caret")
 library("glmnet")
+library("r2pmml")
 
 source("util.R")
+
+versicolor = loadVersicolorCsv("Versicolor")
+
+versicolor_x.raw = as.matrix(versicolor[, -ncol(versicolor)])
+versicolor_y = versicolor[, ncol(versicolor)]
+
+versicolor_x.preProc = preProcess(versicolor_x.raw, method = c("scale"))
+
+versicolor_x = predict(versicolor_x.preProc, newdata = versicolor_x.raw)
+
+generateCrossValLogNetVersicolor = function(){
+	versicolor.glmnet = cv.glmnet(x = versicolor_x, y = versicolor_y, family = "binomial")
+	versicolor.glmnet = decorate(versicolor.glmnet, preProcess = versicolor_x.preProc)
+	print(versicolor.glmnet)
+
+	species = predict(versicolor.glmnet, newx = versicolor_x, s = "lambda.1se", type = "class")
+	probability = predict(versicolor.glmnet, newx = versicolor_x, s = "lambda.1se", type = "response")
+
+	storeRds(versicolor.glmnet, "CrossValLogNetVersicolor")
+	storeCsv(data.frame("_target" = species[, 1], "probability(no)" = (1 - probability[, 1]), "probability(yes)" = probability[, 1], check.names = FALSE), "CrossValLogNetVersicolor")
+
+}
+
+set.seed(42)
+
+generateCrossValLogNetVersicolor()
 
 wine_quality = loadWineQualityCsv("WineQuality")
 

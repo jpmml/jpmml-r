@@ -30,23 +30,12 @@ public class TrainConverter extends Converter<RGenericVector> {
 	}
 
 	@Override
-	public PMML encodePMML(){
+	public PMML encodePMML(RExpEncoder encoder){
 		RGenericVector train = getObject();
 
 		RExp finalModel = train.getValue("finalModel");
-		RGenericVector preProcess = (RGenericVector)train.getValue("preProcess");
 
 		ModelConverter<RExp> converter = (ModelConverter<RExp>)this.converterFactory.newConverter(finalModel);
-
-		RExpEncoder encoder;
-
-		if(preProcess != null){
-			encoder = new PreProcessEncoder(preProcess);
-		} else
-
-		{
-			encoder = new RExpEncoder();
-		}
 
 		return converter.encodePMML(encoder);
 	}

@@ -36,40 +36,6 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	public Model encodeModel(Schema schema);
 
 	@Override
-	public PMML encodePMML(){
-		RExp object = getObject();
-
-		RGenericVector preProcess;
-
-		if(object instanceof S4Object){
-			S4Object model = (S4Object)object;
-
-			preProcess = (RGenericVector)model.getAttributeValue("preProcess", true);
-		} else
-
-		if(object instanceof RGenericVector){
-			RGenericVector model = (RGenericVector)object;
-
-			preProcess = (RGenericVector)model.getValue("preProcess", true);
-		} else
-
-		{
-			preProcess = null;
-		}
-
-		RExpEncoder encoder;
-
-		if(preProcess != null){
-			encoder = new PreProcessEncoder(preProcess);
-		} else
-
-		{
-			encoder = new RExpEncoder();
-		}
-
-		return encodePMML(encoder);
-	}
-
 	public PMML encodePMML(RExpEncoder encoder){
 		encodeSchema(encoder);
 

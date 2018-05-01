@@ -30,7 +30,7 @@ public class CrossValGLMNetConverter extends Converter<RGenericVector> {
 	}
 
 	@Override
-	public PMML encodePMML(){
+	public PMML encodePMML(RExpEncoder encoder){
 		RGenericVector cvGlmnet = getObject();
 
 		RGenericVector glmnetFit = (RGenericVector)cvGlmnet.getValue("glmnet.fit");
@@ -38,8 +38,6 @@ public class CrossValGLMNetConverter extends Converter<RGenericVector> {
 
 		GLMNetConverter converter = (GLMNetConverter)this.converterFactory.newConverter(glmnetFit);
 		converter.setLambdaS(lambda1SE.asScalar());
-
-		RExpEncoder encoder = new RExpEncoder();
 
 		return converter.encodePMML(encoder);
 	}
