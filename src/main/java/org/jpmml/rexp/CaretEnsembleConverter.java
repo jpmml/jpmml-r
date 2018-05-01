@@ -40,9 +40,6 @@ import org.jpmml.converter.mining.MiningModelUtil;
 
 public class CaretEnsembleConverter extends Converter<RGenericVector> {
 
-	private ConverterFactory converterFactory = ConverterFactory.newInstance();
-
-
 	public CaretEnsembleConverter(RGenericVector caretEnsemble){
 		super(caretEnsemble);
 	}
@@ -143,7 +140,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 	private Conversion encodeTrainModel(RGenericVector train, Function<Schema, Schema> schemaFunction){
 		RExp finalModel = train.getValue("finalModel");
 
-		ModelConverter<?> converter = (ModelConverter<?>)this.converterFactory.newConverter(finalModel);
+		ModelConverter<?> converter = (ModelConverter<?>)newConverter(finalModel);
 
 		RExpEncoder encoder = new RExpEncoder();
 

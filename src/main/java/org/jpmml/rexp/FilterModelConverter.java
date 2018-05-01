@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2018 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,18 +18,37 @@
  */
 package org.jpmml.rexp;
 
-public class TrainConverter extends FilterModelConverter<RGenericVector, RExp> {
+import org.dmg.pmml.Model;
+import org.dmg.pmml.PMML;
+import org.jpmml.converter.Schema;
 
-	public TrainConverter(RGenericVector train){
-		super(train);
+abstract
+public class FilterModelConverter<R extends RExp, M extends RExp> extends ModelConverter<R> {
+
+	private ModelConverter<M> converter = null;
+
+
+	public FilterModelConverter(R object){
+		super(object);
+	}
+
+	abstract
+	public ModelConverter<M> createConverter();
+
+	@Override
+	public void encodeSchema(RExpEncoder encoder){
+		this.converter.encodeSchema(encoder);
 	}
 
 	@Override
-	public ModelConverter<RExp> createConverter(){
-		RGenericVector train = getObject();
+	public Model encodeModel(Schema schema){
+		return this.converter.encodeModel(schema);
+	}
 
-		RExp finalModel = train.getValue("finalModel");
+	@Override
+	public PMML encodePMML(RExpEncoder encoder){
+		this.converter = createConverter();
 
-		return (ModelConverter<RExp>)newConverter(finalModel);
+		return super.encodePMML(encoder);
 	}
 }

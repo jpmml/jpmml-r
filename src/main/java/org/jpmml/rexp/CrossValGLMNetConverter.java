@@ -18,27 +18,22 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.PMML;
-
-public class CrossValGLMNetConverter extends Converter<RGenericVector> {
-
-	private ConverterFactory converterFactory = ConverterFactory.newInstance();
-
+public class CrossValGLMNetConverter extends FilterModelConverter<RGenericVector, RGenericVector> {
 
 	public CrossValGLMNetConverter(RGenericVector cvGlmnet){
 		super(cvGlmnet);
 	}
 
 	@Override
-	public PMML encodePMML(RExpEncoder encoder){
+	public GLMNetConverter createConverter(){
 		RGenericVector cvGlmnet = getObject();
 
 		RGenericVector glmnetFit = (RGenericVector)cvGlmnet.getValue("glmnet.fit");
 		RDoubleVector lambda1SE = (RDoubleVector)cvGlmnet.getValue("lambda.1se");
 
-		GLMNetConverter converter = (GLMNetConverter)this.converterFactory.newConverter(glmnetFit);
+		GLMNetConverter converter = (GLMNetConverter)newConverter(glmnetFit);
 		converter.setLambdaS(lambda1SE.asScalar());
 
-		return converter.encodePMML(encoder);
+		return converter;
 	}
 }

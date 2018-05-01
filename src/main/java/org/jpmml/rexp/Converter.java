@@ -80,4 +80,11 @@ public class Converter<R extends RExp> {
 	private void setObject(R object){
 		this.object = object;
 	}
+
+	static
+	public <R extends RExp> Converter<R> newConverter(R rexp){
+		ConverterFactory converterFactory = ConverterFactory.newInstance();
+
+		return converterFactory.newConverter(rexp);
+	}
 }
