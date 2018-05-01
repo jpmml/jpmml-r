@@ -36,6 +36,7 @@ import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.ValueUtil;
 
 public class PreProcessEncoder extends RExpEncoder {
 
@@ -115,16 +116,22 @@ public class PreProcessEncoder extends RExpEncoder {
 			Double min = ranges.get(0);
 			Double max = ranges.get(1);
 
-			expression = PMMLUtil.createApply("/", PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(min)), PMMLUtil.createConstant(max - min));
+			if(!ValueUtil.isZero(min)){
+				expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(min));
+			} // End if
+
+			if(!ValueUtil.isOne(max - min)){
+				expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(max - min));
+			}
 		}
 
 		Double mean = this.mean.get(name);
-		if(mean != null){
+		if(mean != null && !ValueUtil.isZero(mean)){
 			expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(mean));
 		}
 
 		Double std = this.std.get(name);
-		if(std != null){
+		if(std != null && !ValueUtil.isOne(std)){
 			expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(std));
 		}
 
