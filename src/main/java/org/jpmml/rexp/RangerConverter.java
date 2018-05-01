@@ -20,6 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
@@ -251,7 +252,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, schema);
+		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -259,7 +260,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int index, ScoreEncoder scoreEncoder, RNumberVector<?> leftChildIDs, RNumberVector<?> rightChildIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, RGenericVector terminalClassCounts, Schema schema){
+	private void encodeNode(Node node, int index, ScoreEncoder scoreEncoder, RNumberVector<?> leftChildIDs, RNumberVector<?> rightChildIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, RGenericVector terminalClassCounts, CategoryManager categoryManager, Schema schema){
 		int leftIndex = ValueUtil.asInt(leftChildIDs.getValue(index));
 		int rightIndex = ValueUtil.asInt(rightChildIDs.getValue(index));
 
@@ -271,6 +272,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 			return;
 		}
+
+		CategoryManager leftCategoryManager = categoryManager;
+		CategoryManager rightCategoryManager = categoryManager;
 
 		Predicate leftPredicate;
 		Predicate rightPredicate;
@@ -284,10 +288,19 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 			int splitLevelIndex = ValueUtil.asInt(Math.floor(splitValue.doubleValue()));
 
+			FieldName name = categoricalFeature.getName();
 			List<String> values = categoricalFeature.getValues();
 
-			leftPredicate = createSimpleSetPredicate(categoricalFeature, values.subList(0, splitLevelIndex));
-			rightPredicate = createSimpleSetPredicate(categoricalFeature, values.subList(splitLevelIndex, values.size()));
+			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+
+			List<String> leftValues = filterValues(values.subList(0, splitLevelIndex), valueFilter);
+			List<String> rightValues = filterValues(values.subList(splitLevelIndex, values.size()), valueFilter);
+
+			leftCategoryManager = leftCategoryManager.restrict(name, leftValues);
+			rightCategoryManager = rightCategoryManager.restrict(name, rightValues);
+
+			leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
+			rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
 		} else
 
 		{
@@ -302,14 +315,21 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		Node leftChild = new Node()
 			.setPredicate(leftPredicate);
 
-		encodeNode(leftChild, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, schema);
+		encodeNode(leftChild, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
 
 		Node rightChild = new Node()
 			.setPredicate(rightPredicate);
 
-		encodeNode(rightChild, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, schema);
+		encodeNode(rightChild, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, rightCategoryManager, schema);
 
 		node.addNodes(leftChild, rightChild);
+	}
+
+	static
+	private <E> List<E> filterValues(List<E> values, java.util.function.Predicate<E> valueFilter){
+		return values.stream()
+			.filter(valueFilter)
+			.collect(Collectors.toList());
 	}
 
 	static

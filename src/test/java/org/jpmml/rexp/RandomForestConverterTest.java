@@ -20,6 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.Test;
@@ -32,8 +33,16 @@ public class RandomForestConverterTest extends ConverterTest {
 	public void selectValues(){
 		List<String> values = Arrays.asList("1", "2", "3", "4");
 
-		assertEquals(Arrays.asList("1", "3", "4"), RandomForestConverter.selectValues(values, 13d, true));
-		assertEquals(Arrays.asList("2"), RandomForestConverter.selectValues(values, 13d, false));
+		Predicate<String> truePredicate = new Predicate<String>(){
+
+			@Override
+			public boolean test(String value){
+				return true;
+			}
+		};
+
+		assertEquals(Arrays.asList("1", "3", "4"), RandomForestConverter.selectValues(values, truePredicate, 13d, true));
+		assertEquals(Arrays.asList("2"), RandomForestConverter.selectValues(values, truePredicate, 13d, false));
 	}
 
 	@Test

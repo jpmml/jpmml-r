@@ -384,14 +384,14 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		{
+			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+
 			RIntegerVector csplitDim = csplit.dim();
 
 			int csplitRows = csplitDim.getValue(0);
 			int csplitColumns = csplitDim.getValue(1);
 
 			List<Integer> csplitRow = FortranMatrixUtil.getRow(csplit.getValues(), csplitRows, csplitColumns, ValueUtil.asInt(splitValue) - 1);
-
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
 			List<String> values = categoricalFeature.getValues();
 

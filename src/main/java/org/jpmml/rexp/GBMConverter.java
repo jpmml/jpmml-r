@@ -198,7 +198,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			.setId("1")
 			.setPredicate(new True());
 
-		encodeNode(root, 0, tree, c_splits, schema);
+		encodeNode(root, 0, tree, c_splits, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
@@ -206,7 +206,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, Schema schema){
+	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, CategoryManager categoryManager, Schema schema){
 		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
 		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
 		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
@@ -215,6 +215,9 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
 
 		Predicate missingPredicate;
+
+		CategoryManager leftCategoryManager = categoryManager;
+		CategoryManager rightCategoryManager = categoryManager;
 
 		Predicate leftPredicate;
 		Predicate rightPredicate;
@@ -230,6 +233,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			if(feature instanceof CategoricalFeature){
 				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
+				FieldName name = categoricalFeature.getName();
 				List<String> values = categoricalFeature.getValues();
 
 				int index = ValueUtil.asInt(split);
@@ -238,8 +242,16 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 				List<Integer> splitValues = c_split.getValues();
 
-				leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, true));
-				rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, false));
+				java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+
+				List<String> leftValues = selectValues(values, valueFilter, splitValues, true);
+				List<String> rightValues = selectValues(values, valueFilter, splitValues, false);
+
+				leftCategoryManager = leftCategoryManager.restrict(name, leftValues);
+				rightCategoryManager = rightCategoryManager.restrict(name, rightValues);
+
+				leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
+				rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
 			} else
 
 			{
@@ -266,7 +278,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				.setId(String.valueOf(missing + 1))
 				.setPredicate(missingPredicate);
 
-			encodeNode(missingChild, missing, tree, c_splits, schema);
+			encodeNode(missingChild, missing, tree, c_splits, categoryManager, schema);
 
 			node.addNodes(missingChild);
 		}
@@ -277,7 +289,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				.setId(String.valueOf(left + 1))
 				.setPredicate(leftPredicate);
 
-			encodeNode(leftChild, left, tree, c_splits, schema);
+			encodeNode(leftChild, left, tree, c_splits, leftCategoryManager, schema);
 
 			node.addNodes(leftChild);
 		}
@@ -288,7 +300,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				.setId(String.valueOf(right + 1))
 				.setPredicate(rightPredicate);
 
-			encodeNode(rightChild, right, tree, c_splits, schema);
+			encodeNode(rightChild, right, tree, c_splits, rightCategoryManager, schema);
 
 			node.addNodes(rightChild);
 		}
@@ -306,7 +318,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private <E> List<E> selectValues(List<E> values, List<Integer> splitValues, boolean left){
+	private <E> List<E> selectValues(List<E> values, java.util.function.Predicate<E> valueFilter, List<Integer> splitValues, boolean left){
 
 		if(values.size() != splitValues.size()){
 			throw new IllegalArgumentException();
@@ -328,7 +340,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				append = (splitValue == 1);
 			} // End if
 
-			if(append){
+			if(append && valueFilter.test(value)){
 				result.add(value);
 			}
 		}
