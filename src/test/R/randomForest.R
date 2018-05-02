@@ -1,6 +1,7 @@
 library("caret")
 library("plyr")
 library("randomForest")
+library("r2pmml")
 
 source("util.R")
 
@@ -21,7 +22,8 @@ predictRandomForestAudit = function(audit.randomForest, data, targetName){
 }
 
 generateRandomForestFormulaAudit = function(){
-	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 7)
+	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 71)
+	audit.randomForest = decorate(audit.randomForest, compact = TRUE)
 	print(audit.randomForest)
 
 	storeRds(audit.randomForest, "RandomForestFormulaAudit")
@@ -29,7 +31,7 @@ generateRandomForestFormulaAudit = function(){
 }
 
 generateRandomForestCustFormulaAudit = function(){
-	audit.randomForest = randomForest(Adjusted ~ . - Education + plyr::revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + base::cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)), data = audit, ntree = 7)
+	audit.randomForest = randomForest(Adjusted ~ . - Education + plyr::revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + base::cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)), data = audit, ntree = 71)
 	print(audit.randomForest)
 
 	storeRds(audit.randomForest, "RandomForestCustFormulaAudit")
@@ -37,7 +39,8 @@ generateRandomForestCustFormulaAudit = function(){
 }
 
 generateRandomForestAudit = function(){
-	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 7)
+	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 71)
+	audit.randomForest = decorate(audit.randomForest, compact = TRUE)
 	print(audit.randomForest)
 
 	storeRds(audit.randomForest, "RandomForestAudit")
@@ -51,7 +54,7 @@ generateRandomForestCustFormulaAudit()
 generateRandomForestAudit()
 
 generateTrainRandomForestFormulaAuditMatrix = function(){
-	audit.train = train(Adjusted ~ ., data = audit, method = "rf", ntree = 7)
+	audit.train = train(Adjusted ~ ., data = audit, method = "rf", ntree = 31)
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
@@ -62,7 +65,7 @@ generateTrainRandomForestFormulaAuditMatrix = function(){
 }
 
 generateTrainRandomForestAudit = function(){
-	audit.train = train(x = audit_x, y = audit_y, method = "rf", ntree = 7)
+	audit.train = train(x = audit_x, y = audit_y, method = "rf", ntree = 31)
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit_x)
@@ -83,7 +86,8 @@ auto_x = auto[, -ncol(auto)]
 auto_y = auto[, ncol(auto)]
 
 generateRandomForestFormulaAuto = function(){
-	auto.randomForest = randomForest(mpg ~ ., data = auto, ntree = 7)
+	auto.randomForest = randomForest(mpg ~ ., data = auto, ntree = 31)
+	auto.randomForest = decorate(auto.randomForest, compact = TRUE)
 	print(auto.randomForest)
 
 	mpg = predict(auto.randomForest, newdata = auto)
@@ -93,7 +97,7 @@ generateRandomForestFormulaAuto = function(){
 }
 
 generateRandomForestCustFormulaAuto = function(){
-	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - weight + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 7)
+	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - weight + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 31)
 	print(auto.randomForest)
 
 	mpg = predict(auto.randomForest, newdata = auto)
@@ -103,7 +107,8 @@ generateRandomForestCustFormulaAuto = function(){
 }
 
 generateRandomForestAuto = function(){
-	auto.randomForest = randomForest(x = auto_x, y = auto_y, ntree = 7)
+	auto.randomForest = randomForest(x = auto_x, y = auto_y, ntree = 31)
+	auto.randomForest = decorate(auto.randomForest, compact = TRUE)
 	print(auto.randomForest)
 
 	mpg = predict(auto.randomForest, newdata = auto_x)
@@ -122,7 +127,7 @@ auto.caret = auto
 auto.caret$origin = as.integer(auto.caret$origin)
 
 generateTrainRandomForestFormulaAuto = function(){
-	auto.train = train(mpg ~ ., data = auto.caret, method = "rf", ntree = 7)
+	auto.train = train(mpg ~ ., data = auto.caret, method = "rf", ntree = 11)
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto.caret)
@@ -132,7 +137,7 @@ generateTrainRandomForestFormulaAuto = function(){
 }
 
 generateTrainRandomForestAuto = function(){
-	auto.train = train(x = auto_x, y = auto_y, method = "rf", ntree = 7)
+	auto.train = train(x = auto_x, y = auto_y, method = "rf", ntree = 11)
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto_x)
@@ -164,6 +169,7 @@ predictRandomForestIris = function(iris.randomForest, data, targetName){
 
 generateRandomForestFormulaIris = function(){
 	iris.randomForest = randomForest(Species ~ ., data = iris, ntree = 7)
+	iris.randomForest = decorate(iris.randomForest, compact = TRUE)
 	print(iris.randomForest)
 
 	storeRds(iris.randomForest, "RandomForestFormulaIris")
@@ -180,6 +186,7 @@ generateRandomForestCustFormulaIris = function(){
 
 generateRandomForestIris = function(){
 	iris.randomForest = randomForest(x = iris_x, y = iris_y, ntree = 7)
+	iris.randomForest = decorate(iris.randomForest, compact = TRUE)
 	print(iris.randomForest)
 
 	storeRds(iris.randomForest, "RandomForestIris")
@@ -219,7 +226,8 @@ wine_quality_x = wine_quality[, -ncol(wine_quality)]
 wine_quality_y = wine_quality[, ncol(wine_quality)]
 
 generateRandomForestFormulaWineQuality = function(){
-	wine_quality.randomForest = randomForest(quality ~ ., data = wine_quality, ntree = 7)
+	wine_quality.randomForest = randomForest(quality ~ ., data = wine_quality, ntree = 31)
+	wine_quality.randomForest = decorate(wine_quality.randomForest, compact = TRUE)
 	print(wine_quality.randomForest)
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality)
@@ -229,7 +237,7 @@ generateRandomForestFormulaWineQuality = function(){
 }
 
 generateRandomForestWineQuality = function(){
-	wine_quality.randomForest = randomForest(x = wine_quality_x, y = wine_quality_y, ntree = 7)
+	wine_quality.randomForest = randomForest(x = wine_quality_x, y = wine_quality_y, ntree = 31)
 	print(wine_quality.randomForest)
 
 	quality = predict(wine_quality.randomForest, newdata = wine_quality_x)
@@ -260,7 +268,8 @@ predictRandomForestWineColor = function(wine_color.randomForest, data, targetNam
 }
 
 generateRandomForestFormulaWineColor = function(){
-	wine_color.randomForest = randomForest(color ~ ., data = wine_color, ntree = 7)
+	wine_color.randomForest = randomForest(color ~ ., data = wine_color, ntree = 31)
+	wine_color.randomForest = decorate(wine_color.randomForest, compact = TRUE)
 	print(wine_color.randomForest)
 
 	storeRds(wine_color.randomForest, "RandomForestFormulaWineColor")
@@ -268,7 +277,7 @@ generateRandomForestFormulaWineColor = function(){
 }
 
 generateRandomForestWineColor = function(){
-	wine_color.randomForest = randomForest(x = wine_color_x, y = wine_color_y, ntree = 7)
+	wine_color.randomForest = randomForest(x = wine_color_x, y = wine_color_y, ntree = 31)
 	print(wine_color.randomForest)
 
 	storeRds(wine_color.randomForest, "RandomForestWineColor")

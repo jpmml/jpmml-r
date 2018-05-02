@@ -31,6 +31,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.Visitor;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.Node;
@@ -45,6 +46,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
+import org.jpmml.rexp.visitors.RandomForestCompactor;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
@@ -268,6 +270,10 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
+		RGenericVector randomForest = getObject();
+
+		RBooleanVector compact = (RBooleanVector)randomForest.getValue("compact", true);
+
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
@@ -275,7 +281,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		encodeNode(root, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
+			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
+
+		if(compact != null && compact.asScalar()){
+			Visitor visitor = new RandomForestCompactor();
+
+			visitor.applyTo(treeModel);
+		}
 
 		return treeModel;
 	}
