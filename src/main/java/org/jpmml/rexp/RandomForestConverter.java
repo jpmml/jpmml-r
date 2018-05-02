@@ -315,8 +315,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				List<String> leftValues = selectValues(values, valueFilter, split, true);
 				List<String> rightValues = selectValues(values, valueFilter, split, false);
 
-				leftCategoryManager = categoryManager.restrict(name, leftValues);
-				rightCategoryManager = categoryManager.restrict(name, rightValues);
+				leftCategoryManager = categoryManager.fork(name, leftValues);
+				rightCategoryManager = categoryManager.fork(name, rightValues);
 
 				leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
 				rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);

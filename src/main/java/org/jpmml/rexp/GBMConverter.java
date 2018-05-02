@@ -247,8 +247,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				List<String> leftValues = selectValues(values, valueFilter, splitValues, true);
 				List<String> rightValues = selectValues(values, valueFilter, splitValues, false);
 
-				leftCategoryManager = leftCategoryManager.restrict(name, leftValues);
-				rightCategoryManager = rightCategoryManager.restrict(name, rightValues);
+				leftCategoryManager = leftCategoryManager.fork(name, leftValues);
+				rightCategoryManager = rightCategoryManager.fork(name, rightValues);
 
 				leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
 				rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);

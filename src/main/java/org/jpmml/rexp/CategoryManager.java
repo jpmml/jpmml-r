@@ -19,7 +19,6 @@
 package org.jpmml.rexp;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -28,22 +27,30 @@ import java.util.function.Predicate;
 
 import org.dmg.pmml.FieldName;
 
-public class CategoryManager {
-
-	private Map<FieldName, Set<String>> valueMap = Collections.emptyMap();
-
+public class CategoryManager extends ValueManager<Set<String>> {
 
 	public CategoryManager(){
 	}
 
 	public CategoryManager(Map<FieldName, Set<String>> valueMap){
-		setValueMap(valueMap);
+		super(valueMap);
+	}
+
+	public CategoryManager fork(FieldName name, Collection<String> values){
+		return fork(name, new LinkedHashSet<>(values));
+	}
+
+	@Override
+	public CategoryManager fork(FieldName name, Set<String> values){
+		Map<FieldName, Set<String>> valueMap = new LinkedHashMap<>(getValueMap());
+
+		valueMap.put(name, values);
+
+		return new CategoryManager(valueMap);
 	}
 
 	public Predicate<String> getValueFilter(FieldName name){
-		Map<FieldName, Set<String>> valueMap = getValueMap();
-
-		Set<String> values = valueMap.get(name);
+		Set<String> values = getValue(name);
 
 		Predicate<String> predicate = new Predicate<String>(){
 
@@ -59,26 +66,5 @@ public class CategoryManager {
 		};
 
 		return predicate;
-	}
-
-	public CategoryManager restrict(FieldName name, Collection<String> values){
-		Map<FieldName, Set<String>> valueMap = new LinkedHashMap<>(getValueMap());
-
-		valueMap.put(name, new LinkedHashSet<>(values));
-
-		return new CategoryManager(valueMap);
-	}
-
-	public Map<FieldName, Set<String>> getValueMap(){
-		return this.valueMap;
-	}
-
-	private void setValueMap(Map<FieldName, Set<String>> valueMap){
-
-		if(valueMap == null){
-			throw new IllegalArgumentException();
-		}
-
-		this.valueMap = valueMap;
 	}
 }

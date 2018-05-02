@@ -296,8 +296,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			List<String> leftValues = filterValues(values.subList(0, splitLevelIndex), valueFilter);
 			List<String> rightValues = filterValues(values.subList(splitLevelIndex, values.size()), valueFilter);
 
-			leftCategoryManager = leftCategoryManager.restrict(name, leftValues);
-			rightCategoryManager = rightCategoryManager.restrict(name, rightValues);
+			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
+			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
 
 			leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
 			rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
