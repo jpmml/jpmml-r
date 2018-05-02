@@ -198,7 +198,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			.setId("1")
 			.setPredicate(new True());
 
-		encodeNode(root, 0, tree, c_splits, new CategoryManager(), schema);
+		encodeNode(root, 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
@@ -206,13 +206,18 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, CategoryManager categoryManager, Schema schema){
+	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
 		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
 		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
 		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
 		RIntegerVector rightNode = (RIntegerVector)tree.getValue(3);
 		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
+
+		Boolean isMissing;
+
+		FlagManager missingFlagManager = flagManager;
+		FlagManager nonMissingFlagManager = flagManager;
 
 		Predicate missingPredicate;
 
@@ -226,7 +231,17 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		if(var != -1){
 			Feature feature = schema.getFeature(var);
 
-			missingPredicate = createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
+			{
+				FieldName name = feature.getName();
+
+				isMissing = flagManager.getValue(name);
+				if(isMissing == null){
+					missingFlagManager = missingFlagManager.fork(name, Boolean.TRUE);
+					nonMissingFlagManager = nonMissingFlagManager.fork(name, Boolean.FALSE);
+				}
+
+				missingPredicate = createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
+			}
 
 			Double split = splitCodePred.getValue(i);
 
@@ -273,34 +288,34 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		Integer missing = missingNode.getValue(i);
-		if(missing != -1){
+		if(missing != -1 && (isMissing == null || isMissing)){
 			Node missingChild = new Node()
 				.setId(String.valueOf(missing + 1))
 				.setPredicate(missingPredicate);
 
-			encodeNode(missingChild, missing, tree, c_splits, categoryManager, schema);
+			encodeNode(missingChild, missing, tree, c_splits, missingFlagManager, categoryManager, schema);
 
 			node.addNodes(missingChild);
 		}
 
 		Integer left = leftNode.getValue(i);
-		if(left != -1){
+		if(left != -1 && (isMissing == null || !isMissing)){
 			Node leftChild = new Node()
 				.setId(String.valueOf(left + 1))
 				.setPredicate(leftPredicate);
 
-			encodeNode(leftChild, left, tree, c_splits, leftCategoryManager, schema);
+			encodeNode(leftChild, left, tree, c_splits, nonMissingFlagManager, leftCategoryManager, schema);
 
 			node.addNodes(leftChild);
 		}
 
 		Integer right = rightNode.getValue(i);
-		if(right != -1){
+		if(right != -1 && (isMissing == null || !isMissing)){
 			Node rightChild = new Node()
 				.setId(String.valueOf(right + 1))
 				.setPredicate(rightPredicate);
 
-			encodeNode(rightChild, right, tree, c_splits, rightCategoryManager, schema);
+			encodeNode(rightChild, right, tree, c_splits, nonMissingFlagManager, rightCategoryManager, schema);
 
 			node.addNodes(rightChild);
 		}
