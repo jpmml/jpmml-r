@@ -50,8 +50,13 @@ import org.jpmml.rexp.visitors.RandomForestCompactor;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
+	private boolean compact = true;
+
+
 	public RandomForestConverter(RGenericVector randomForest){
 		super(randomForest);
+
+		this.compact = getOption("compact", Boolean.TRUE);
 	}
 
 	@Override
@@ -272,8 +277,6 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		RGenericVector randomForest = getObject();
 
-		RBooleanVector compact = (RBooleanVector)randomForest.getValue("compact", true);
-
 		Node root = new Node()
 			.setId("1")
 			.setPredicate(new True());
@@ -284,7 +287,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
-		if(compact != null && compact.asScalar()){
+		if(this.compact){
 			Visitor visitor = new RandomForestCompactor();
 
 			visitor.applyTo(treeModel);

@@ -73,6 +73,32 @@ public class Converter<R extends RExp> {
 		return encoder;
 	}
 
+	public Boolean getOption(String name, Boolean defaultValue){
+		RGenericVector options = getOptions();
+
+		if(options != null){
+			RBooleanVector option = (RBooleanVector)options.getValue(name, true);
+
+			if(option != null){
+				return option.asScalar();
+			}
+		}
+
+		return defaultValue;
+	}
+
+	public RGenericVector getOptions(){
+		R object = getObject();
+
+		if(object instanceof RGenericVector){
+			RGenericVector model = (RGenericVector)object;
+
+			return (RGenericVector)model.getValue("pmml_options", true);
+		}
+
+		return null;
+	}
+
 	public R getObject(){
 		return this.object;
 	}

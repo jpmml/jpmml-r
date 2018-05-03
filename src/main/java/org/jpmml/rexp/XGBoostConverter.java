@@ -40,9 +40,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	private Learner learner = null;
 
+	private boolean compact = true;
+
 
 	public XGBoostConverter(RGenericVector booster){
 		super(booster);
+
+		this.compact = getOption("compact", Boolean.TRUE);
 	}
 
 	@Override
@@ -104,13 +108,12 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		RGenericVector booster = getObject();
 
 		RNumberVector<?> ntreeLimit = (RNumberVector<?>)booster.getValue("ntreelimit", true);
-		RBooleanVector compact = (RBooleanVector)booster.getValue("compact", true);
 
 		Learner learner = ensureLearner();
 
 		Schema xgbSchema = XGBoostUtil.toXGBoostSchema(schema);
 
-		MiningModel miningModel = learner.encodeMiningModel((ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null), (compact != null ? compact.asScalar() : false), xgbSchema);
+		MiningModel miningModel = learner.encodeMiningModel((ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null), this.compact, xgbSchema);
 
 		return miningModel;
 	}
