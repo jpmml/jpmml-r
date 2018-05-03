@@ -59,7 +59,7 @@ public class FormulaUtil {
 		Formula formula = new Formula(encoder);
 
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
-		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses");
+		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses", true);
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);
@@ -71,7 +71,22 @@ public class FormulaUtil {
 
 			FieldName name = FieldName.create(variable);
 			OpType opType = OpType.CONTINUOUS;
-			DataType dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
+			DataType dataType;
+
+			if(dataClasses != null){
+				dataType = RExpUtil.getDataType(dataClasses.getValue(variable));
+			} else
+
+			{
+				RVector<?> data = context.getData(name.getValue());
+				if(data != null){
+					dataType = data.getDataType();
+				} else
+
+				{
+					throw new IllegalArgumentException();
+				}
+			}
 
 			List<String> categories = context.getCategories(variable);
 			if(categories != null && categories.size() > 0){

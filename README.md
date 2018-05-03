@@ -18,6 +18,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `train` - Selected JPMML-R model types
   * [`caretEnsemble` package](https://cran.r-project.org/package=caretEnsemble):
     * `caretEnsemble` - Ensemble regression and classification
+  * [`CHAID` package](https://r-forge.r-project.org/R/?group_id=343):
+    * `party` - CHi-squared Automated Interaction Detection (CHAID) classification
   * [`earth` package](https://cran.r-project.org/package=earth):
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
   * [`elmNN` package](https://cran.r-project.org/package=elmNN):

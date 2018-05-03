@@ -18,6 +18,17 @@
  */
 package org.jpmml.rexp;
 
-abstract
-public class PartyConverterTest extends ConverterTest {
+import org.junit.Test;
+
+public class ChaidConverterTest extends PartyConverterTest {
+
+	@Test
+	public void evaluateAudit() throws Exception {
+		evaluate("Chaid", "Audit");
+	}
+
+	@Test
+	public void evaluateIris() throws Exception {
+		evaluate("Chaid", "Iris");
+	}
 }

@@ -37,6 +37,11 @@ public class RIntegerVector extends RNumberVector<Integer> {
 
 	@Override
 	public DataType getDataType(){
+
+		if(isFactor()){
+			return DataType.STRING;
+		}
+
 		return DataType.INTEGER;
 	}
 

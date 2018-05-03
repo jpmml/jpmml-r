@@ -46,6 +46,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector party = getObject();
 
 		RGenericVector data = (RGenericVector)party.getValue("data");
+		RGenericVector fitted = (RGenericVector)party.getValue("fitted");
 		RExp terms = party.getValue("terms");
 
 		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
@@ -53,6 +54,17 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);
+
+		String responseVariable;
+
+		int responseIndex = response.asScalar();
+		if(responseIndex != 0){
+			responseVariable = variableRows.getDequotedValue(responseIndex - 1);
+		} else
+
+		{
+			responseVariable = null;
+		}
 
 		FormulaContext context = new FormulaContext(){
 
@@ -74,6 +86,10 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 				if(data.hasValue(variable)){
 					return (RVector<?>)data.getValue(variable);
+				} // End if
+
+				if((variable).equals(responseVariable)){
+					return (RVector<?>)fitted.getValue("(response)");
 				}
 
 				return null;
@@ -84,12 +100,11 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		RIntegerVector levels = null;
 
-		int responseIndex = response.asScalar();
 		if(responseIndex != 0){
-			RVector<?> vector = (RVector<?>)data.getValue(termColumns.getValue(responseIndex - 1));
+			RVector<?> responseData = context.getData(responseVariable);
 
-			if(RExpUtil.isFactor(vector)){
-				levels = (RIntegerVector)vector;
+			if(responseData != null && RExpUtil.isFactor(responseData)){
+				levels = (RIntegerVector)responseData;
 			}
 		} else
 
@@ -154,10 +169,6 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		if(kids == null){
 			return;
-		} // End if
-
-		if(kids.size() != 2){
-			throw new IllegalArgumentException();
 		}
 
 		RIntegerVector varid = (RIntegerVector)split.getValue("varid");
@@ -169,15 +180,19 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		Feature feature = features.get(varid.asScalar() - 1);
 
-		Predicate leftPredicate;
-		Predicate rightPredicate;
-
 		if(breaks != null && index == null){
 			ContinuousFeature continuousFeature = (ContinuousFeature)feature;
+
+			if(kids.size() != 2){
+				throw new IllegalArgumentException();
+			} // End if
 
 			if(breaks.size() != 1){
 				throw new IllegalArgumentException();
 			}
+
+			Predicate leftPredicate;
+			Predicate rightPredicate;
 
 			String value = ValueUtil.formatValue(breaks.asScalar());
 
@@ -190,37 +205,51 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, value);
 				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
+
+			Node leftChild = new Node()
+				.setPredicate(leftPredicate);
+
+			Node rightChild = new Node()
+				.setPredicate(rightPredicate);
+
+			encodeNode(leftChild, (RGenericVector)kids.getValue(0), scores, schema);
+			encodeNode(rightChild, (RGenericVector)kids.getValue(1), scores, schema);
+
+			node.addNodes(leftChild, rightChild);
 		} else
 
 		if(breaks == null && index != null){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
+			if(kids.size() < 2){
+				throw new IllegalArgumentException();
+			}
+
 			List<String> values = categoricalFeature.getValues();
 
-			if(right.asScalar()){
-				leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, 1));
-				rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, 2));
-			} else
+			for(int i = 0; i < kids.size(); i++){
+				Predicate predicate;
 
-			{
-				throw new IllegalArgumentException();
+				if(right.asScalar()){
+					predicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, i + 1));
+				} else
+
+				{
+					throw new IllegalArgumentException();
+				}
+
+				Node child = new Node()
+					.setPredicate(predicate);
+
+				encodeNode(child, (RGenericVector)kids.getValue(i), scores, schema);
+
+				node.addNodes(child);
 			}
 		} else
 
 		{
 			throw new IllegalArgumentException();
 		}
-
-		Node leftChild = new Node()
-			.setPredicate(leftPredicate);
-
-		Node rightChild = new Node()
-			.setPredicate(rightPredicate);
-
-		encodeNode(leftChild, (RGenericVector)kids.getValue(0), scores, schema);
-		encodeNode(rightChild, (RGenericVector)kids.getValue(1), scores, schema);
-
-		node.addNodes(leftChild, rightChild);
 	}
 
 	static
