@@ -54,7 +54,7 @@ public class RMSConverter extends LMConverter {
 			}
 
 			@Override
-			public RGenericVector getData(){
+			public RVector<?> getData(String variable){
 				return null;
 			}
 		};

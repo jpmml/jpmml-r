@@ -24,5 +24,5 @@ public interface FormulaContext {
 
 	List<String> getCategories(String variable);
 
-	RGenericVector getData();
+	RVector<?> getData(String variable);
 }

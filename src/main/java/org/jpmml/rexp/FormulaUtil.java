@@ -187,11 +187,9 @@ public class FormulaUtil {
 					opType = OpType.CATEGORICAL;
 				}
 
-				RGenericVector data = context.getData();
-				if(data != null && data.hasValue(name.getValue())){
-					RVector<?> column = (RVector<?>)data.getValue(name.getValue());
-
-					dataType = column.getDataType();
+				RVector<?> data = context.getData(name.getValue());
+				if(data != null){
+					dataType = data.getDataType();
 				}
 
 				dataField = encoder.createDataField(name, opType, dataType, categories);

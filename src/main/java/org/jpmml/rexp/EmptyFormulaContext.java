@@ -28,7 +28,7 @@ public class EmptyFormulaContext implements FormulaContext {
 	}
 
 	@Override
-	public RGenericVector getData(){
+	public RVector<?> getData(String variable){
 		return null;
 	}
 }

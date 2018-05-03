@@ -31,24 +31,26 @@ public class ModelFrameFormulaContext implements FormulaContext {
 
 	@Override
 	public List<String> getCategories(String variable){
-		RGenericVector model = getModel();
+		RVector<?> data = getData(variable);
 
-		if(model.hasValue(variable)){
-			RVector<?> vector = (RVector<?>)model.getValue(variable);
+		if(data != null && RExpUtil.isFactor(data)){
+			RIntegerVector factor = (RIntegerVector)data;
 
-			if(RExpUtil.isFactor(vector)){
-				RIntegerVector factor = (RIntegerVector)vector;
-
-				return factor.getLevelValues();
-			}
+			return factor.getLevelValues();
 		}
 
 		return null;
 	}
 
 	@Override
-	public RGenericVector getData(){
+	public RVector<?> getData(String variable){
 		RGenericVector model = getModel();
+
+		if(model.hasValue(variable)){
+			RVector<?> vector = (RVector<?>)model.getValue(variable);
+
+			return vector;
+		}
 
 		return model;
 	}

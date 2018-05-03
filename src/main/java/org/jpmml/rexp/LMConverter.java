@@ -60,13 +60,13 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			}
 
 			@Override
-			public RGenericVector getData(){
+			public RVector<?> getData(String variable){
 
-				if(data != null){
-					return data;
+				if(data != null && data.hasValue(variable)){
+					return (RVector<?>)data.getValue(variable);
 				}
 
-				return super.getData();
+				return super.getData(variable);
 			}
 		};
 

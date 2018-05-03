@@ -58,10 +58,10 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public List<String> getCategories(String variable){
-				RVector<?> vector = (RVector<?>)data.getValue(variable);
+				RVector<?> data = getData(variable);
 
-				if(RExpUtil.isFactor(vector)){
-					RIntegerVector factor = (RIntegerVector)vector;
+				if(data != null && RExpUtil.isFactor(data)){
+					RIntegerVector factor = (RIntegerVector)data;
 
 					return factor.getLevelValues();
 				}
@@ -70,7 +70,12 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			}
 
 			@Override
-			public RGenericVector getData(){
+			public RVector<?> getData(String variable){
+
+				if(data.hasValue(variable)){
+					return (RVector<?>)data.getValue(variable);
+				}
+
 				return null;
 			}
 		};
