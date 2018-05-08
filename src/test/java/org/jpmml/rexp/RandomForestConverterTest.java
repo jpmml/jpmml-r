@@ -68,8 +68,8 @@ public class RandomForestConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		evaluate("TrainRandomForestFormula", "AuditMatrix");
+	public void evaluateCaretFormulaAudit() throws Exception {
+		evaluate("TrainRandomForestFormula", "Audit");
 	}
 
 	@Test

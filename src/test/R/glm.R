@@ -1,9 +1,12 @@
 library("caret")
 library("plyr")
+library("recipes")
 
 source("util.R")
 
 audit = loadAuditCsv("Audit")
+
+audit.recipe = recipe(Adjusted ~ ., data = audit)
 
 predictGLMAudit = function(audit.glm){
 	probabilities = predict(audit.glm, newdata = audit, type = "response")
@@ -32,20 +35,22 @@ generateGLMCustFormulaAudit = function(){
 generateGLMFormulaAudit()
 generateGLMCustFormulaAudit()
 
-generateTrainGLMFormulaAuditMatrix = function(){
-	audit.train = train(Adjusted ~ ., data = audit, method = "glm")
+generateTrainGLMFormulaAudit = function(){
+	audit.train = train(audit.recipe, data = audit, method = "glm")
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
 	probabilities = predict(audit.train, newdata = audit, type = "prob")
 
-	storeRds(audit.train, "TrainGLMFormulaAuditMatrix")
-	storeCsv(data.frame(".outcome" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainGLMFormulaAuditMatrix")
+	storeRds(audit.train, "TrainGLMFormulaAudit")
+	storeCsv(data.frame("Adjusted" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainGLMFormulaAudit")
 }
 
-generateTrainGLMFormulaAuditMatrix()
+generateTrainGLMFormulaAudit()
 
 auto = loadAutoCsv("Auto")
+
+auto.recipe = recipe(mpg ~ ., data = auto)
 
 generateGLMFormulaAuto = function(){
 	auto.glm = glm(mpg ~ ., data = auto)
@@ -70,17 +75,14 @@ generateGLMCustFormulaAuto = function(){
 generateGLMFormulaAuto()
 generateGLMCustFormulaAuto()
 
-auto.caret = auto
-auto.caret$origin = as.integer(auto.caret$origin)
-
 generateTrainGLMFormulaAuto = function(){
-	auto.train = train(mpg ~ ., data = auto.caret, method = "glm")
+	auto.train = train(auto.recipe, data = auto, method = "glm")
 	print(auto.train)
 
-	mpg = predict(auto.train, newdata = auto.caret)
+	mpg = predict(auto.train, newdata = auto)
 
 	storeRds(auto.train, "TrainGLMFormulaAuto")
-	storeCsv(data.frame(".outcome" = mpg), "TrainGLMFormulaAuto")
+	storeCsv(data.frame("mpg" = mpg), "TrainGLMFormulaAuto")
 }
 
 generateTrainGLMFormulaAuto()

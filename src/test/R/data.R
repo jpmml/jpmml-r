@@ -26,14 +26,6 @@ createAudit = function(audit){
 
 	storeCsv(audit, "Audit")
 
-	audit.matrix = data.frame(model.matrix(formula("Adjusted ~ ."), audit))
-	names(audit.matrix) = gsub("\\.", "-", names(audit.matrix))
-
-	# Delete the leading "X-Intercept" column
-	audit.matrix = audit.matrix[, 2:ncol(audit.matrix)]
-
-	storeCsv(audit.matrix, "AuditMatrix")
-
 	audit_x = audit[, -ncol(audit)]
 	audit_y = audit[, ncol(audit)]
 

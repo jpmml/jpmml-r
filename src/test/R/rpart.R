@@ -1,4 +1,5 @@
 library("caret")
+library("recipes")
 library("rpart")
 
 source("util.R")
@@ -74,6 +75,8 @@ generateRPartAutoNA()
 
 iris = loadIrisCsv("Iris")
 
+iris.recipe = recipe(Species ~ ., data = iris)
+
 predictRPartIris = function(iris.rpart, data){
 	species = predict(iris.rpart, newdata = data, type = "class")
 	probabilities = predict(iris.rpart, newdata = data, type = "prob")
@@ -96,14 +99,14 @@ set.seed(42)
 generateRPartIris()
 
 generateTrainRPartIris = function(){
-	iris.train = train(Species ~ ., data = iris, method = "rpart", control = list(c = 0, usesurrogate = 0))
+	iris.train = train(iris.recipe, data = iris, method = "rpart", control = list(c = 0, usesurrogate = 0))
 	print(iris.train)
 
 	species = predict(iris.train, newdata = iris)
 	probabilities = predict(iris.train, newdata = iris, type = "prob")
 
 	storeRds(iris.train, "TrainRPartIris")
-	storeCsv(data.frame(".outcome" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "TrainRPartIris")
+	storeCsv(data.frame("Species" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "TrainRPartIris")
 }
 
 set.seed(42)

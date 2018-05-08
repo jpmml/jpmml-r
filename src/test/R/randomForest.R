@@ -1,11 +1,14 @@
 library("caret")
 library("plyr")
 library("randomForest")
+library("recipes")
 library("r2pmml")
 
 source("util.R")
 
 audit = loadAuditCsv("Audit")
+
+audit.recipe = recipe(Adjusted ~ ., data = audit)
 
 audit_x = audit[, -ncol(audit)]
 audit_y = audit[, ncol(audit)]
@@ -53,15 +56,15 @@ generateRandomForestFormulaAudit()
 generateRandomForestCustFormulaAudit()
 generateRandomForestAudit()
 
-generateTrainRandomForestFormulaAuditMatrix = function(){
-	audit.train = train(Adjusted ~ ., data = audit, method = "rf", ntree = 31)
+generateTrainRandomForestFormulaAudit = function(){
+	audit.train = train(audit.recipe, data = audit, method = "rf", ntree = 31)
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
 	probabilities = predict(audit.train, newdata = audit, type = "prob")
 
-	storeRds(audit.train, "TrainRandomForestFormulaAuditMatrix")
-	storeCsv(data.frame("_target" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainRandomForestFormulaAuditMatrix")
+	storeRds(audit.train, "TrainRandomForestFormulaAudit")
+	storeCsv(data.frame("Adjusted" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "TrainRandomForestFormulaAudit")
 }
 
 generateTrainRandomForestAudit = function(){
@@ -77,7 +80,7 @@ generateTrainRandomForestAudit = function(){
 
 set.seed(42)
 
-generateTrainRandomForestFormulaAuditMatrix()
+generateTrainRandomForestFormulaAudit()
 generateTrainRandomForestAudit()
 
 auto = loadAutoCsv("Auto")

@@ -1,4 +1,4 @@
-.outcome,probability(setosa),probability(versicolor),probability(virginica)
+Species,probability(setosa),probability(versicolor),probability(virginica)
 setosa,1,0,0
 setosa,1,0,0
 setosa,1,0,0

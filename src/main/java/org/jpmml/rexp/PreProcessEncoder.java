@@ -38,7 +38,7 @@ import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class PreProcessEncoder extends RExpEncoder {
+public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 
 	private Map<FieldName, List<Double>> ranges = Collections.emptyMap();
 
@@ -50,6 +50,8 @@ public class PreProcessEncoder extends RExpEncoder {
 
 
 	public PreProcessEncoder(RGenericVector preProcess){
+		super(preProcess);
+
 		RGenericVector method = (RGenericVector)preProcess.getValue("method");
 
 		RStringVector methodNames = method.names();
@@ -78,15 +80,7 @@ public class PreProcessEncoder extends RExpEncoder {
 	}
 
 	@Override
-	public Schema createSchema(){
-		Schema schema = super.createSchema();
-
-		schema = filter(schema);
-
-		return schema;
-	}
-
-	private Schema filter(Schema schema){
+	public Schema transformSchema(Schema schema){
 		Function<Feature, Feature> function = new Function<Feature, Feature>(){
 
 			@Override

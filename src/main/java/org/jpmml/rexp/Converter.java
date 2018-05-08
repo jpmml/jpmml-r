@@ -43,27 +43,39 @@ public class Converter<R extends RExp> {
 		RExp object = getObject();
 
 		RGenericVector preProcess;
+		RGenericVector recipe;
 
 		if(object instanceof S4Object){
 			S4Object model = (S4Object)object;
 
 			preProcess = (RGenericVector)model.getAttributeValue("preProcess", true);
+			recipe = (RGenericVector)model.getAttributeValue("recipe", true);
 		} else
 
 		if(object instanceof RGenericVector){
 			RGenericVector model = (RGenericVector)object;
 
 			preProcess = (RGenericVector)model.getValue("preProcess", true);
+			recipe = (RGenericVector)model.getValue("recipe", true);
 		} else
 
 		{
 			preProcess = null;
+			recipe = null;
+		} // End if
+
+		if(preProcess != null && recipe != null){
+			throw new IllegalArgumentException();
 		}
 
 		RExpEncoder encoder;
 
 		if(preProcess != null){
 			encoder = new PreProcessEncoder(preProcess);
+		} else
+
+		if(recipe != null){
+			encoder = new RecipeEncoder(recipe);
 		} else
 
 		{

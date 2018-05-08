@@ -36,8 +36,8 @@ public class GLMConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void evaluateCaretFormulaAuditMatrix() throws Exception {
-		evaluate("TrainGLMFormula", "AuditMatrix");
+	public void evaluateCaretFormulaAudit() throws Exception {
+		evaluate("TrainGLMFormula", "Audit");
 	}
 
 	@Test
