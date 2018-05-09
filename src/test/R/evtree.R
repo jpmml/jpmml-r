@@ -11,9 +11,10 @@ generateEvTreeAudit = function(){
 	print(audit.evtree)
 
 	adjusted = predict(audit.evtree, newdata = audit)
+	probabilities = predict(audit.evtree, newdata = audit, type = "prob")
 
 	storeRds(audit.evtree, "EvTreeAudit")
-	storeCsv(data.frame("Adjusted" = adjusted), "EvTreeAudit")
+	storeCsv(data.frame("Adjusted" = adjusted, "probability(0)" = probabilities[, 1], "probability(1)" = probabilities[, 2], check.names = FALSE), "EvTreeAudit")
 }
 
 set.seed(42)
@@ -28,9 +29,10 @@ generateEvTreeIris = function(){
 	print(iris.evtree)
 
 	species = predict(iris.evtree, newdata = iris)
+	probabilities = predict(iris.evtree, newdata = iris, type = "prob")
 
 	storeRds(iris.evtree, "EvTreeIris")
-	storeCsv(data.frame("Species" = species), "EvTreeIris")
+	storeCsv(data.frame("Species" = species, "probability(setosa)" = probabilities[, 1], "probability(versicolor)" = probabilities[, 2], "probability(virginica)" = probabilities[, 3], check.names = FALSE), "EvTreeIris")
 }
 
 set.seed(42)

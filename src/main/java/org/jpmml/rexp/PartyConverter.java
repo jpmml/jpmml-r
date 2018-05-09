@@ -21,16 +21,21 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.Predicate;
+import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
+import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -122,29 +127,34 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector party = getObject();
 
 		RGenericVector partyNode = (RGenericVector)party.getValue("node");
-		RVector<?> scores = (RVector<?>)DecorationUtil.getValue(party, "scores");
+
+		RGenericVector predicted = (RGenericVector)DecorationUtil.getValue(party, "predicted");
+
+		RVector<?> response = (RVector<?>)predicted.getValue("(response)");
+		RDoubleVector prob = (RDoubleVector)predicted.getValue("(prob)", true);
 
 		Node root = new Node()
 			.setPredicate(new True());
 
-		encodeNode(root, partyNode, scores, schema);
+		encodeNode(root, partyNode, response, prob, schema);
 
-		MiningFunction miningFunction;
+		TreeModel treeModel;
 
-		if(RExpUtil.isFactor(scores)){
-			miningFunction = MiningFunction.CLASSIFICATION;
+		if(RExpUtil.isFactor(response)){
+			CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+
+			treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel), root)
+				.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 		} else
 
 		{
-			miningFunction = MiningFunction.REGRESSION;
+			treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 		}
-
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, RGenericVector partyNode, RVector<?> scores, Schema schema){
+	private void encodeNode(Node node, RGenericVector partyNode, RVector<?> response, RDoubleVector prob, Schema schema){
 		RIntegerVector id = (RIntegerVector)partyNode.getValue("id");
 		RGenericVector split = (RGenericVector)partyNode.getValue("split");
 		RGenericVector kids = (RGenericVector)partyNode.getValue("kids");
@@ -155,16 +165,34 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		Label label = schema.getLabel();
+		List<? extends Feature> features = schema.getFeatures();
+
 		node.setId(String.valueOf(id.asScalar()));
 
-		if(RExpUtil.isFactor(scores)){
-			RIntegerVector factor = (RIntegerVector)scores;
+		if(RExpUtil.isFactor(response)){
+			RIntegerVector factor = (RIntegerVector)response;
 
-			node.setScore(factor.getLevelValue(id.asScalar() - 1));
+			int index = id.asScalar() - 1;
+
+			node.setScore(factor.getLevelValue(index));
+
+			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
+
+			List<Double> probabilities = FortranMatrixUtil.getRow(prob.getValues(), response.size(), categoricalLabel.size(), index);
+
+			for(int i = 0; i < categoricalLabel.size(); i++){
+				String value = categoricalLabel.getValue(i);
+				Double probability = probabilities.get(i);
+
+				ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
+
+				node.addScoreDistributions(scoreDistribution);
+			}
 		} else
 
 		{
-			node.setScore(ValueUtil.formatValue(scores.getValue(id.asScalar() - 1)));
+			node.setScore(ValueUtil.formatValue(response.getValue(id.asScalar() - 1)));
 		} // End if
 
 		if(kids == null){
@@ -175,8 +203,6 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RDoubleVector breaks = (RDoubleVector)split.getValue("breaks");
 		RIntegerVector index = (RIntegerVector)split.getValue("index");
 		RBooleanVector right = (RBooleanVector)split.getValue("right");
-
-		List<? extends Feature> features = schema.getFeatures();
 
 		Feature feature = features.get(varid.asScalar() - 1);
 
@@ -212,8 +238,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			Node rightChild = new Node()
 				.setPredicate(rightPredicate);
 
-			encodeNode(leftChild, (RGenericVector)kids.getValue(0), scores, schema);
-			encodeNode(rightChild, (RGenericVector)kids.getValue(1), scores, schema);
+			encodeNode(leftChild, (RGenericVector)kids.getValue(0), response, prob, schema);
+			encodeNode(rightChild, (RGenericVector)kids.getValue(1), response, prob, schema);
 
 			node.addNodes(leftChild, rightChild);
 		} else
@@ -241,7 +267,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				Node child = new Node()
 					.setPredicate(predicate);
 
-				encodeNode(child, (RGenericVector)kids.getValue(i), scores, schema);
+				encodeNode(child, (RGenericVector)kids.getValue(i), response, prob, schema);
 
 				node.addNodes(child);
 			}
