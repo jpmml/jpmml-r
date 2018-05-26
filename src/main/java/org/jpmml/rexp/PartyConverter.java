@@ -175,7 +175,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 			int index = id.asScalar() - 1;
 
-			node.setScore(factor.getLevelValue(index));
+			node.setScore(factor.getFactorValue(index));
 
 			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
 

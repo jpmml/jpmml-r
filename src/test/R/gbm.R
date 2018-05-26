@@ -1,5 +1,7 @@
 library("caret")
+library("dplyr")
 library("gbm")
+library("r2pmml")
 
 source("util.R")
 
@@ -81,6 +83,7 @@ generateGBMIris()
 
 generateTrainGBMFormulaIris = function(){
 	iris.train = train(Species ~ ., data = iris, method = "gbm", response.name = "Species")
+	iris.train = verify(iris.train, newdata = sample_n(iris, 10))
 	print(iris.train)
 
 	species = predict(iris.train, newdata = iris)
@@ -128,7 +131,8 @@ auto.caret = auto
 auto.caret$origin = as.integer(auto.caret$origin)
 
 generateTrainGBMFormulaAutoNA = function(){
-	auto.train = train(mpg ~ ., data = auto.caret, method = "gbm", response.name = "mpg")
+	auto.train = train(mpg ~ ., data = auto.caret, method = "gbm", na.action = na.pass, response.name = "mpg")
+	auto.train = verify(auto.train, newdata = sample_n(auto.caret[complete.cases(auto.caret), ], 50))
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto.caret, na.action = na.pass)
@@ -137,17 +141,6 @@ generateTrainGBMFormulaAutoNA = function(){
 	storeCsv(data.frame("mpg" = mpg), "TrainGBMFormulaAutoNA")
 }
 
-generateTrainGBMAutoNA = function(){
-	auto.train = train(x = auto_x, y = auto_y, method = "gbm", response.name = "mpg")
-	print(auto.train)
-
-	mpg = predict(auto.train, newdata = auto_x)
-
-	storeRds(auto.train, "TrainGBMAutoNA")
-	storeCsv(data.frame("mpg" = mpg), "TrainGBMAutoNA")
-}
-
 set.seed(42)
 
 generateTrainGBMFormulaAutoNA()
-generateTrainGBMAutoNA()

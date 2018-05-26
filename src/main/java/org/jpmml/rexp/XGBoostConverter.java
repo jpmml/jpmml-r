@@ -180,7 +180,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 				throw new IllegalArgumentException();
 			}
 
-			featureMap.addEntry(name.getLevelValue(i), type.getLevelValue(i));
+			featureMap.addEntry(name.getFactorValue(i), type.getFactorValue(i));
 		}
 
 		return featureMap;

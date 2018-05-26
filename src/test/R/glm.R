@@ -1,6 +1,8 @@
 library("caret")
+library("dplyr")
 library("plyr")
 library("recipes")
+library("r2pmml")
 
 source("util.R")
 
@@ -37,6 +39,7 @@ generateGLMCustFormulaAudit()
 
 generateTrainGLMFormulaAudit = function(){
 	audit.train = train(audit.recipe, data = audit, method = "glm")
+	audit.train = verify(audit.train, newdata = sample_n(audit, 100))
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
@@ -77,6 +80,7 @@ generateGLMCustFormulaAuto()
 
 generateTrainGLMFormulaAuto = function(){
 	auto.train = train(auto.recipe, data = auto, method = "glm")
+	auto.train = verify(auto.train, newdata = sample_n(auto, 50))
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto)

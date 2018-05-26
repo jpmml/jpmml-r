@@ -1,4 +1,5 @@
 library("caret")
+library("dplyr")
 library("plyr")
 library("randomForest")
 library("recipes")
@@ -58,6 +59,7 @@ generateRandomForestAudit()
 
 generateTrainRandomForestFormulaAudit = function(){
 	audit.train = train(audit.recipe, data = audit, method = "rf", ntree = 31)
+	audit.train = verify(audit.train, newdata = sample_n(audit, 100))
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit)
@@ -69,6 +71,7 @@ generateTrainRandomForestFormulaAudit = function(){
 
 generateTrainRandomForestAudit = function(){
 	audit.train = train(x = audit_x, y = audit_y, method = "rf", ntree = 31)
+	audit.train = verify(audit.train, newdata = sample_n(audit_x, 100))
 	print(audit.train)
 
 	adjusted = predict(audit.train, newdata = audit_x)
@@ -131,6 +134,7 @@ auto.caret$origin = as.integer(auto.caret$origin)
 
 generateTrainRandomForestFormulaAuto = function(){
 	auto.train = train(mpg ~ ., data = auto.caret, method = "rf", ntree = 11)
+	auto.train = verify(auto.train, newdata = sample_n(auto.caret, 50))
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto.caret)
@@ -141,6 +145,7 @@ generateTrainRandomForestFormulaAuto = function(){
 
 generateTrainRandomForestAuto = function(){
 	auto.train = train(x = auto_x, y = auto_y, method = "rf", ntree = 11)
+	auto.train = verify(auto.train, newdata = sample_n(auto_x, 50))
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto_x)
@@ -204,6 +209,7 @@ generateRandomForestIris()
 
 generateTrainRandomForestIris = function(){
 	iris.train = train(x = iris_x, y = iris_y, method = "rf", preProcess = c("range"), ntree = 7)
+	iris.train = verify(iris.train, newdata = sample_n(iris_x, 10))
 	print(iris.train)
 
 	storeRds(iris.train, "TrainRandomForestIris")
@@ -212,6 +218,7 @@ generateTrainRandomForestIris = function(){
 
 generateTrainRandomForestFormulaIris = function(){
 	iris.train = train(Species ~ ., data = iris, method = "rf", preProcess = c("center", "scale"), ntree = 7)
+	iris.train = verify(iris.train, newdata = sample_n(iris, 10))
 	print(iris.train)
 
 	storeRds(iris.train, "TrainRandomForestFormulaIris")

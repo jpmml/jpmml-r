@@ -1,6 +1,8 @@
 library("caret")
+library("dplyr")
 library("recipes")
 library("rpart")
+library("r2pmml")
 
 source("util.R")
 
@@ -100,6 +102,7 @@ generateRPartIris()
 
 generateTrainRPartIris = function(){
 	iris.train = train(iris.recipe, data = iris, method = "rpart", control = list(c = 0, usesurrogate = 0))
+	iris.train = verify(iris.train, newdata = sample_n(iris, 10))
 	print(iris.train)
 
 	species = predict(iris.train, newdata = iris)

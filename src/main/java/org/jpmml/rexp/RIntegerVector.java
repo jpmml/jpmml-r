@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import org.dmg.pmml.DataType;
 
@@ -73,15 +75,30 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		return (RStringVector)levels.getValue();
 	}
 
-	public String getLevelValue(int index){
+	public List<String> getLevelValues(){
+		RStringVector levels = getLevels();
+
+		return levels.getValues();
+	}
+
+	public String getFactorValue(int index){
 		RStringVector levels = getLevels();
 
 		return levels.getValue(getValue(index) - 1);
 	}
 
-	public List<String> getLevelValues(){
-		RStringVector levels = getLevels();
+	public List<String> getFactorValues(){
+		List<Integer> values = getValues();
+		List<String> levelValues = getLevelValues();
 
-		return levels.getValues();
+		Function<Integer, String> function = new Function<Integer, String>(){
+
+			@Override
+			public String apply(Integer value){
+				return levelValues.get(value - 1);
+			}
+		};
+
+		return Lists.transform(values, function);
 	}
 }

@@ -61,9 +61,4 @@ public class GBMConverterTest extends ConverterTest {
 	public void evaluateCaretFormulaAutoNA() throws Exception {
 		evaluate("TrainGBMFormula", "AutoNA");
 	}
-
-	@Test
-	public void evaluateCaretFitAutoNA() throws Exception {
-		evaluate("TrainGBM", "AutoNA");
-	}
 }
