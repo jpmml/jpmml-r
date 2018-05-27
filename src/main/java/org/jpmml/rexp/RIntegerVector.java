@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import org.dmg.pmml.DataType;
 
-
 public class RIntegerVector extends RNumberVector<Integer> {
 
 	private int[] values = null;
@@ -54,12 +53,31 @@ public class RIntegerVector extends RNumberVector<Integer> {
 
 	@Override
 	public Integer getValue(int index){
-		return this.values[index];
+		int value = this.values[index];
+
+		if(value == Integer.MIN_VALUE){
+			return null;
+		}
+
+		return value;
 	}
 
 	@Override
 	public List<Integer> getValues(){
-		return Ints.asList(this.values);
+		Function<Integer, Integer> function = new Function<Integer, Integer>(){
+
+			@Override
+			public Integer apply(Integer value){
+
+				if(value == Integer.MIN_VALUE){
+					return null;
+				}
+
+				return value;
+			}
+		};
+
+		return Lists.transform(Ints.asList(this.values), function);
 	}
 
 	public boolean isFactor(){
@@ -84,7 +102,12 @@ public class RIntegerVector extends RNumberVector<Integer> {
 	public String getFactorValue(int index){
 		RStringVector levels = getLevels();
 
-		return levels.getValue(getValue(index) - 1);
+		Integer value = getValue(index);
+		if(value == null){
+			return null;
+		}
+
+		return levels.getValue(value - 1);
 	}
 
 	public List<String> getFactorValues(){
@@ -95,6 +118,11 @@ public class RIntegerVector extends RNumberVector<Integer> {
 
 			@Override
 			public String apply(Integer value){
+
+				if(value == null){
+					return null;
+				}
+
 				return levelValues.get(value - 1);
 			}
 		};

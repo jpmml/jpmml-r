@@ -252,12 +252,12 @@ public class RExpParser {
 	private RBooleanVector readLogicalVector(int flags) throws IOException {
 		int length = readInt();
 
-		boolean[] values = new boolean[length];
+		int[] values = new int[length];
 
 		for(int i = 0; i < length; i++){
 			int value = readInt();
 
-			values[i] = (value == 1);
+			values[i] = value;
 		}
 
 		return new RBooleanVector(values, readAttributes(flags));

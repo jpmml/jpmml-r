@@ -132,7 +132,7 @@ auto.caret$origin = as.integer(auto.caret$origin)
 
 generateTrainGBMFormulaAutoNA = function(){
 	auto.train = train(mpg ~ ., data = auto.caret, method = "gbm", na.action = na.pass, response.name = "mpg")
-	auto.train = verify(auto.train, newdata = sample_n(auto.caret[complete.cases(auto.caret), ], 50))
+	auto.train = verify(auto.train, newdata = sample_n(auto.caret, 50), na.action = na.pass)
 	print(auto.train)
 
 	mpg = predict(auto.train, newdata = auto.caret, na.action = na.pass)

@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
@@ -135,7 +137,24 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 			List<?> values;
 
-			if(RExpUtil.isFactor(column)){
+			if(column instanceof RDoubleVector){
+				Function<Double, Double> function = new Function<Double, Double>(){
+
+					@Override
+					public Double apply(Double value){
+
+						if(value.isNaN()){
+							return null;
+						}
+
+						return value;
+					}
+				};
+
+				values = Lists.transform((List)column.getValues(), function);
+			} else
+
+			if(column instanceof RIntegerVector && RExpUtil.isFactor(column)){
 				RIntegerVector factor = (RIntegerVector)column;
 
 				values = factor.getFactorValues();

@@ -20,15 +20,17 @@ package org.jpmml.rexp;
 
 import java.util.List;
 
-import com.google.common.primitives.Booleans;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 import org.dmg.pmml.DataType;
 
 public class RBooleanVector extends RVector<Boolean> {
 
-	private boolean[] values = null;
+	private int[] values = null;
 
 
-	public RBooleanVector(boolean[] values, RPair attributes){
+	public RBooleanVector(int[] values, RPair attributes){
 		super(attributes);
 
 		this.values = values;
@@ -46,11 +48,30 @@ public class RBooleanVector extends RVector<Boolean> {
 
 	@Override
 	public Boolean getValue(int index){
-		return this.values[index];
+		int value = this.values[index];
+
+		if(value == Integer.MIN_VALUE){
+			return null;
+		}
+
+		return Boolean.valueOf(value == 1);
 	}
 
 	@Override
 	public List<Boolean> getValues(){
-		return Booleans.asList(this.values);
+		Function<Integer, Boolean> function = new Function<Integer, Boolean>(){
+
+			@Override
+			public Boolean apply(Integer value){
+
+				if(value == Integer.MIN_VALUE){
+					return null;
+				}
+
+				return (value == 1);
+			}
+		};
+
+		return Lists.transform(Ints.asList(this.values), function);
 	}
 }
