@@ -187,7 +187,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> bestvar = (RNumberVector<?>)forest.getValue("bestvar");
 		RDoubleVector xbestsplit = (RDoubleVector)forest.getValue("xbestsplit");
 		RIntegerVector nrnodes = (RIntegerVector)forest.getValue("nrnodes");
-		RDoubleVector ntree = (RDoubleVector)forest.getValue("ntree");
+		RNumberVector<?> ntree = (RNumberVector<?>)forest.getValue("ntree");
 
 		ScoreEncoder<Double> scoreEncoder = new ScoreEncoder<Double>(){
 
