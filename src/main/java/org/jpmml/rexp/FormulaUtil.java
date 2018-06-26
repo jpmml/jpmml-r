@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-
 import org.dmg.pmml.Apply;
 import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataField;
@@ -38,15 +36,11 @@ import org.dmg.pmml.Discretize;
 import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.Extension;
-import org.dmg.pmml.FieldColumnPair;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
-import org.dmg.pmml.InlineTable;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
-import org.dmg.pmml.Row;
-import org.jpmml.converter.DOMUtil;
 import org.jpmml.converter.PMMLUtil;
 
 public class FormulaUtil {
@@ -367,25 +361,7 @@ public class FormulaUtil {
 			mapping.put(category, category);
 		}
 
-		List<String> columns = Arrays.asList("from", "to");
-
-		InlineTable inlineTable = new InlineTable();
-
-		DocumentBuilder documentBuilder = DOMUtil.createDocumentBuilder();
-
-		Collection<Map.Entry<String, String>> entries = mapping.entrySet();
-		for(Map.Entry<String, String> entry : entries){
-			Row row = DOMUtil.createRow(documentBuilder, columns, Arrays.asList(entry.getKey(), entry.getValue()));
-
-			inlineTable.addRows(row);
-		}
-
-		MapValues mapValues = new MapValues()
-			.addFieldColumnPairs(new FieldColumnPair(name, columns.get(0)))
-			.setOutputColumn(columns.get(1))
-			.setInlineTable(inlineTable);
-
-		return mapValues;
+		return PMMLUtil.createMapValues(name, mapping);
 	}
 
 	static

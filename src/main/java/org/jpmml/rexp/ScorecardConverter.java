@@ -79,7 +79,7 @@ public class ScorecardConverter extends GLMConverter {
 			Characteristic characteristic = fieldCharacteristics.get(name);
 			if(characteristic == null){
 				characteristic = new Characteristic()
-					.setName(FeatureUtil.createName("score", feature));
+					.setName("score(" + FeatureUtil.getName(feature) + ")");
 
 				fieldCharacteristics.put(name, characteristic);
 			}

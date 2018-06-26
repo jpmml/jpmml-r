@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
-import org.jpmml.converter.CategoricalLabel;
-import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
@@ -67,17 +65,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
 			renameDataField(label.getName(), outcomeName);
 
-			if(label instanceof CategoricalLabel){
-				CategoricalLabel categoricalLabel = (CategoricalLabel)label;
-
-				label = new CategoricalLabel(outcomeName, categoricalLabel.getDataType(), categoricalLabel.getValues());
-			} else
-
-			if(label instanceof ContinuousLabel){
-				ContinuousLabel continuousLabel = (ContinuousLabel)label;
-
-				label = new ContinuousLabel(outcomeName, continuousLabel.getDataType());
-			}
+			label = label.toRenamedLabel(outcomeName);
 
 			schema = new Schema(label, features);
 		} else
@@ -94,12 +82,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 	}
 
 	private void renameDataField(FieldName name, FieldName renamedName){
-		Map<FieldName, DataField> dataFields = getDataFields();
-
-		DataField dataField = dataFields.remove(name);
-		if(dataField == null){
-			throw new IllegalArgumentException(name.getValue());
-		}
+		DataField dataField = removeDataField(name);
 
 		dataField.setName(renamedName);
 
