@@ -19,13 +19,11 @@
 package org.jpmml.rexp;
 
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 import com.google.common.base.Equivalence;
-import com.google.common.base.Predicate;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMML;
-import org.dmg.pmml.Visitor;
-import org.jpmml.converter.visitors.CellTransformer;
 import org.jpmml.evaluator.ArchiveBatch;
 import org.jpmml.evaluator.IntegrationTest;
 import org.jpmml.evaluator.IntegrationTestBatch;
@@ -64,9 +62,6 @@ public class ConverterTest extends IntegrationTest {
 					RExp rexp = parser.parse();
 
 					PMML pmml = convert(rexp, clazz);
-
-					Visitor visitor = new CellTransformer();
-					visitor.applyTo(pmml);
 
 					ensureValidity(pmml);
 

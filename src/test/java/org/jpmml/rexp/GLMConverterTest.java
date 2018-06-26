@@ -18,8 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import com.google.common.base.Predicates;
-import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Batch;
 import org.junit.Test;
 
@@ -44,7 +42,7 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateFormulaAuto() throws Exception {
 		evaluate("GLMFormula", "Auto");
 
-		try(Batch batch = createBatch("GLMFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+		try(Batch batch = createBatch("GLMFormula", "Auto", name -> true, LMConverter.class)){
 			evaluate(batch, null);
 		}
 	}
@@ -53,7 +51,7 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateCustFormulaAuto() throws Exception {
 		evaluate("GLMCustFormula", "Auto");
 
-		try(Batch batch = createBatch("GLMCustFormula", "Auto", Predicates.<FieldName>alwaysTrue(), LMConverter.class)){
+		try(Batch batch = createBatch("GLMCustFormula", "Auto", name -> true, LMConverter.class)){
 			evaluate(batch, null);
 		}
 	}
