@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.dmg.pmml.Apply;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
@@ -242,34 +241,40 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		RDoubleVector xScaledCenter = null;
-		RDoubleVector xScaledScale = null;
-
-		if(xScale != null){
-			xScaledCenter = (RDoubleVector)xScale.getValue("scaled:center");
-			xScaledScale = (RDoubleVector)xScale.getValue("scaled:scale");
-		}
+		RDoubleVector xScaledCenter = (RDoubleVector)xScale.getValue("scaled:center");
+		RDoubleVector xScaledScale = (RDoubleVector)xScale.getValue("scaled:scale");
 
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
-			if(scaled.getValue(i)){
-				Feature feature = (features.get(i)).toContinuousFeature();
-
-				FieldName name = FeatureUtil.createName("scale", feature);
-
-				DerivedField derivedField = encoder.getDerivedField(name);
-				if(derivedField == null){
-					Double center = xScaledCenter.getValue(columnName);
-					Double scale = xScaledScale.getValue(columnName);
-
-					Apply apply = PMMLUtil.createApply("/", PMMLUtil.createApply("-", feature.ref(), PMMLUtil.createConstant(center)), PMMLUtil.createConstant(scale));
-
-					derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
-				}
-
-				features.set(i, new ContinuousFeature(encoder, derivedField));
+			if(!scaled.getValue(i)){
+				continue;
 			}
+
+			Feature feature = features.get(i);
+
+			Double center = xScaledCenter.getValue(columnName);
+			Double scale = xScaledScale.getValue(columnName);
+
+			if(ValueUtil.isZero(center) && ValueUtil.isOne(scale)){
+				continue;
+			}
+
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
+
+			Expression expression = continuousFeature.ref();
+
+			if(!ValueUtil.isZero(center)){
+				expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(center));
+			} // End if
+
+			if(!ValueUtil.isOne(scale)){
+				expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(scale));
+			}
+
+			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
+
+			features.set(i, new ContinuousFeature(encoder, derivedField));
 		}
 	}
 

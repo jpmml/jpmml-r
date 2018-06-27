@@ -122,9 +122,16 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		}
 
 		for(int i = 0; i < features.size(); i++){
-			Feature feature = (features.get(i)).toContinuousFeature();
+			Feature feature = features.get(i);
+			Double factor = scale.getValue(i);
 
-			Apply apply = PMMLUtil.createApply("/", feature.ref(), PMMLUtil.createConstant(scale.getValue(i)));
+			if(ValueUtil.isOne(factor)){
+				continue;
+			}
+
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
+
+			Apply apply = PMMLUtil.createApply("/", continuousFeature.ref(), PMMLUtil.createConstant(factor));
 
 			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
