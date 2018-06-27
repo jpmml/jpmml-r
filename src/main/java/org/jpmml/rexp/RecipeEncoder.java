@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,30 +33,44 @@ import org.jpmml.converter.Schema;
 
 public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
+	private Map<FieldName, Role> varRoles = Collections.emptyMap();
+
+	private Map<FieldName, Source> varSources = Collections.emptyMap();
+
+	private Map<FieldName, Type> varTypes = Collections.emptyMap();
+
+	private Map<FieldName, Role> termRoles = Collections.emptyMap();
+
+	private Map<FieldName, Source> termSources = Collections.emptyMap();
+
+	private Map<FieldName, Type> termTypes = Collections.emptyMap();
+
+
 	public RecipeEncoder(RGenericVector recipe){
 		super(recipe);
-	}
-
-	@Override
-	public Schema transformSchema(Schema schema){
-		RGenericVector recipe = getObject();
 
 		RGenericVector varInfo = (RGenericVector)recipe.getValue("var_info");
 		RGenericVector termInfo = (RGenericVector)recipe.getValue("term_info");
+
+		this.varRoles = parseInfo(varInfo, "role", value -> Role.valueOf(value.toUpperCase()));
+		this.varSources = parseInfo(varInfo, "source", value -> Source.valueOf(value.toUpperCase()));
+		this.varTypes = parseInfo(varInfo, "type", value -> Type.valueOf(value.toUpperCase()));
+
+		this.termRoles = parseInfo(termInfo, "role", value -> Role.valueOf(value.toUpperCase()));
+		this.termSources = parseInfo(termInfo, "source", value -> Source.valueOf(value.toUpperCase()));
+		this.termTypes = parseInfo(termInfo, "type", value -> Type.valueOf(value.toUpperCase()));
+	}
+
+	@Override
+	public Schema createSchema(){
+		RGenericVector recipe = getObject();
+
+		Label label = getLabel();
+		List<? extends Feature> features = getFeatures();
+
 		RGenericVector steps = (RGenericVector)recipe.getValue("steps");
 
-		Map<FieldName, Role> varRoles = parseInfo(varInfo, "role", value -> Role.valueOf(value.toUpperCase()));
-		Map<FieldName, Source> varSources = parseInfo(varInfo, "source", value -> Source.valueOf(value.toUpperCase()));
-		Map<FieldName, Type> varTypes = parseInfo(varInfo, "type", value -> Type.valueOf(value.toUpperCase()));
-
-		Map<FieldName, Role> termRoles = parseInfo(termInfo, "role", value -> Role.valueOf(value.toUpperCase()));
-		Map<FieldName, Source> termSources = parseInfo(termInfo, "source", value -> Source.valueOf(value.toUpperCase()));
-		Map<FieldName, Type> termTypes = parseInfo(termInfo, "type", value -> Type.valueOf(value.toUpperCase()));
-
-		Label label = schema.getLabel();
-		List<? extends Feature> features = schema.getFeatures();
-
-		List<FieldName> outcomeNames = termRoles.entrySet().stream()
+		List<FieldName> outcomeNames = this.termRoles.entrySet().stream()
 			.filter(entry -> (Role.OUTCOME).equals(entry.getValue()))
 			.map(entry -> entry.getKey())
 			.collect(Collectors.toList());
@@ -66,8 +81,6 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 			renameDataField(label.getName(), outcomeName);
 
 			label = label.toRenamedLabel(outcomeName);
-
-			schema = new Schema(label, features);
 		} else
 
 		if(outcomeNames.size() >= 2){
@@ -78,7 +91,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		return schema;
+		return new Schema(label, features);
 	}
 
 	private void renameDataField(FieldName name, FieldName renamedName){

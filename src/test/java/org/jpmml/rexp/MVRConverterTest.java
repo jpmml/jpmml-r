@@ -31,4 +31,9 @@ public class MVRConverterTest extends ConverterTest {
 	public void evaluateCustFormulaAuto() throws Exception {
 		evaluate("PLSRegressionCustFormula", "Auto");
 	}
+
+	@Test
+	public void evaluateFormulaWineQuality() throws Exception {
+		evaluate("PLSRegressionFormula", "WineQuality");
+	}
 }

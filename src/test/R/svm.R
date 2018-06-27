@@ -1,3 +1,4 @@
+library("caret")
 library("e1071")
 library("r2pmml")
 
@@ -63,14 +64,15 @@ generateLibSVMAuto = function(){
 
 generateLibSVMAuto()
 
-iris = loadIrisCsv("Iris")
+iris.raw = loadIrisCsv("Iris")
 
-iris_x = iris[, -ncol(iris)]
-iris_y = iris[, ncol(iris)]
+iris.preProc = preProcess(iris.raw, method = c("center"))
+
+iris = predict(iris.preProc, iris)
 
 generateLibSVMFormulaIris = function(){
 	iris.svm = svm(Species ~ ., data = iris)
-	iris.svm = decorate(iris.svm, data = iris)
+	iris.svm = decorate(iris.svm, data = iris, preProcess = iris.preProc)
 	print(iris.svm)
 
 	species = predict(iris.svm, newdata = iris)
@@ -81,7 +83,7 @@ generateLibSVMFormulaIris = function(){
 
 generateLibSVMAnomalyFormulaIris = function(){
 	iris.svm = svm(~ . - Species, data = iris, type = "one-classification")
-	iris.svm = decorate(iris.svm, data = iris)
+	iris.svm = decorate(iris.svm, data = iris, preProcess = iris.preProc)
 	print(iris.svm)
 
 	outlier = predict(iris.svm, newdata = iris)
@@ -93,6 +95,11 @@ generateLibSVMAnomalyFormulaIris = function(){
 
 generateLibSVMFormulaIris()
 generateLibSVMAnomalyFormulaIris()
+
+iris = loadIrisCsv("Iris")
+
+iris_x = iris[, -ncol(iris)]
+iris_y = iris[, ncol(iris)]
 
 generateLibSVMIris = function(){
 	iris.svm = svm(x = iris_x, y = iris_y, type = "nu-classification", kernel = "linear")

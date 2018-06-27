@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
+import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
@@ -35,7 +35,6 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
 public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
@@ -80,31 +79,25 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 	}
 
 	@Override
-	public Schema transformSchema(Schema schema){
-		Function<Feature, Feature> function = new Function<Feature, Feature>(){
+	public void addFeature(Feature feature){
+		FieldName name = FeatureUtil.getName(feature);
 
-			@Override
-			public Feature apply(Feature feature){
-				Expression expression = encodeExpression(feature);
+		DataField dataField = getDataField(name);
+		if(dataField != null){
+			Expression expression = feature.ref();
+			Expression transformedExpression = encodeExpression(name, expression);
 
-				if(expression == null){
-					return feature;
-				}
+			if(!(expression).equals(transformedExpression)){
+				DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, transformedExpression);
 
-				DerivedField derivedField = createDerivedField(FeatureUtil.createName("preProcess", feature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
-
-				return new ContinuousFeature(PreProcessEncoder.this, derivedField);
+				feature = new ContinuousFeature(PreProcessEncoder.this, derivedField);
 			}
-		};
+		}
 
-		return schema.toTransformedSchema(function);
+		super.addFeature(feature);
 	}
 
-	private Expression encodeExpression(Feature feature){
-		FieldName name = feature.getName();
-
-		Expression expression = feature.ref();
-
+	private Expression encodeExpression(FieldName name, Expression expression){
 		List<Double> ranges = this.ranges.get(name);
 		if(ranges != null){
 			Double min = ranges.get(0);
@@ -132,10 +125,6 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 		Double median = this.median.get(name);
 		if(median != null){
 			expression = PMMLUtil.createApply("if", PMMLUtil.createApply("isNotMissing", new FieldRef(name)), expression, PMMLUtil.createConstant(median));
-		} // End if
-
-		if(expression instanceof FieldRef){
-			return null;
 		}
 
 		return expression;

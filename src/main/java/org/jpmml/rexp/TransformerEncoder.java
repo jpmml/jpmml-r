@@ -18,8 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import org.jpmml.converter.Schema;
-
 abstract
 public class TransformerEncoder<R extends RExp> extends RExpEncoder {
 
@@ -28,16 +26,6 @@ public class TransformerEncoder<R extends RExp> extends RExpEncoder {
 
 	public TransformerEncoder(R object){
 		setObject(object);
-	}
-
-	abstract
-	public Schema transformSchema(Schema schema);
-
-	@Override
-	public Schema createSchema(){
-		Schema schema = super.createSchema();
-
-		return transformSchema(schema);
 	}
 
 	public R getObject(){
