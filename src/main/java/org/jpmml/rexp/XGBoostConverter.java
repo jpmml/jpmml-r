@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.mining.MiningModel;
@@ -32,6 +34,7 @@ import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.xgboost.FeatureMap;
+import org.jpmml.xgboost.HasXGBoostOptions;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
 import org.jpmml.xgboost.XGBoostUtil;
@@ -111,9 +114,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Learner learner = ensureLearner();
 
+		Map<String, Object> options = new LinkedHashMap<>();
+		options.put(HasXGBoostOptions.OPTION_COMPACT, this.compact);
+		options.put(HasXGBoostOptions.OPTION_NTREE_LIMIT, ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null);
+
 		Schema xgbSchema = XGBoostUtil.toXGBoostSchema(schema);
 
-		MiningModel miningModel = learner.encodeMiningModel((ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null), this.compact, xgbSchema);
+		MiningModel miningModel = learner.encodeMiningModel(options, xgbSchema);
 
 		return miningModel;
 	}
