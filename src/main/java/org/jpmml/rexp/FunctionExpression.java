@@ -139,18 +139,24 @@ public class FunctionExpression extends Expression {
 
 	@Override
 	public VisitorAction accept(Visitor visitor){
-		VisitorAction status = VisitorAction.CONTINUE;
+		VisitorAction status = visitor.visit(this);
 
-		if((status == VisitorAction.CONTINUE) && hasArguments()){
-			List<Argument> arguments = getArguments();
+		if(status == VisitorAction.CONTINUE){
+			visitor.pushParent(this);
 
-			for(Argument argument : arguments){
-				status = PMMLObject.traverse(visitor, argument.getExpression());
+			if(hasArguments()){
+				List<Argument> arguments = getArguments();
 
-				if(status != VisitorAction.CONTINUE){
-					break;
+				for(Argument argument : arguments){
+					status = PMMLObject.traverse(visitor, argument.getExpression());
+
+					if(status != VisitorAction.CONTINUE){
+						break;
+					}
 				}
 			}
+
+			visitor.popParent();
 		} // End if
 
 		if(status == VisitorAction.TERMINATE){

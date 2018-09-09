@@ -18,60 +18,22 @@
  */
 package org.jpmml.rexp.visitors;
 
-import java.util.Deque;
 import java.util.List;
 
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.HasFieldReference;
-import org.dmg.pmml.PMMLObject;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.SimpleSetPredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.VisitorAction;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.model.visitors.AbstractVisitor;
+import org.jpmml.converter.visitors.AbstractTreeModelTransformer;
 
-public class RandomForestCompactor extends AbstractVisitor {
-
-	@Override
-	public void pushParent(PMMLObject object){
-		super.pushParent(object);
-
-		if(object instanceof Node){
-			handleNodePush((Node)object);
-		}
-	}
+public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 	@Override
-	public PMMLObject popParent(){
-		PMMLObject object = super.popParent();
-
-		if(object instanceof Node){
-			handleNodePop((Node)object);
-		}
-
-		return object;
-	}
-
-	@Override
-	public VisitorAction visit(TreeModel treeModel){
-		TreeModel.NoTrueChildStrategy noTrueChildStrategy = treeModel.getNoTrueChildStrategy();
-		TreeModel.SplitCharacteristic splitCharacteristic = treeModel.getSplitCharacteristic();
-
-		if(!(TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION).equals(noTrueChildStrategy) || !(TreeModel.SplitCharacteristic.BINARY_SPLIT).equals(splitCharacteristic)){
-			throw new IllegalArgumentException();
-		}
-
-		treeModel
-			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
-			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
-
-		return super.visit(treeModel);
-	}
-
-	private <P extends Predicate & HasFieldReference<P>> void handleNodePush(Node node){
+	public void enterNode(Node node){
 		String id = node.getId();
 		String score = node.getScore();
 
@@ -89,50 +51,37 @@ public class RandomForestCompactor extends AbstractVisitor {
 			Node firstChild = children.get(0);
 			Node secondChild = children.get(1);
 
-			P firstPredicate = (P)firstChild.getPredicate();
-			P secondPredicate = (P)secondChild.getPredicate();
+			Predicate firstPredicate = firstChild.getPredicate();
+			Predicate secondPredicate = secondChild.getPredicate();
 
-			if(!(firstPredicate.getField()).equals(secondPredicate.getField())){
-				throw new IllegalArgumentException();
-			}
+			checkFieldReference(firstPredicate, secondPredicate);
 
-			boolean update = isDefined(firstPredicate.getField());
+			boolean update = isDefinedField((HasFieldReference<?>)firstPredicate);
 
-			if((firstPredicate instanceof SimplePredicate) && (secondPredicate instanceof SimplePredicate)){
-				SimplePredicate.Operator firstOperator = ((SimplePredicate)firstPredicate).getOperator();
-				SimplePredicate.Operator secondOperator = ((SimplePredicate)secondPredicate).getOperator();
-
-				if((SimplePredicate.Operator.LESS_OR_EQUAL).equals(firstOperator) && (SimplePredicate.Operator.GREATER_THAN).equals(secondOperator)){
-					update = true;
-				} else
-
-				{
-					checkOperator((SimplePredicate)firstPredicate, SimplePredicate.Operator.EQUAL);
-					checkOperator((SimplePredicate)secondPredicate, SimplePredicate.Operator.EQUAL);
-				}
+			if(hasOperator(firstPredicate, SimplePredicate.Operator.EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.EQUAL)){
+				// Ignored
 			} else
 
-			if((firstPredicate instanceof SimplePredicate) && (secondPredicate instanceof SimpleSetPredicate)){
-				checkOperator((SimplePredicate)firstPredicate, SimplePredicate.Operator.EQUAL);
-				checkBooleanOperator((SimpleSetPredicate)secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN);
+			if(hasOperator(firstPredicate, SimplePredicate.Operator.LESS_OR_EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.GREATER_THAN)){
+				update = true;
 			} else
 
-			if((firstPredicate instanceof SimpleSetPredicate) && (secondPredicate instanceof SimplePredicate)){
-				checkBooleanOperator((SimpleSetPredicate)firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN);
-				checkOperator((SimplePredicate)secondPredicate, SimplePredicate.Operator.EQUAL);
+			if(hasOperator(firstPredicate, SimplePredicate.Operator.EQUAL) && hasBooleanOperator(secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN)){
+				// Ignored
+			} else
+
+			if(hasBooleanOperator(firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN) && hasOperator(secondPredicate, SimplePredicate.Operator.EQUAL)){
 
 				if(update){
-					children.remove(0);
-					children.add(1, firstChild);
+					children = swapChildren(node);
 
 					firstChild = children.get(0);
 					secondChild = children.get(1);
 				}
 			} else
 
-			if((firstPredicate instanceof SimpleSetPredicate) && (secondPredicate instanceof SimpleSetPredicate)){
-				checkBooleanOperator((SimpleSetPredicate)firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN);
-				checkBooleanOperator((SimpleSetPredicate)secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN);
+			if(hasBooleanOperator(firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN) && hasBooleanOperator(secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN)){
+				// Ignored
 			} else
 
 			{
@@ -153,8 +102,8 @@ public class RandomForestCompactor extends AbstractVisitor {
 		node.setId(null);
 	}
 
-	private void handleNodePop(Node node){
-		String score = node.getScore();
+	@Override
+	public void exitNode(Node node){
 		Predicate predicate = node.getPredicate();
 
 		if(predicate instanceof True){
@@ -164,78 +113,33 @@ public class RandomForestCompactor extends AbstractVisitor {
 				return;
 			}
 
-			String parentScore = parentNode.getScore();
-			if(parentScore != null){
-				throw new IllegalArgumentException();
-			}
-
-			parentNode.setScore(score);
-
-			List<Node> parentChildren = parentNode.getNodes();
-
-			boolean success = parentChildren.remove(node);
-			if(!success){
-				throw new IllegalArgumentException();
-			} // End if
-
-			if(node.hasNodes()){
-				List<Node> children = node.getNodes();
-
-				parentChildren.addAll(children);
-			}
+			initScore(parentNode, node);
+			replaceChildWithGrandchildren(parentNode, node);
 		}
 	}
 
-	private boolean isDefined(FieldName name){
-		Deque<PMMLObject> parents = getParents();
+	@Override
+	public void enterTreeModel(TreeModel treeModel){
+		TreeModel.NoTrueChildStrategy noTrueChildStrategy = treeModel.getNoTrueChildStrategy();
+		TreeModel.SplitCharacteristic splitCharacteristic = treeModel.getSplitCharacteristic();
 
-		for(PMMLObject parent : parents){
-
-			if(parent instanceof Node){
-				Node node = (Node)parent;
-
-				Predicate predicate = node.getPredicate();
-				if(predicate instanceof HasFieldReference){
-					HasFieldReference<?> hasFieldReference = (HasFieldReference<?>)predicate;
-
-					if((name).equals(hasFieldReference.getField())){
-						return true;
-					}
-				}
-			} else
-
-			{
-				return false;
-			}
-		}
-
-		return false;
-	}
-
-	private Node getParentNode(){
-		Deque<PMMLObject> parents = getParents();
-
-		PMMLObject parent = parents.peekFirst();
-		if(parent instanceof Node){
-			return (Node)parent;
-		}
-
-		return null;
-	}
-
-	static
-	private void checkOperator(SimplePredicate simplePredicate, SimplePredicate.Operator operator){
-
-		if(!(operator).equals(simplePredicate.getOperator())){
+		if(!(TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION).equals(noTrueChildStrategy) || !(TreeModel.SplitCharacteristic.BINARY_SPLIT).equals(splitCharacteristic)){
 			throw new IllegalArgumentException();
 		}
 	}
 
-	static
-	public void checkBooleanOperator(SimpleSetPredicate simpleSetPredicate, SimpleSetPredicate.BooleanOperator booleanOperator){
+	@Override
+	public void exitTreeModel(TreeModel treeModel){
+		treeModel
+			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
+			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
+	}
 
-		if(!(booleanOperator).equals(simpleSetPredicate.getBooleanOperator())){
-			throw new IllegalArgumentException();
-		}
+	private boolean isDefinedField(HasFieldReference<?> hasFieldReference){
+		FieldName name = hasFieldReference.getField();
+
+		Node ancestorNode = getAncestorNode(node -> hasFieldReference(node.getPredicate(), name));
+
+		return (ancestorNode != null);
 	}
 }
