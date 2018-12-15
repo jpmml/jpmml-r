@@ -125,12 +125,11 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 
 		Conversion conversion = encodeTrainModel(ensModel, null);
 
-		Schema schema = conversion.getSchema();
 		Model model = conversion.getModel();
 
 		segmentationModels.add(model);
 
-		MiningModel miningModel = MiningModelUtil.createModelChain(segmentationModels, schema);
+		MiningModel miningModel = MiningModelUtil.createModelChain(segmentationModels);
 
 		PMML pmml = encoder.encodePMML(miningModel);
 

@@ -111,16 +111,9 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 					case -1:
 					case 1:
 						{
-							feature = feature.toContinuousFeature();
+							ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-							FieldName name = FieldName.create(formatHingeFunction(dir, feature, cut));
-
-							DerivedField derivedField = encoder.getDerivedField(name);
-							if(derivedField == null){
-								Apply apply = createHingeFunction(dir, feature, cut);
-
-								derivedField = encoder.createDerivedField(name, OpType.CONTINUOUS, DataType.DOUBLE, apply);
-							}
+							DerivedField derivedField = encoder.ensureDerivedField(FieldName.create(formatHingeFunction(dir, continuousFeature, cut)), OpType.CONTINUOUS, DataType.DOUBLE, () -> createHingeFunction(dir, continuousFeature, cut));
 
 							feature = new ContinuousFeature(encoder, derivedField);
 						}
