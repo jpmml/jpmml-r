@@ -33,6 +33,7 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -250,7 +251,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> leftChildIDs = (RNumberVector<?>)childNodeIDs.getValue(0);
 		RNumberVector<?> rightChildIDs = (RNumberVector<?>)childNodeIDs.getValue(1);
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
@@ -313,12 +314,12 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
-		Node leftChild = new Node()
+		Node leftChild = new ComplexNode()
 			.setPredicate(leftPredicate);
 
 		encodeNode(leftChild, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
 
-		Node rightChild = new Node()
+		Node rightChild = new ComplexNode()
 			.setPredicate(rightPredicate);
 
 		encodeNode(rightChild, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, rightCategoryManager, schema);

@@ -33,6 +33,7 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -174,7 +175,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private TreeModel encodeTreeModel(RGenericVector tree, Schema schema){
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(root, tree, schema);
@@ -240,12 +241,12 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
-		Node leftChild = new Node()
+		Node leftChild = new ComplexNode()
 			.setPredicate(leftPredicate);
 
 		encodeNode(leftChild, left, schema);
 
-		Node rightChild = new Node()
+		Node rightChild = new ComplexNode()
 			.setPredicate(rightPredicate);
 
 		encodeNode(rightChild, right, schema);

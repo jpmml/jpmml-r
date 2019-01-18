@@ -30,6 +30,7 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -150,7 +151,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
@@ -220,7 +221,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
@@ -319,10 +320,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = rightCompoundPredicate;
 		}
 
-		Node leftChild = new Node()
+		Node leftChild = new ComplexNode()
 			.setPredicate(leftPredicate);
 
-		Node rightChild = new Node()
+		Node rightChild = new ComplexNode()
 			.setPredicate(rightPredicate);
 
 		encodeNode(leftChild, leftRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);

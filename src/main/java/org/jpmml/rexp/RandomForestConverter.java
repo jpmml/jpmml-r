@@ -34,6 +34,7 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.BooleanFeature;
@@ -278,7 +279,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		RGenericVector randomForest = getObject();
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setId("1")
 			.setPredicate(new True());
 
@@ -359,7 +360,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		int left = ValueUtil.asInt(leftDaughter.get(i));
 		if(left != 0){
-			Node leftChild = new Node()
+			Node leftChild = new ComplexNode()
 				.setId(String.valueOf(left))
 				.setPredicate(leftPredicate);
 
@@ -370,7 +371,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 		int right = ValueUtil.asInt(rightDaughter.get(i));
 		if(right != 0){
-			Node rightChild = new Node()
+			Node rightChild = new ComplexNode()
 				.setId(String.valueOf(right))
 				.setPredicate(rightPredicate);
 

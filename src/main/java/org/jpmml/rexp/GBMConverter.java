@@ -34,6 +34,7 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CMatrixUtil;
@@ -196,7 +197,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setId("1")
 			.setPredicate(new True());
 
@@ -291,7 +292,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Integer missing = missingNode.getValue(i);
 		if(missing != -1 && (isMissing == null || isMissing)){
-			Node missingChild = new Node()
+			Node missingChild = new ComplexNode()
 				.setId(String.valueOf(missing + 1))
 				.setPredicate(missingPredicate);
 
@@ -302,7 +303,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Integer left = leftNode.getValue(i);
 		if(left != -1 && (isMissing == null || !isMissing)){
-			Node leftChild = new Node()
+			Node leftChild = new ComplexNode()
 				.setId(String.valueOf(left + 1))
 				.setPredicate(leftPredicate);
 
@@ -313,7 +314,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Integer right = rightNode.getValue(i);
 		if(right != -1 && (isMissing == null || !isMissing)){
-			Node rightChild = new Node()
+			Node rightChild = new ComplexNode()
 				.setId(String.valueOf(right + 1))
 				.setPredicate(rightPredicate);
 

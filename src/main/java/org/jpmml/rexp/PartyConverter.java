@@ -28,6 +28,7 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -133,7 +134,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RVector<?> response = (RVector<?>)predicted.getValue("(response)");
 		RDoubleVector prob = (RDoubleVector)predicted.getValue("(prob)", true);
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(root, partyNode, response, prob, schema);
@@ -232,10 +233,10 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
 
-			Node leftChild = new Node()
+			Node leftChild = new ComplexNode()
 				.setPredicate(leftPredicate);
 
-			Node rightChild = new Node()
+			Node rightChild = new ComplexNode()
 				.setPredicate(rightPredicate);
 
 			encodeNode(leftChild, (RGenericVector)kids.getValue(0), response, prob, schema);
@@ -264,7 +265,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				Node child = new Node()
+				Node child = new ComplexNode()
 					.setPredicate(predicate);
 
 				encodeNode(child, (RGenericVector)kids.getValue(i), response, prob, schema);

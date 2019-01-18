@@ -34,6 +34,7 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
+import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.AbstractTransformation;
@@ -164,7 +165,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		int rows = nrnodes.asScalar();
 		int columns = ntree.asScalar();
 
-		Node root = new Node()
+		Node root = new ComplexNode()
 			.setPredicate(new True());
 
 		encodeNode(
@@ -202,7 +203,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			Predicate leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 
-			Node leftChild = new Node()
+			Node leftChild = new ComplexNode()
 				.setPredicate(leftPredicate);
 
 			int leftIndex = (leftDaughter.get(index) - 1);
@@ -211,7 +212,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			Predicate rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 
-			Node rightChild = new Node()
+			Node rightChild = new ComplexNode()
 				.setPredicate(rightPredicate);
 
 			int rightIndex = (rightDaughter.get(index) - 1);
