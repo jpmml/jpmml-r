@@ -34,7 +34,8 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.AbstractTransformation;
@@ -165,11 +166,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		int rows = nrnodes.asScalar();
 		int columns = ntree.asScalar();
 
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(
-			root,
+		Node root = encodeNode(
+			new True(),
 			0,
 			0,
 			FortranMatrixUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
@@ -187,11 +185,11 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int index, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue, Schema schema){
+	private Node encodeNode(Predicate predicate, int index, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue, Schema schema){
 		int status = nodeStatus.get(index);
 		int size = nodeSize.get(index);
 
-		node.setId(String.valueOf(index + 1));
+		String id = String.valueOf(index + 1);
 
 		// Interior node
 		if(status == -3){
@@ -202,29 +200,27 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			String value = ValueUtil.formatValue(splitValue.get(index));
 
 			Predicate leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
-
-			Node leftChild = new ComplexNode()
-				.setPredicate(leftPredicate);
-
-			int leftIndex = (leftDaughter.get(index) - 1);
-
-			encodeNode(leftChild, leftIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
-
 			Predicate rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 
-			Node rightChild = new ComplexNode()
-				.setPredicate(rightPredicate);
+			Node leftChild = encodeNode(leftPredicate, leftDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
+			Node rightChild = encodeNode(rightPredicate, rightDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
-			int rightIndex = (rightDaughter.get(index) - 1);
+			Node result = new BranchNode()
+				.setId(id)
+				.setPredicate(predicate)
+				.addNodes(leftChild, rightChild);
 
-			encodeNode(rightChild, rightIndex, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
-
-			node.addNodes(leftChild, rightChild);
+			return result;
 		} else
 
 		// Terminal node
 		if(status == -1){
-			node.setScore(ValueUtil.formatValue(depth + avgPathLength(size)));
+			Node result = new LeafNode()
+				.setId(id)
+				.setScore(depth + avgPathLength(size))
+				.setPredicate(predicate);
+
+			return result;
 		} else
 
 		{

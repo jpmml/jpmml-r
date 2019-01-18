@@ -33,7 +33,8 @@ import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -45,6 +46,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
+import org.jpmml.rexp.tree.NodeUtil;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
@@ -143,8 +145,10 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			@Override
-			public void encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
-				node.setScore(ValueUtil.formatValue(splitValue));
+			public Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
+				node.setScore(splitValue);
+
+				return node;
 			}
 		};
 
@@ -164,7 +168,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			@Override
-			public void encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
+			public Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
 				int index = ValueUtil.asInt(splitValue);
 
 				if(terminalClassCount != null){
@@ -172,6 +176,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 				}
 
 				node.setScore(levels.getValue(index - 1));
+
+				return node;
 			}
 		};
 
@@ -193,11 +199,15 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			@Override
-			public void encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
+			public Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
 
 				if(splitValue.doubleValue() != 0d || (terminalClassCount == null || terminalClassCount.size() != levels.size())){
 					throw new IllegalArgumentException();
 				}
+
+				node = NodeUtil.toComplexNode(node);
+
+				List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
 				Double maxProbability = null;
 
@@ -213,8 +223,10 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 					ScoreDistribution scoreDisctibution = new ScoreDistribution(value, probability);
 
-					node.addScoreDistributions(scoreDisctibution);
+					scoreDistributions.add(scoreDisctibution);
 				}
+
+				return node;
 			}
 		};
 
@@ -251,10 +263,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> leftChildIDs = (RNumberVector<?>)childNodeIDs.getValue(0);
 		RNumberVector<?> rightChildIDs = (RNumberVector<?>)childNodeIDs.getValue(1);
 
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(root, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
+		Node root = encodeNode(new True(), 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -262,7 +271,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int index, ScoreEncoder scoreEncoder, RNumberVector<?> leftChildIDs, RNumberVector<?> rightChildIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, RGenericVector terminalClassCounts, CategoryManager categoryManager, Schema schema){
+	private Node encodeNode(Predicate predicate, int index, ScoreEncoder scoreEncoder, RNumberVector<?> leftChildIDs, RNumberVector<?> rightChildIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, RGenericVector terminalClassCounts, CategoryManager categoryManager, Schema schema){
 		int leftIndex = ValueUtil.asInt(leftChildIDs.getValue(index));
 		int rightIndex = ValueUtil.asInt(rightChildIDs.getValue(index));
 
@@ -270,9 +279,10 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> terminalClassCount = (terminalClassCounts != null ? (RNumberVector<?>)terminalClassCounts.getValue(index) : null);
 
 		if(leftIndex == 0 && rightIndex == 0){
-			scoreEncoder.encode(node, splitValue, terminalClassCount);
+			Node result = new LeafNode()
+				.setPredicate(predicate);
 
-			return;
+			return scoreEncoder.encode(result, splitValue, terminalClassCount);
 		}
 
 		CategoryManager leftCategoryManager = categoryManager;
@@ -314,17 +324,14 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
-		Node leftChild = new ComplexNode()
-			.setPredicate(leftPredicate);
+		Node leftChild = encodeNode(leftPredicate, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
+		Node rightChild = encodeNode(rightPredicate, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, rightCategoryManager, schema);
 
-		encodeNode(leftChild, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
+		Node result = new BranchNode()
+			.setPredicate(predicate)
+			.addNodes(leftChild, rightChild);
 
-		Node rightChild = new ComplexNode()
-			.setPredicate(rightPredicate);
-
-		encodeNode(rightChild, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, rightCategoryManager, schema);
-
-		node.addNodes(leftChild, rightChild);
+		return result;
 	}
 
 	static
@@ -337,6 +344,6 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	static
 	private interface ScoreEncoder {
 
-		void encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount);
+		Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount);
 	}
 }

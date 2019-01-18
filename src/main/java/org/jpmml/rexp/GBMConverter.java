@@ -34,7 +34,8 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CMatrixUtil;
@@ -197,11 +198,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
-		Node root = new ComplexNode()
-			.setId("1")
-			.setPredicate(new True());
-
-		encodeNode(root, 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
+		Node root = encodeNode(new True(), 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
@@ -209,13 +206,27 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int i, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
+	private Node encodeNode(Predicate predicate, int i, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
 		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
 		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
 		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
 		RIntegerVector rightNode = (RIntegerVector)tree.getValue(3);
 		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
+
+		String id = String.valueOf(i + 1);
+
+		Integer var = splitVar.getValue(i);
+		if(var == -1){
+			Double value = prediction.getValue(i);
+
+			Node result = new LeafNode()
+				.setId(id)
+				.setScore(value)
+				.setPredicate(predicate);
+
+			return result;
+		}
 
 		Boolean isMissing;
 
@@ -224,104 +235,89 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Predicate missingPredicate;
 
+		Feature feature = schema.getFeature(var);
+
+		{
+			FieldName name = feature.getName();
+
+			isMissing = flagManager.getValue(name);
+			if(isMissing == null){
+				missingFlagManager = missingFlagManager.fork(name, Boolean.TRUE);
+				nonMissingFlagManager = nonMissingFlagManager.fork(name, Boolean.FALSE);
+			}
+
+			missingPredicate = createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
+		}
+
 		CategoryManager leftCategoryManager = categoryManager;
 		CategoryManager rightCategoryManager = categoryManager;
 
 		Predicate leftPredicate;
 		Predicate rightPredicate;
 
-		Integer var = splitVar.getValue(i);
-		if(var != -1){
-			Feature feature = schema.getFeature(var);
+		Double split = splitCodePred.getValue(i);
 
-			{
-				FieldName name = feature.getName();
+		if(feature instanceof CategoricalFeature){
+			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-				isMissing = flagManager.getValue(name);
-				if(isMissing == null){
-					missingFlagManager = missingFlagManager.fork(name, Boolean.TRUE);
-					nonMissingFlagManager = nonMissingFlagManager.fork(name, Boolean.FALSE);
-				}
+			FieldName name = categoricalFeature.getName();
+			List<String> values = categoricalFeature.getValues();
 
-				missingPredicate = createSimplePredicate(feature, SimplePredicate.Operator.IS_MISSING, null);
-			}
+			int index = ValueUtil.asInt(split);
 
-			Double split = splitCodePred.getValue(i);
+			RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
 
-			if(feature instanceof CategoricalFeature){
-				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+			List<Integer> splitValues = c_split.getValues();
 
-				FieldName name = categoricalFeature.getName();
-				List<String> values = categoricalFeature.getValues();
+			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
 
-				int index = ValueUtil.asInt(split);
+			List<String> leftValues = selectValues(values, valueFilter, splitValues, true);
+			List<String> rightValues = selectValues(values, valueFilter, splitValues, false);
 
-				RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
+			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
+			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
 
-				List<Integer> splitValues = c_split.getValues();
-
-				java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
-
-				List<String> leftValues = selectValues(values, valueFilter, splitValues, true);
-				List<String> rightValues = selectValues(values, valueFilter, splitValues, false);
-
-				leftCategoryManager = leftCategoryManager.fork(name, leftValues);
-				rightCategoryManager = rightCategoryManager.fork(name, rightValues);
-
-				leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
-				rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
-			} else
-
-			{
-				ContinuousFeature continuousFeature = feature.toContinuousFeature();
-
-				String value = ValueUtil.formatValue(split);
-
-				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, value);
-				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
-			}
+			leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
+			rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
 		} else
 
 		{
-			Double value = prediction.getValue(i);
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			node.setScore(ValueUtil.formatValue(value));
+			String value = ValueUtil.formatValue(split);
 
-			return;
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, value);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 		}
+
+		Node result = new BranchNode()
+			.setId(id)
+			.setPredicate(predicate);
+
+		List<Node> nodes = result.getNodes();
 
 		Integer missing = missingNode.getValue(i);
 		if(missing != -1 && (isMissing == null || isMissing)){
-			Node missingChild = new ComplexNode()
-				.setId(String.valueOf(missing + 1))
-				.setPredicate(missingPredicate);
+			Node missingChild = encodeNode(missingPredicate, missing, tree, c_splits, missingFlagManager, categoryManager, schema);
 
-			encodeNode(missingChild, missing, tree, c_splits, missingFlagManager, categoryManager, schema);
-
-			node.addNodes(missingChild);
+			nodes.add(missingChild);
 		}
 
 		Integer left = leftNode.getValue(i);
 		if(left != -1 && (isMissing == null || !isMissing)){
-			Node leftChild = new ComplexNode()
-				.setId(String.valueOf(left + 1))
-				.setPredicate(leftPredicate);
+			Node leftChild = encodeNode(leftPredicate, left, tree, c_splits, nonMissingFlagManager, leftCategoryManager, schema);
 
-			encodeNode(leftChild, left, tree, c_splits, nonMissingFlagManager, leftCategoryManager, schema);
-
-			node.addNodes(leftChild);
+			nodes.add(leftChild);
 		}
 
 		Integer right = rightNode.getValue(i);
 		if(right != -1 && (isMissing == null || !isMissing)){
-			Node rightChild = new ComplexNode()
-				.setId(String.valueOf(right + 1))
-				.setPredicate(rightPredicate);
+			Node rightChild = encodeNode(rightPredicate, right, tree, c_splits, nonMissingFlagManager, rightCategoryManager, schema);
 
-			encodeNode(rightChild, right, tree, c_splits, nonMissingFlagManager, rightCategoryManager, schema);
-
-			node.addNodes(rightChild);
+			nodes.add(rightChild);
 		}
+
+		return result;
 	}
 
 	static

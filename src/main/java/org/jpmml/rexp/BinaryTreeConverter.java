@@ -33,7 +33,8 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -43,6 +44,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.rexp.tree.NodeUtil;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -175,10 +177,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private TreeModel encodeTreeModel(RGenericVector tree, Schema schema){
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(root, tree, schema);
+		Node root = encodeNode(new True(), tree, schema);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -186,7 +185,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, RGenericVector tree, Schema schema){
+	private Node encodeNode(Predicate predicate, RGenericVector tree, Schema schema){
 		RIntegerVector nodeId = (RIntegerVector)tree.getValue("nodeID");
 		RBooleanVector terminal = (RBooleanVector)tree.getValue("terminal");
 		RGenericVector psplit = (RGenericVector)tree.getValue("psplit");
@@ -195,12 +194,14 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RGenericVector left = (RGenericVector)tree.getValue("left");
 		RGenericVector right = (RGenericVector)tree.getValue("right");
 
-		node.setId(String.valueOf(nodeId.asScalar()));
+		String id = String.valueOf(nodeId.asScalar());
 
 		if((Boolean.TRUE).equals(terminal.asScalar())){
-			node = encodeScore(node, prediction, schema);
+			Node result = new LeafNode()
+				.setId(id)
+				.setPredicate(predicate);
 
-			return;
+			return encodeScore(result, prediction, schema);
 		}
 
 		RNumberVector<?> splitpoint = (RNumberVector<?>)psplit.getValue("splitpoint");
@@ -241,17 +242,15 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
 
-		Node leftChild = new ComplexNode()
-			.setPredicate(leftPredicate);
+		Node leftChild = encodeNode(leftPredicate, left, schema);
+		Node rightChild = encodeNode(rightPredicate, right, schema);
 
-		encodeNode(leftChild, left, schema);
+		Node result = new BranchNode()
+			.setId(id)
+			.setPredicate(predicate)
+			.addNodes(leftChild, rightChild);
 
-		Node rightChild = new ComplexNode()
-			.setPredicate(rightPredicate);
-
-		encodeNode(rightChild, right, schema);
-
-		node.addNodes(leftChild, rightChild);
+		return result;
 	}
 
 	private Node encodeScore(Node node, RDoubleVector probabilities, Schema schema){
@@ -306,7 +305,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		Double probability = probabilities.asScalar();
 
-		node.setScore(ValueUtil.formatValue(probability));
+		node.setScore(probability);
 
 		return node;
 	}
@@ -318,6 +317,10 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		if(categoricalLabel.size() != probabilities.size()){
 			throw new IllegalArgumentException();
 		}
+
+		node = NodeUtil.toComplexNode(node);
+
+		List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
 		Double maxProbability = null;
 
@@ -333,7 +336,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
 
-			node.addScoreDistributions(scoreDistribution);
+			scoreDistributions.add(scoreDistribution);
 		}
 
 		return node;

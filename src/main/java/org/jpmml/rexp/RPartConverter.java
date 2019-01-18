@@ -30,7 +30,6 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.tree.ComplexNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -40,6 +39,9 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.rexp.tree.CountingBranchNode;
+import org.jpmml.rexp.tree.CountingLeafNode;
+import org.jpmml.rexp.tree.NodeUtil;
 
 public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
@@ -141,20 +143,19 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			@Override
-			public void encode(Node node, int offset){
+			public Node encode(Node node, int offset){
 				Number score = yval.getValue(offset);
 				Number recordCount = n.getValue(offset);
 
 				node
-					.setScore(ValueUtil.formatValue(score))
+					.setScore(score)
 					.setRecordCount(recordCount.doubleValue());
+
+				return node;
 			}
 		};
 
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node root = encodeNode(new True(), 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
@@ -198,7 +199,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 
 			@Override
-			public void encode(Node node, int offset){
+			public Node encode(Node node, int offset){
 				String score = categories.get(this.classes.get(offset) - 1);
 				Integer recordCount = n.getValue(offset);
 
@@ -207,6 +208,9 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 					.setRecordCount(recordCount.doubleValue());
 
 				if(hasScoreDistribution){
+					node = NodeUtil.toComplexNode(node);
+
+					List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
 					for(int i = 0; i < categories.size(); i++){
 						List<? extends Number> recordCounts = this.recordCounts.get(i);
@@ -215,16 +219,15 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 							.setValue(categories.get(i))
 							.setRecordCount(recordCounts.get(offset).doubleValue());
 
-						node.addScoreDistributions(scoreDistribution);
+						scoreDistributions.add(scoreDistribution);
 					}
 				}
+
+				return node;
 			}
 		};
 
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(root, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node root = encodeNode(new True(), 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
@@ -260,16 +263,18 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
+	private Node encodeNode(Predicate predicate, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
 		int offset = getIndex(rowNames, rowName);
 
-		node.setId(String.valueOf(rowName));
-
-		scoreEncoder.encode(node, offset);
+		String id = String.valueOf(rowName);
 
 		int splitVar = var.getValue(offset) - 1;
 		if(splitVar == 0){
-			return;
+			Node result = new CountingLeafNode()
+				.setId(id)
+				.setPredicate(predicate);
+
+			return scoreEncoder.encode(result, offset);
 		}
 
 		int leftRowName = rowName * 2;
@@ -320,14 +325,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = rightCompoundPredicate;
 		}
 
-		Node leftChild = new ComplexNode()
-			.setPredicate(leftPredicate);
-
-		Node rightChild = new ComplexNode()
-			.setPredicate(rightPredicate);
-
-		encodeNode(leftChild, leftRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
-		encodeNode(rightChild, rightRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node leftChild = encodeNode(leftPredicate, leftRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node rightChild = encodeNode(rightPredicate, rightRowName, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		if(this.useSurrogate == 2){
 
@@ -345,7 +344,12 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		}
 
-		node.addNodes(leftChild, rightChild);
+		Node result = new CountingBranchNode()
+			.setId(id)
+			.setPredicate(predicate)
+			.addNodes(leftChild, rightChild);
+
+		return scoreEncoder.encode(result, offset);
 	}
 
 	private List<Predicate> encodePredicates(Feature feature, int splitOffset, RNumberVector<?> splits, RIntegerVector csplit){
@@ -455,6 +459,6 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	static
 	private interface ScoreEncoder {
 
-		void encode(Node node, int offset);
+		Node encode(Node node, int offset);
 	}
 }

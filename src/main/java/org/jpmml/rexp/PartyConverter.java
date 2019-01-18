@@ -134,10 +134,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RVector<?> response = (RVector<?>)predicted.getValue("(response)");
 		RDoubleVector prob = (RDoubleVector)predicted.getValue("(prob)", true);
 
-		Node root = new ComplexNode()
-			.setPredicate(new True());
-
-		encodeNode(root, partyNode, response, prob, schema);
+		Node root = encodeNode(new True(), partyNode, response, prob, schema);
 
 		TreeModel treeModel;
 
@@ -155,7 +152,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private void encodeNode(Node node, RGenericVector partyNode, RVector<?> response, RDoubleVector prob, Schema schema){
+	private Node encodeNode(Predicate predicate, RGenericVector partyNode, RVector<?> response, RDoubleVector prob, Schema schema){
 		RIntegerVector id = (RIntegerVector)partyNode.getValue("id");
 		RGenericVector split = (RGenericVector)partyNode.getValue("split");
 		RGenericVector kids = (RGenericVector)partyNode.getValue("kids");
@@ -169,18 +166,22 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
-		node.setId(String.valueOf(id.asScalar()));
+		Node result = new ComplexNode()
+			.setId(String.valueOf(id.asScalar()))
+			.setPredicate(predicate);
 
 		if(RExpUtil.isFactor(response)){
 			RIntegerVector factor = (RIntegerVector)response;
 
 			int index = id.asScalar() - 1;
 
-			node.setScore(factor.getFactorValue(index));
+			result.setScore(factor.getFactorValue(index));
 
 			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
 
 			List<Double> probabilities = FortranMatrixUtil.getRow(prob.getValues(), response.size(), categoricalLabel.size(), index);
+
+			List<ScoreDistribution> scoreDistributions = result.getScoreDistributions();
 
 			for(int i = 0; i < categoricalLabel.size(); i++){
 				String value = categoricalLabel.getValue(i);
@@ -188,16 +189,16 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 				ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
 
-				node.addScoreDistributions(scoreDistribution);
+				scoreDistributions.add(scoreDistribution);
 			}
 		} else
 
 		{
-			node.setScore(ValueUtil.formatValue(response.getValue(id.asScalar() - 1)));
+			result.setScore(response.getValue(id.asScalar() - 1));
 		} // End if
 
 		if(kids == null){
-			return;
+			return result;
 		}
 
 		RIntegerVector varid = (RIntegerVector)split.getValue("varid");
@@ -233,16 +234,10 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
 
-			Node leftChild = new ComplexNode()
-				.setPredicate(leftPredicate);
+			Node leftChild = encodeNode(leftPredicate, (RGenericVector)kids.getValue(0), response, prob, schema);
+			Node rightChild = encodeNode(rightPredicate, (RGenericVector)kids.getValue(1), response, prob, schema);
 
-			Node rightChild = new ComplexNode()
-				.setPredicate(rightPredicate);
-
-			encodeNode(leftChild, (RGenericVector)kids.getValue(0), response, prob, schema);
-			encodeNode(rightChild, (RGenericVector)kids.getValue(1), response, prob, schema);
-
-			node.addNodes(leftChild, rightChild);
+			result.addNodes(leftChild, rightChild);
 		} else
 
 		if(breaks == null && index != null){
@@ -255,28 +250,27 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			List<String> values = categoricalFeature.getValues();
 
 			for(int i = 0; i < kids.size(); i++){
-				Predicate predicate;
+				Predicate childPredicate;
 
 				if(right.asScalar()){
-					predicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, i + 1));
+					childPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, i + 1));
 				} else
 
 				{
 					throw new IllegalArgumentException();
 				}
 
-				Node child = new ComplexNode()
-					.setPredicate(predicate);
+				Node child = encodeNode(childPredicate, (RGenericVector)kids.getValue(i), response, prob, schema);
 
-				encodeNode(child, (RGenericVector)kids.getValue(i), response, prob, schema);
-
-				node.addNodes(child);
+				result.addNodes(child);
 			}
 		} else
 
 		{
 			throw new IllegalArgumentException();
 		}
+
+		return result;
 	}
 
 	static

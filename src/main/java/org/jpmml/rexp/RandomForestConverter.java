@@ -34,7 +34,8 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.BooleanFeature;
@@ -194,8 +195,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder<Double> scoreEncoder = new ScoreEncoder<Double>(){
 
 			@Override
-			public String encode(Double value){
-				return ValueUtil.formatValue(value);
+			public Double encode(Double value){
+				return value;
 			}
 		};
 
@@ -279,11 +280,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		RGenericVector randomForest = getObject();
 
-		Node root = new ComplexNode()
-			.setId("1")
-			.setPredicate(new True());
-
-		encodeNode(root, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
+		Node root = encodeNode(new True(), 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
@@ -298,87 +295,90 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private <P extends Number> void encodeNode(Node node, int i, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, List<P> nodepred, CategoryManager categoryManager, Schema schema){
+	private <P extends Number> Node encodeNode(Predicate predicate, int i, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, List<P> nodepred, CategoryManager categoryManager, Schema schema){
+		String id = String.valueOf(i + 1);
+
+		int var = ValueUtil.asInt(bestvar.get(i));
+		if(var == 0){
+			P prediction = nodepred.get(i);
+
+			Node result = new LeafNode()
+				.setId(id)
+				.setScore(scoreEncoder.encode(prediction))
+				.setPredicate(predicate);
+
+			return result;
+		}
+
 		CategoryManager leftCategoryManager = categoryManager;
 		CategoryManager rightCategoryManager = categoryManager;
 
 		Predicate leftPredicate;
 		Predicate rightPredicate;
 
-		int var = ValueUtil.asInt(bestvar.get(i));
-		if(var != 0){
-			Feature feature = schema.getFeature(var - 1);
+		Feature feature = schema.getFeature(var - 1);
 
-			Double split = xbestsplit.get(i);
+		Double split = xbestsplit.get(i);
 
-			if(feature instanceof BooleanFeature){
-				BooleanFeature booleanFeature = (BooleanFeature)feature;
+		if(feature instanceof BooleanFeature){
+			BooleanFeature booleanFeature = (BooleanFeature)feature;
 
-				if(split != 0.5d){
-					throw new IllegalArgumentException();
-				}
-
-				leftPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(0));
-				rightPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(1));
-			} else
-
-			if(feature instanceof CategoricalFeature){
-				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
-
-				FieldName name = categoricalFeature.getName();
-				List<String> values = categoricalFeature.getValues();
-
-				java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
-
-				List<String> leftValues = selectValues(values, valueFilter, split, true);
-				List<String> rightValues = selectValues(values, valueFilter, split, false);
-
-				leftCategoryManager = categoryManager.fork(name, leftValues);
-				rightCategoryManager = categoryManager.fork(name, rightValues);
-
-				leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
-				rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
-			} else
-
-			{
-				ContinuousFeature continuousFeature = feature.toContinuousFeature();
-
-				String value = ValueUtil.formatValue(split);
-
-				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
+			if(split != 0.5d){
+				throw new IllegalArgumentException();
 			}
+
+			leftPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(0));
+			rightPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(1));
+		} else
+
+		if(feature instanceof CategoricalFeature){
+			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+
+			FieldName name = categoricalFeature.getName();
+			List<String> values = categoricalFeature.getValues();
+
+			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+
+			List<String> leftValues = selectValues(values, valueFilter, split, true);
+			List<String> rightValues = selectValues(values, valueFilter, split, false);
+
+			leftCategoryManager = categoryManager.fork(name, leftValues);
+			rightCategoryManager = categoryManager.fork(name, rightValues);
+
+			leftPredicate = createSimpleSetPredicate(categoricalFeature, leftValues);
+			rightPredicate = createSimpleSetPredicate(categoricalFeature, rightValues);
 		} else
 
 		{
-			P prediction = nodepred.get(i);
+			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			node.setScore(scoreEncoder.encode(prediction));
+			String value = ValueUtil.formatValue(split);
 
-			return;
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
 		}
+
+		Node result = new BranchNode()
+			.setId(id)
+			.setPredicate(predicate);
+
+		List<Node> nodes = result.getNodes();
 
 		int left = ValueUtil.asInt(leftDaughter.get(i));
 		if(left != 0){
-			Node leftChild = new ComplexNode()
-				.setId(String.valueOf(left))
-				.setPredicate(leftPredicate);
+			Node leftChild = encodeNode(leftPredicate, left - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, leftCategoryManager, schema);
 
-			encodeNode(leftChild, left - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, leftCategoryManager, schema);
-
-			node.addNodes(leftChild);
+			nodes.add(leftChild);
 		}
 
 		int right = ValueUtil.asInt(rightDaughter.get(i));
 		if(right != 0){
-			Node rightChild = new ComplexNode()
-				.setId(String.valueOf(right))
-				.setPredicate(rightPredicate);
+			Node rightChild = encodeNode(rightPredicate, right - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, rightCategoryManager, schema);
 
-			encodeNode(rightChild, right - 1, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, rightCategoryManager, schema);
-
-			node.addNodes(rightChild);
+			nodes.add(rightChild);
 		}
+
+		return result;
 	}
 
 	static
@@ -427,7 +427,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	static
 	private interface ScoreEncoder<V extends Number> {
 
-		String encode(V value);
+		Object encode(V value);
 	}
 
 	private static final UnsignedLong TWO = UnsignedLong.valueOf(2L);
