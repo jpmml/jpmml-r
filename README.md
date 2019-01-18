@@ -74,7 +74,7 @@ Java library and command-line application for converting [R](https://www.r-proje
 
 # Installation #
 
-Enter the project root directory and build using [Apache Maven](http://maven.apache.org/):
+Enter the project root directory and build using [Apache Maven](https://maven.apache.org/):
 ```
 mvn clean install
 ```
@@ -119,7 +119,7 @@ java -Xms4G -Xmx8G -jar target/jpmml-r-executable-1.3-SNAPSHOT.jar --rds-input r
 
 # License #
 
-JPMML-R is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](http://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
+JPMML-R is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](https://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
 
 # Additional information #
 
