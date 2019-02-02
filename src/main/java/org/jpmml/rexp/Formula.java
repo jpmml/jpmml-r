@@ -138,10 +138,6 @@ public class Formula {
 		this.fields.add(field);
 	}
 
-	public void addField(Field<?> field, List<String> categories){
-		addField(field, categories, categories);
-	}
-
 	public void addField(Field<?> field, List<String> categoryNames, List<String> categoryValues){
 		RExpEncoder encoder = getEncoder();
 

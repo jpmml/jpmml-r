@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -92,14 +93,31 @@ public class FormulaUtil {
 			FieldName shortName = name;
 
 			expression:
-			if(variable.indexOf('(') > -1 && variable.indexOf(')') > -1){
-				FunctionExpression functionExpression;
+			if((variable.indexOf('(') > -1 && variable.indexOf(')') > -1) || (variable.indexOf(' ') > -1)){
 
 				try {
-					functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(variable);
+					expression = ExpressionTranslator.translateExpression(variable);
 				} catch(Exception e){
 					break expression;
 				}
+
+				FunctionExpression functionExpression;
+
+				if(expression instanceof FunctionExpression){
+					functionExpression = (FunctionExpression)expression;
+				} else
+
+				{
+					FunctionExpression.Argument xArgument = new FunctionExpression.Argument("x", expression){
+
+						@Override
+						public String formatExpression(){
+							return variable;
+						}
+					};
+
+					functionExpression = new FunctionExpression("base", "I", Collections.singletonList(xArgument));
+				} // End if
 
 				if(functionExpression.hasId("base", "cut")){
 					expression = encodeCutExpression(functionExpression, categories, expressionFields, encoder);
@@ -122,6 +140,8 @@ public class FormulaUtil {
 				} else
 
 				{
+					expression = null;
+
 					break expression;
 				}
 
@@ -130,14 +150,29 @@ public class FormulaUtil {
 				String value = (xArgument.formatExpression()).trim();
 
 				shortName = FieldName.create(functionExpression.hasId("base", "I") ? value : (functionExpression.getFunction() + "(" + value + ")"));
+			}
+
+			List<String> categoryNames;
+			List<String> categoryValues;
+
+			if((DataType.BOOLEAN).equals(dataType)){
+				opType = OpType.CATEGORICAL;
+
+				categoryNames = Arrays.asList("FALSE", "TRUE");
+				categoryValues = Arrays.asList("false", "true");
+			} else
+
+			{
+				categoryNames = categories;
+				categoryValues = categories;
 			} // End if
 
 			if(expression != null){
 				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, expression)
 					.addExtensions(createExtension(variable));
 
-				if(categories != null && categories.size() > 0){
-					formula.addField(derivedField, categories);
+				if(categoryNames != null && categoryNames.size() > 0){
+					formula.addField(derivedField, categoryNames, categoryValues);
 				} else
 
 				{
@@ -150,26 +185,8 @@ public class FormulaUtil {
 			} else
 
 			{
-				if((DataType.BOOLEAN).equals(dataType)){
-					categories = Arrays.asList("false", "true");
-				} // End if
-
-				if(categories != null && categories.size() > 0){
+				if(categoryNames != null && categoryNames.size() > 0){
 					DataField dataField = encoder.createDataField(name, OpType.CATEGORICAL, dataType, categories);
-
-					List<String> categoryNames;
-					List<String> categoryValues;
-
-					switch(dataType){
-						case BOOLEAN:
-							categoryNames = Arrays.asList("FALSE", "TRUE");
-							categoryValues = Arrays.asList("false", "true");
-							break;
-						default:
-							categoryNames = categories;
-							categoryValues = categories;
-							break;
-					}
 
 					formula.addField(dataField, categoryNames, categoryValues);
 				} else
