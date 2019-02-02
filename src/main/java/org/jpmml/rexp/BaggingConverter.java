@@ -41,7 +41,7 @@ public class BaggingConverter extends AdaBagConverter {
 	public Model encodeModel(Schema schema){
 		RGenericVector bagging = getObject();
 
-		RGenericVector trees = bagging.getGenericValue("trees");
+		RGenericVector trees = bagging.getGenericElement("trees");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 

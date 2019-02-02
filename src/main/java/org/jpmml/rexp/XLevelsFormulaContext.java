@@ -33,8 +33,8 @@ public class XLevelsFormulaContext implements FormulaContext {
 	public List<String> getCategories(String variable){
 		RGenericVector xlevels = getXLevels();
 
-		if(xlevels != null && xlevels.hasValue(variable)){
-			RStringVector levels = xlevels.getStringValue(variable);
+		if(xlevels != null && xlevels.hasElement(variable)){
+			RStringVector levels = xlevels.getStringElement(variable);
 
 			return levels.getValues();
 		}

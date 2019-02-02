@@ -97,7 +97,7 @@ public class Formula {
 			name = inverseFeatures.get(feature);
 		}
 
-		return coefficients.getValue(name.getValue());
+		return coefficients.getElement(name.getValue());
 	}
 
 	public Field<?> getField(int index){

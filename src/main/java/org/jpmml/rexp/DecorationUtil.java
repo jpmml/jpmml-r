@@ -24,30 +24,30 @@ public class DecorationUtil {
 	}
 
 	static
-	public RGenericVector getGenericValue(RGenericVector model, String name){
+	public RGenericVector getGenericElement(RGenericVector model, String name){
 
 		try {
-			return model.getGenericValue(name, false);
+			return model.getGenericElement(name, false);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}
 	}
 
 	static
-	public RNumberVector<?> getNumericValue(RGenericVector model, String name){
+	public RNumberVector<?> getNumericElement(RGenericVector model, String name){
 
 		try {
-			return model.getNumericValue(name, false);
+			return model.getNumericElement(name, false);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}
 	}
 
 	static
-	public RVector<?> getVectorValue(RGenericVector model, String name){
+	public RVector<?> getVectorElement(RGenericVector model, String name){
 
 		try {
-			return model.getVectorValue(name, false);
+			return model.getVectorElement(name, false);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}

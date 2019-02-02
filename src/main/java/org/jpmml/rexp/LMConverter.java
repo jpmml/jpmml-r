@@ -39,19 +39,19 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
-		RGenericVector xlevels = lm.getGenericValue("xlevels", true);
-		RGenericVector model = lm.getGenericValue("model");
-		RGenericVector data = lm.getGenericValue("data", true);
+		RGenericVector xlevels = lm.getGenericElement("xlevels", true);
+		RGenericVector model = lm.getGenericElement("model");
+		RGenericVector data = lm.getGenericElement("data", true);
 
-		RExp terms = model.getAttributeValue("terms");
+		RExp terms = model.getAttribute("terms");
 
 		FormulaContext context = new ModelFrameFormulaContext(model){
 
 			@Override
 			public List<String> getCategories(String variable){
 
-				if(xlevels != null && xlevels.hasValue(variable)){
-					RStringVector levels = xlevels.getStringValue(variable);
+				if(xlevels != null && xlevels.hasElement(variable)){
+					RStringVector levels = xlevels.getStringElement(variable);
 
 					return levels.getValues();
 				}
@@ -62,8 +62,8 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			@Override
 			public RVector<?> getData(String variable){
 
-				if(data != null && data.hasValue(variable)){
-					return data.getVectorValue(variable);
+				if(data != null && data.hasElement(variable)){
+					return data.getVectorElement(variable);
 				}
 
 				return super.getData(variable);
@@ -89,9 +89,9 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector lm = getObject();
 
-		RDoubleVector coefficients = lm.getDoubleValue("coefficients");
+		RDoubleVector coefficients = lm.getDoubleElement("coefficients");
 
-		Double intercept = coefficients.getValue(getInterceptName(), true);
+		Double intercept = coefficients.getElement(getInterceptName(), true);
 
 		List<? extends Feature> features = schema.getFeatures();
 
@@ -111,7 +111,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public List<String> getCoefficientNames(){
 		RGenericVector lm = getObject();
 
-		RDoubleVector coefficients = lm.getDoubleValue("coefficients");
+		RDoubleVector coefficients = lm.getDoubleElement("coefficients");
 
 		RStringVector coefficientNames = coefficients.names();
 

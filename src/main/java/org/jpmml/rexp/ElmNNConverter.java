@@ -48,11 +48,11 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector elmNN = getObject();
 
-		RGenericVector model = DecorationUtil.getGenericValue(elmNN, "model");
+		RGenericVector model = DecorationUtil.getGenericElement(elmNN, "model");
 
-		RExp terms = model.getAttributeValue("terms");
+		RExp terms = model.getAttribute("terms");
 
-		RStringVector columns = terms.getStringAttributeValue("columns");
+		RStringVector columns = terms.getStringAttribute("columns");
 
 		FormulaContext context = new ModelFrameFormulaContext(model);
 
@@ -69,11 +69,11 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 	public NeuralNetwork encodeModel(Schema schema){
 		RGenericVector elmNN = getObject();
 
-		RDoubleVector inpweight = elmNN.getDoubleValue("inpweight");
-		RDoubleVector biashid = elmNN.getDoubleValue("biashid");
-		RDoubleVector outweight = elmNN.getDoubleValue("outweight");
-		RStringVector actfun = elmNN.getStringValue("actfun");
-		RDoubleVector nhid = elmNN.getDoubleValue("nhid");
+		RDoubleVector inpweight = elmNN.getDoubleElement("inpweight");
+		RDoubleVector biashid = elmNN.getDoubleElement("biashid");
+		RDoubleVector outweight = elmNN.getDoubleElement("outweight");
+		RStringVector actfun = elmNN.getStringElement("actfun");
+		RDoubleVector nhid = elmNN.getDoubleElement("nhid");
 
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();

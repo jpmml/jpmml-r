@@ -28,7 +28,7 @@ public class TrainConverter extends FilterModelConverter<RGenericVector, RExp> {
 	public ModelConverter<RExp> createConverter(){
 		RGenericVector train = getObject();
 
-		RExp finalModel = train.getValue("finalModel");
+		RExp finalModel = train.getElement("finalModel");
 
 		return (ModelConverter<RExp>)newConverter(finalModel);
 	}

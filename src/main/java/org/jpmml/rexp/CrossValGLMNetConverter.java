@@ -28,8 +28,8 @@ public class CrossValGLMNetConverter extends FilterModelConverter<RGenericVector
 	public GLMNetConverter createConverter(){
 		RGenericVector cvGlmnet = getObject();
 
-		RGenericVector glmnetFit = cvGlmnet.getGenericValue("glmnet.fit");
-		RDoubleVector lambda1SE = cvGlmnet.getDoubleValue("lambda.1se");
+		RGenericVector glmnetFit = cvGlmnet.getGenericElement("glmnet.fit");
+		RDoubleVector lambda1SE = cvGlmnet.getDoubleElement("lambda.1se");
 
 		GLMNetConverter converter = (GLMNetConverter)newConverter(glmnetFit);
 		converter.setLambdaS(lambda1SE.asScalar());

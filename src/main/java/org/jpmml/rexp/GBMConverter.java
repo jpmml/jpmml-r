@@ -61,14 +61,14 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector gbm = getObject();
 
-		RGenericVector distribution = gbm.getGenericValue("distribution");
-		RStringVector response_name = gbm.getStringValue("response.name", true);
-		RGenericVector var_levels = gbm.getGenericValue("var.levels");
-		RStringVector var_names = gbm.getStringValue("var.names");
-		RNumberVector<?> var_type = gbm.getNumericValue("var.type");
-		RStringVector classes = gbm.getStringValue("classes", true);
+		RGenericVector distribution = gbm.getGenericElement("distribution");
+		RStringVector response_name = gbm.getStringElement("response.name", true);
+		RGenericVector var_levels = gbm.getGenericElement("var.levels");
+		RStringVector var_names = gbm.getStringElement("var.names");
+		RNumberVector<?> var_type = gbm.getNumericElement("var.type");
+		RStringVector classes = gbm.getStringElement("classes", true);
 
-		RStringVector distributionName = distribution.getStringValue("name");
+		RStringVector distributionName = distribution.getStringElement("name");
 
 		{
 			FieldName responseName;
@@ -125,12 +125,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector gbm = getObject();
 
-		RDoubleVector initF = gbm.getDoubleValue("initF");
-		RGenericVector trees = gbm.getGenericValue("trees");
-		RGenericVector c_splits = gbm.getGenericValue("c.splits");
-		RGenericVector distribution = gbm.getGenericValue("distribution");
+		RDoubleVector initF = gbm.getDoubleElement("initF");
+		RGenericVector trees = gbm.getGenericElement("trees");
+		RGenericVector c_splits = gbm.getGenericElement("c.splits");
+		RGenericVector distribution = gbm.getGenericElement("distribution");
 
-		RStringVector distributionName = distribution.getStringValue("name");
+		RStringVector distributionName = distribution.getStringElement("name");
 
 		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 

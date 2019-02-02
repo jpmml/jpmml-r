@@ -49,8 +49,8 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 	public RecipeEncoder(RGenericVector recipe){
 		super(recipe);
 
-		RGenericVector varInfo = recipe.getGenericValue("var_info");
-		RGenericVector termInfo = recipe.getGenericValue("term_info");
+		RGenericVector varInfo = recipe.getGenericElement("var_info");
+		RGenericVector termInfo = recipe.getGenericElement("term_info");
 
 		this.varRoles = parseInfo(varInfo, "role", value -> Role.valueOf(value.toUpperCase()));
 		this.varSources = parseInfo(varInfo, "source", value -> Source.valueOf(value.toUpperCase()));
@@ -68,7 +68,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		Label label = getLabel();
 		List<? extends Feature> features = getFeatures();
 
-		RGenericVector steps = recipe.getGenericValue("steps");
+		RGenericVector steps = recipe.getGenericElement("steps");
 
 		List<FieldName> outcomeNames = this.termRoles.entrySet().stream()
 			.filter(entry -> (Role.OUTCOME).equals(entry.getValue()))
@@ -104,8 +104,8 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
 	static
 	private <E extends Enum<E>> Map<FieldName, E> parseInfo(RGenericVector info, String name, Function<String, E> function){
-		RStringVector variable = info.getStringValue("variable");
-		RStringVector value = info.getStringValue(name);
+		RStringVector variable = info.getStringElement("variable");
+		RStringVector value = info.getStringElement(name);
 
 		if(variable.size() != value.size()){
 			throw new IllegalArgumentException();

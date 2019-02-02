@@ -77,7 +77,7 @@ public class MultNetConverter extends GLMNetConverter {
 				String targetCategory = categoricalLabel.getValue(i);
 
 				List<Double> categoryA0 = FortranMatrixUtil.getRow(a0.getValues(), a0Rows, a0Columns, i);
-				S4Object categoryBeta = (S4Object)categoryBetas.getValue(targetCategory);
+				S4Object categoryBeta = (S4Object)categoryBetas.getElement(targetCategory);
 
 				Double intercept = categoryA0.get(column);
 				List<Double> coefficients = getCoefficients(categoryBeta, column);

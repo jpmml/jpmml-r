@@ -48,7 +48,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector kmeans = getObject();
 
-		RDoubleVector centers = kmeans.getDoubleValue("centers");
+		RDoubleVector centers = kmeans.getDoubleElement("centers");
 
 		RStringVector columnNames = centers.dimnames(1);
 		for(int i = 0; i < columnNames.size(); i++){
@@ -64,8 +64,8 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector kmeans = getObject();
 
-		RDoubleVector centers = kmeans.getDoubleValue("centers");
-		RIntegerVector size = kmeans.getIntegerValue("size");
+		RDoubleVector centers = kmeans.getDoubleElement("centers");
+		RIntegerVector size = kmeans.getIntegerElement("size");
 
 		RIntegerVector centersDim = centers.dim();
 

@@ -50,12 +50,12 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector earth = getObject();
 
-		RDoubleVector dirs = earth.getDoubleValue("dirs");
-		RDoubleVector cuts = earth.getDoubleValue("cuts");
-		RDoubleVector selectedTerms = earth.getDoubleValue("selected.terms");
-		RDoubleVector coefficients = earth.getDoubleValue("coefficients");
-		RExp terms = earth.getValue("terms");
-		RGenericVector xlevels = DecorationUtil.getGenericValue(earth, "xlevels");
+		RDoubleVector dirs = earth.getDoubleElement("dirs");
+		RDoubleVector cuts = earth.getDoubleElement("cuts");
+		RDoubleVector selectedTerms = earth.getDoubleElement("selected.terms");
+		RDoubleVector coefficients = earth.getDoubleElement("coefficients");
+		RExp terms = earth.getElement("terms");
+		RGenericVector xlevels = DecorationUtil.getGenericElement(earth, "xlevels");
 
 		RStringVector dirsRows = dirs.dimnames(0);
 		RStringVector dirsColumns = dirs.dimnames(1);
@@ -149,7 +149,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 	public GeneralRegressionModel encodeModel(Schema schema){
 		RGenericVector earth = getObject();
 
-		RDoubleVector coefficients = earth.getDoubleValue("coefficients");
+		RDoubleVector coefficients = earth.getDoubleElement("coefficients");
 
 		Double intercept = coefficients.getValue(0);
 

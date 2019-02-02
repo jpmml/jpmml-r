@@ -42,10 +42,10 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector multinom = getObject();
 
-		RStringVector lev = multinom.getStringValue("lev");
-		RExp terms = multinom.getValue("terms");
-		RGenericVector xlevels = multinom.getGenericValue("xlevels");
-		RStringVector vcoefnames = multinom.getStringValue("vcoefnames");
+		RStringVector lev = multinom.getStringElement("lev");
+		RExp terms = multinom.getElement("terms");
+		RGenericVector xlevels = multinom.getGenericElement("xlevels");
+		RStringVector vcoefnames = multinom.getStringElement("vcoefnames");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
@@ -62,10 +62,10 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 	public RegressionModel encodeModel(Schema schema){
 		RGenericVector multinom = getObject();
 
-		RDoubleVector n = multinom.getDoubleValue("n");
-		RBooleanVector softmax = multinom.getBooleanValue("softmax");
-		RBooleanVector censored = multinom.getBooleanValue("censored");
-		RDoubleVector wts = multinom.getDoubleValue("wts");
+		RDoubleVector n = multinom.getDoubleElement("n");
+		RBooleanVector softmax = multinom.getBooleanElement("softmax");
+		RBooleanVector censored = multinom.getBooleanElement("censored");
+		RDoubleVector wts = multinom.getDoubleElement("wts");
 
 		if(n.size() != 3){
 			throw new IllegalArgumentException();

@@ -29,74 +29,65 @@ public class RExp {
 	}
 
 	public RStringVector names(){
-		return getStringAttributeValue("names");
+		return getStringAttribute("names");
 	}
 
 	public RIntegerVector dim(){
-		return getIntegerAttributeValue("dim");
+		return getIntegerAttribute("dim");
 	}
 
 	public RStringVector dimnames(int index){
-		RGenericVector dimnames = getGenericAttributeValue("dimnames");
+		RGenericVector dimnames = getGenericAttribute("dimnames");
 
 		return (RStringVector)dimnames.getValue(index);
 	}
 
-	public RBooleanVector getBooleanAttributeValue(String name){
-		return (RBooleanVector)getAttributeValue(name);
+	public RExp getAttribute(String name){
+		return findAttribute(name, false);
 	}
 
-	public RBooleanVector getBooleanAttributeValue(String name, boolean optional){
-		return (RBooleanVector)getAttributeValue(name, optional);
+	public RExp getAttribute(String name, boolean optional){
+		return findAttribute(name, optional);
 	}
 
-	public RDoubleVector getDoubleAttributeValue(String name){
-		return (RDoubleVector)getAttributeValue(name);
+	public RBooleanVector getBooleanAttribute(String name){
+		return (RBooleanVector)getAttribute(name);
 	}
 
-	public RDoubleVector getDoubleAttributeValue(String name, boolean optional){
-		return (RDoubleVector)getAttributeValue(name, optional);
+	public RBooleanVector getBooleanAttribute(String name, boolean optional){
+		return (RBooleanVector)getAttribute(name, optional);
 	}
 
-	public RGenericVector getGenericAttributeValue(String name){
-		return (RGenericVector)getAttributeValue(name);
+	public RDoubleVector getDoubleAttribute(String name){
+		return (RDoubleVector)getAttribute(name);
 	}
 
-	public RGenericVector getGenericAttributeValue(String name, boolean optional){
-		return (RGenericVector)getAttributeValue(name, optional);
+	public RDoubleVector getDoubleAttribute(String name, boolean optional){
+		return (RDoubleVector)getAttribute(name, optional);
 	}
 
-	public RIntegerVector getIntegerAttributeValue(String name){
-		return (RIntegerVector)getAttributeValue(name);
+	public RGenericVector getGenericAttribute(String name){
+		return (RGenericVector)getAttribute(name);
 	}
 
-	public RIntegerVector getIntegerAttributeValue(String name, boolean optional){
-		return (RIntegerVector)getAttributeValue(name, optional);
+	public RGenericVector getGenericAttribute(String name, boolean optional){
+		return (RGenericVector)getAttribute(name, optional);
 	}
 
-	public RStringVector getStringAttributeValue(String name){
-		return (RStringVector)getAttributeValue(name);
+	public RIntegerVector getIntegerAttribute(String name){
+		return (RIntegerVector)getAttribute(name);
 	}
 
-	public RStringVector getStringAttributeValue(String name, boolean optional){
-		return (RStringVector)getAttributeValue(name, optional);
+	public RIntegerVector getIntegerAttribute(String name, boolean optional){
+		return (RIntegerVector)getAttribute(name, optional);
 	}
 
-	public RExp getAttributeValue(String name){
-		return getAttributeValue(name, false);
+	public RStringVector getStringAttribute(String name){
+		return (RStringVector)getAttribute(name);
 	}
 
-	public RExp getAttributeValue(String name, boolean optional){
-		RPair attribute = getAttribute(name);
-		if(attribute != null){
-			return attribute.getValue();
-		}
-
-		if(optional){
-			return null;
-		}
-
-		throw new IllegalArgumentException(name);
+	public RStringVector getStringAttribute(String name, boolean optional){
+		return (RStringVector)getAttribute(name, optional);
 	}
 
 	public boolean hasAttribute(String tag){
@@ -114,19 +105,23 @@ public class RExp {
 		return false;
 	}
 
-	public RPair getAttribute(String tag){
+	private RExp findAttribute(String tag, boolean optional){
 		RPair attribute = getAttributes();
 
 		while(attribute != null){
 
 			if(attribute.tagEquals(tag)){
-				return attribute;
+				return attribute.getValue();
 			}
 
 			attribute = attribute.getNext();
 		}
 
-		return null;
+		if(optional){
+			return null;
+		}
+
+		throw new IllegalArgumentException(tag);
 	}
 
 	public RPair getAttributes(){

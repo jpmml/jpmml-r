@@ -56,8 +56,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
-		RVector<?> fmap = DecorationUtil.getVectorValue(booster, "fmap");
-		RGenericVector schema = booster.getGenericValue("schema", true);
+		RVector<?> fmap = DecorationUtil.getVectorElement(booster, "fmap");
+		RGenericVector schema = booster.getGenericElement("schema", true);
 
 		FeatureMap featureMap;
 
@@ -68,7 +68,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 
 		if(schema != null){
-			RVector<?> missing = schema.getVectorValue("missing", true);
+			RVector<?> missing = schema.getVectorElement("missing", true);
 
 			if(missing != null){
 				featureMap.addMissingValue(ValueUtil.formatValue(missing.asScalar()));
@@ -83,8 +83,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		List<String> targetCategories = null;
 
 		if(schema != null){
-			RStringVector responseName = schema.getStringValue("response_name", true);
-			RStringVector responseLevels = schema.getStringValue("response_levels", true);
+			RStringVector responseName = schema.getStringElement("response_name", true);
+			RStringVector responseLevels = schema.getStringElement("response_levels", true);
 
 			if(responseName != null){
 				targetField = FieldName.create(responseName.asScalar());
@@ -110,7 +110,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector booster = getObject();
 
-		RNumberVector<?> ntreeLimit = booster.getNumericValue("ntreelimit", true);
+		RNumberVector<?> ntreeLimit = booster.getNumericElement("ntreelimit", true);
 
 		Learner learner = ensureLearner();
 
@@ -137,7 +137,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	private Learner loadLearner(){
 		RGenericVector booster = getObject();
 
-		RRaw raw = (RRaw)booster.getValue("raw");
+		RRaw raw = (RRaw)booster.getElement("raw");
 
 		try {
 			return loadLearner(raw);

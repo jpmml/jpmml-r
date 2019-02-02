@@ -20,7 +20,6 @@ package org.jpmml.rexp;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 import org.dmg.pmml.DataType;
 
@@ -65,37 +64,33 @@ public class RVector<V> extends RExp implements Iterable<V> {
 		return values.indexOf(value);
 	}
 
-	public boolean hasValue(String name){
-		RPair names = getAttribute("names");
-		if(names == null){
-			throw new IllegalStateException();
-		}
-
-		RStringVector vector = (RStringVector)names.getValue();
-
-		return (vector.indexOf(name) > -1);
+	public V getElement(String name){
+		return findElement(name, false);
 	}
 
-	public V getValue(String name){
-		return getValue(name, false);
+	public V getElement(String name, boolean optional){
+		return findElement(name, optional);
 	}
 
-	public V getValue(String name, boolean optional){
-		RPair names = getAttribute("names");
-		if(names == null){
-			throw new IllegalStateException();
-		}
+	public boolean hasElement(String name){
+		RStringVector names = getStringAttribute("names");
 
-		RStringVector vector = (RStringVector)names.getValue();
+		List<String> values = names.getDequotedValues();
 
-		List<String> values = vector.getDequotedValues();
-		for(int i = 0; i < values.size(); i++){
-			String value = values.get(i);
+		int index = values.indexOf(name);
 
-			if(Objects.equals(name, value)){
-				return getValue(i);
-			}
-		}
+		return (index > -1);
+	}
+
+	private V findElement(String name, boolean optional){
+		RStringVector names = getStringAttribute("names");
+
+		List<String> values = names.getDequotedValues();
+
+		int index = values.indexOf(name);
+		if(index > -1){
+			return getValue(index);
+		} // End if
 
 		if(optional){
 			return null;

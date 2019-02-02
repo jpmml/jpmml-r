@@ -57,13 +57,13 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		if(object instanceof S4Object){
 			S4Object model = (S4Object)object;
 
-			verification = model.getGenericAttributeValue("verification", true);
+			verification = model.getGenericAttribute("verification", true);
 		} else
 
 		if(object instanceof RGenericVector){
 			RGenericVector model = (RGenericVector)object;
 
-			verification = model.getGenericValue("verification", true);
+			verification = model.getGenericElement("verification", true);
 		}
 
 		encodeSchema(encoder);
@@ -74,14 +74,14 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 		verification:
 		if(verification != null){
-			RDoubleVector precision = verification.getDoubleValue("precision");
-			RDoubleVector zeroThreshold = verification.getDoubleValue("zeroThreshold");
+			RDoubleVector precision = verification.getDoubleElement("precision");
+			RDoubleVector zeroThreshold = verification.getDoubleElement("zeroThreshold");
 
 			VerificationMap data = new VerificationMap(precision.asScalar(), zeroThreshold.asScalar());
 
-			RGenericVector activeValues = verification.getGenericValue("active_values");
-			RGenericVector targetValues = verification.getGenericValue("target_values", true);
-			RGenericVector outputValues = verification.getGenericValue("output_values", true);
+			RGenericVector activeValues = verification.getGenericElement("active_values");
+			RGenericVector targetValues = verification.getGenericElement("target_values", true);
+			RGenericVector outputValues = verification.getGenericElement("output_values", true);
 
 			if(activeValues != null){
 				data.putInputData(encodeVerificationData(activeValues));

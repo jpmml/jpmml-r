@@ -64,9 +64,7 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
-		RExp terms = ada.getValue("terms", true);
-
-		if(terms != null){
+		if(ada.hasElement("terms")){
 			encodeFormula(encoder);
 		} else
 
@@ -79,10 +77,10 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = ada.getGenericValue("model");
+		RGenericVector model = ada.getGenericElement("model");
 
-		RGenericVector trees = model.getGenericValue("trees");
-		RDoubleVector alpha = model.getDoubleValue("alpha");
+		RGenericVector trees = model.getGenericElement("trees");
+		RDoubleVector alpha = model.getDoubleElement("alpha");
 
 		List<TreeModel> treeModels = encodeTreeModels(trees);
 
@@ -96,11 +94,11 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	private void encodeFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = ada.getGenericValue("model");
-		RExp terms = ada.getValue("terms");
-		RIntegerVector fit = ada.getIntegerValue("fit");
+		RGenericVector model = ada.getGenericElement("model");
+		RExp terms = ada.getElement("terms");
+		RIntegerVector fit = ada.getIntegerElement("fit");
 
-		RGenericVector trees = model.getGenericValue("trees");
+		RGenericVector trees = model.getGenericElement("trees");
 
 		RExpEncoder termsEncoder = new RExpEncoder();
 
@@ -116,10 +114,10 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	private void encodeNonFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = ada.getGenericValue("model");
-		RIntegerVector fit = ada.getFactorValue("fit");
+		RGenericVector model = ada.getGenericElement("model");
+		RIntegerVector fit = ada.getFactorElement("fit");
 
-		RGenericVector trees = model.getGenericValue("trees");
+		RGenericVector trees = model.getGenericElement("trees");
 
 		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, RExpUtil.getFactorLevels(fit));
 

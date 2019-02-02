@@ -46,8 +46,8 @@ public class ModelFrameFormulaContext implements FormulaContext {
 	public RVector<?> getData(String variable){
 		RGenericVector model = getModel();
 
-		if(model.hasValue(variable)){
-			RVector<?> vector = model.getVectorValue(variable);
+		if(model.hasElement(variable)){
+			RVector<?> vector = model.getVectorElement(variable);
 
 			return vector;
 		}

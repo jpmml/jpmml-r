@@ -45,8 +45,8 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector glmnet = getObject();
 
-		RExp beta = glmnet.getValue("beta");
-		RStringVector classnames = glmnet.getStringValue("classnames", true);
+		RExp beta = glmnet.getElement("beta");
+		RStringVector classnames = glmnet.getStringElement("classnames", true);
 
 		if((classnames != null && classnames.size() > 1) && (beta instanceof RGenericVector)){
 			RGenericVector classBetas = (RGenericVector)beta;
@@ -54,7 +54,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			beta = (S4Object)classBetas.getValue(0);
 		} // End if
 
-		RGenericVector dimnames = beta.getGenericAttributeValue("Dimnames");
+		RGenericVector dimnames = beta.getGenericAttribute("Dimnames");
 
 		if(classnames != null){
 			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, classnames.getValues());
@@ -82,9 +82,9 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector glmnet = getObject();
 
-		RDoubleVector a0 = glmnet.getDoubleValue("a0");
-		RExp beta = glmnet.getValue("beta");
-		RDoubleVector lambda = glmnet.getDoubleValue("lambda");
+		RDoubleVector a0 = glmnet.getDoubleElement("a0");
+		RExp beta = glmnet.getElement("beta");
+		RDoubleVector lambda = glmnet.getDoubleElement("lambda");
 
 		Double lambdaS = getLambdaS();
 		if(lambdaS == null){
@@ -102,7 +102,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	private Double loadLambdaS(){
 		RGenericVector glmnet = getObject();
 
-		RNumberVector<?> lambdaS = DecorationUtil.getNumericValue(glmnet, "lambda.s");
+		RNumberVector<?> lambdaS = DecorationUtil.getNumericElement(glmnet, "lambda.s");
 
 		return (lambdaS.asScalar()).doubleValue();
 	}
@@ -117,10 +117,10 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
 	static
 	public List<Double> getCoefficients(S4Object beta, int column){
-		RIntegerVector i = beta.getIntegerAttributeValue("i");
-		RIntegerVector p = beta.getIntegerAttributeValue("p");
-		RIntegerVector dim = beta.getIntegerAttributeValue("Dim");
-		RDoubleVector x = beta.getDoubleAttributeValue("x");
+		RIntegerVector i = beta.getIntegerAttribute("i");
+		RIntegerVector p = beta.getIntegerAttribute("p");
+		RIntegerVector dim = beta.getIntegerAttribute("Dim");
+		RDoubleVector x = beta.getDoubleAttribute("x");
 
 		double[] result = new double[dim.getValue(0)];
 

@@ -49,10 +49,10 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector nn = getObject();
 
-		RGenericVector modelList = nn.getGenericValue("model.list");
+		RGenericVector modelList = nn.getGenericElement("model.list");
 
-		RStringVector response = modelList.getStringValue("response");
-		RStringVector variables = modelList.getStringValue("variables");
+		RStringVector response = modelList.getStringElement("response");
+		RStringVector variables = modelList.getStringElement("variables");
 
 		{
 			DataField dataField = encoder.createDataField(FieldName.create(response.asScalar()), OpType.CONTINUOUS, DataType.DOUBLE);
@@ -73,11 +73,11 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector nn = getObject();
 
-		RExp actFct = nn.getValue("act.fct");
-		RBooleanVector linearOutput = nn.getBooleanValue("linear.output");
-		RGenericVector weights = nn.getGenericValue("weights");
+		RExp actFct = nn.getElement("act.fct");
+		RBooleanVector linearOutput = nn.getBooleanElement("linear.output");
+		RGenericVector weights = nn.getGenericElement("weights");
 
-		RStringVector actFctType = actFct.getStringAttributeValue("type");
+		RStringVector actFctType = actFct.getStringAttribute("type");
 
 		// Select the first repetition
 		weights = (RGenericVector)weights.getValue(0);

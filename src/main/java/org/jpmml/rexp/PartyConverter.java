@@ -51,12 +51,12 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector party = getObject();
 
-		RGenericVector data = party.getGenericValue("data");
-		RGenericVector fitted = party.getGenericValue("fitted");
-		RExp terms = party.getValue("terms");
+		RGenericVector data = party.getGenericElement("data");
+		RGenericVector fitted = party.getGenericElement("fitted");
+		RExp terms = party.getElement("terms");
 
-		RIntegerVector factors = terms.getIntegerAttributeValue("factors");
-		RIntegerVector response = terms.getIntegerAttributeValue("response");
+		RIntegerVector factors = terms.getIntegerAttribute("factors");
+		RIntegerVector response = terms.getIntegerAttribute("response");
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);
@@ -90,12 +90,12 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			@Override
 			public RVector<?> getData(String variable){
 
-				if(data.hasValue(variable)){
-					return data.getVectorValue(variable);
+				if(data.hasElement(variable)){
+					return data.getVectorElement(variable);
 				} // End if
 
 				if((variable).equals(responseVariable)){
-					return fitted.getVectorValue("(response)");
+					return fitted.getVectorElement("(response)");
 				}
 
 				return null;
@@ -127,12 +127,12 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector party = getObject();
 
-		RGenericVector partyNode = party.getGenericValue("node");
+		RGenericVector partyNode = party.getGenericElement("node");
 
-		RGenericVector predicted = DecorationUtil.getGenericValue(party, "predicted");
+		RGenericVector predicted = DecorationUtil.getGenericElement(party, "predicted");
 
-		RVector<?> response = predicted.getVectorValue("(response)");
-		RDoubleVector prob = predicted.getDoubleValue("(prob)", true);
+		RVector<?> response = predicted.getVectorElement("(response)");
+		RDoubleVector prob = predicted.getDoubleElement("(prob)", true);
 
 		Node root = encodeNode(new True(), partyNode, response, prob, schema);
 
@@ -153,11 +153,11 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private Node encodeNode(Predicate predicate, RGenericVector partyNode, RVector<?> response, RDoubleVector prob, Schema schema){
-		RIntegerVector id = partyNode.getIntegerValue("id");
-		RGenericVector split = partyNode.getGenericValue("split");
-		RGenericVector kids = partyNode.getGenericValue("kids");
-		RGenericVector surrogates = partyNode.getGenericValue("surrogates");
-		RGenericVector info = partyNode.getGenericValue("info");
+		RIntegerVector id = partyNode.getIntegerElement("id");
+		RGenericVector split = partyNode.getGenericElement("split");
+		RGenericVector kids = partyNode.getGenericElement("kids");
+		RGenericVector surrogates = partyNode.getGenericElement("surrogates");
+		RGenericVector info = partyNode.getGenericElement("info");
 
 		if(surrogates != null){
 			throw new IllegalArgumentException();
@@ -201,10 +201,10 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			return result;
 		}
 
-		RIntegerVector varid = split.getIntegerValue("varid");
-		RDoubleVector breaks = split.getDoubleValue("breaks");
-		RIntegerVector index = split.getIntegerValue("index");
-		RBooleanVector right = split.getBooleanValue("right");
+		RIntegerVector varid = split.getIntegerElement("varid");
+		RDoubleVector breaks = split.getDoubleElement("breaks");
+		RIntegerVector index = split.getIntegerElement("index");
+		RBooleanVector right = split.getBooleanElement("right");
 
 		Feature feature = features.get(varid.asScalar() - 1);
 

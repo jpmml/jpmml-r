@@ -85,12 +85,7 @@ public class RIntegerVector extends RNumberVector<Integer> {
 	}
 
 	public RStringVector getLevels(){
-		RPair levels = getAttribute("levels");
-		if(levels == null){
-			throw new IllegalStateException();
-		}
-
-		return (RStringVector)levels.getValue();
+		return getStringAttribute("levels");
 	}
 
 	public List<String> getLevelValues(){

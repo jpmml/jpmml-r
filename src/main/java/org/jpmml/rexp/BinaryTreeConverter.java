@@ -61,8 +61,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	public void encodeSchema(RExpEncoder encoder){
 		S4Object binaryTree = getObject();
 
-		S4Object responses = (S4Object)binaryTree.getAttributeValue("responses");
-		RGenericVector tree = binaryTree.getGenericAttributeValue("tree");
+		S4Object responses = (S4Object)binaryTree.getAttribute("responses");
+		RGenericVector tree = binaryTree.getGenericAttribute("tree");
 
 		encodeResponse(responses, encoder);
 		encodeVariableList(tree, encoder);
@@ -72,7 +72,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	public TreeModel encodeModel(Schema schema){
 		S4Object binaryTree = getObject();
 
-		RGenericVector tree = binaryTree.getGenericAttributeValue("tree");
+		RGenericVector tree = binaryTree.getGenericAttribute("tree");
 
 		Output output;
 
@@ -98,9 +98,9 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private void encodeResponse(S4Object responses, RExpEncoder encoder){
-		RGenericVector variables = responses.getGenericAttributeValue("variables");
-		RBooleanVector is_nominal = responses.getBooleanAttributeValue("is_nominal");
-		RGenericVector levels = responses.getGenericAttributeValue("levels");
+		RGenericVector variables = responses.getGenericAttribute("variables");
+		RBooleanVector is_nominal = responses.getBooleanAttribute("is_nominal");
+		RGenericVector levels = responses.getGenericAttribute("levels");
 
 		RStringVector variableNames = variables.names();
 
@@ -108,15 +108,15 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		DataField dataField;
 
-		Boolean categorical = is_nominal.getValue(variableName);
+		Boolean categorical = is_nominal.getElement(variableName);
 		if((Boolean.TRUE).equals(categorical)){
 			this.miningFunction = MiningFunction.CLASSIFICATION;
 
-			RExp targetVariable = variables.getValue(variableName);
+			RExp targetVariable = variables.getElement(variableName);
 
 			RStringVector targetVariableClass = RExpUtil.getClassNames(targetVariable);
 
-			RStringVector targetCategories = levels.getStringValue(variableName);
+			RStringVector targetCategories = levels.getStringElement(variableName);
 
 			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CATEGORICAL, RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
 		} else
@@ -135,17 +135,17 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private void encodeVariableList(RGenericVector tree, RExpEncoder encoder){
-		RBooleanVector terminal = tree.getBooleanValue("terminal");
-		RGenericVector psplit = tree.getGenericValue("psplit");
-		RGenericVector left = tree.getGenericValue("left");
-		RGenericVector right = tree.getGenericValue("right");
+		RBooleanVector terminal = tree.getBooleanElement("terminal");
+		RGenericVector psplit = tree.getGenericElement("psplit");
+		RGenericVector left = tree.getGenericElement("left");
+		RGenericVector right = tree.getGenericElement("right");
 
 		if((Boolean.TRUE).equals(terminal.asScalar())){
 			return;
 		}
 
-		RNumberVector<?> splitpoint = psplit.getNumericValue("splitpoint");
-		RStringVector variableName = psplit.getStringValue("variableName");
+		RNumberVector<?> splitpoint = psplit.getNumericElement("splitpoint");
+		RStringVector variableName = psplit.getStringElement("variableName");
 
 		FieldName name = FieldName.create(variableName.asScalar());
 
@@ -153,7 +153,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		if(dataField == null){
 
 			if(splitpoint instanceof RIntegerVector){
-				RStringVector levels = splitpoint.getStringAttributeValue("levels");
+				RStringVector levels = splitpoint.getStringAttribute("levels");
 
 				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
 			} else
@@ -186,13 +186,13 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private Node encodeNode(Predicate predicate, RGenericVector tree, Schema schema){
-		RIntegerVector nodeId = tree.getIntegerValue("nodeID");
-		RBooleanVector terminal = tree.getBooleanValue("terminal");
-		RGenericVector psplit = tree.getGenericValue("psplit");
-		RGenericVector ssplits = tree.getGenericValue("ssplits");
-		RDoubleVector prediction = tree.getDoubleValue("prediction");
-		RGenericVector left = tree.getGenericValue("left");
-		RGenericVector right = tree.getGenericValue("right");
+		RIntegerVector nodeId = tree.getIntegerElement("nodeID");
+		RBooleanVector terminal = tree.getBooleanElement("terminal");
+		RGenericVector psplit = tree.getGenericElement("psplit");
+		RGenericVector ssplits = tree.getGenericElement("ssplits");
+		RDoubleVector prediction = tree.getDoubleElement("prediction");
+		RGenericVector left = tree.getGenericElement("left");
+		RGenericVector right = tree.getGenericElement("right");
 
 		String id = String.valueOf(nodeId.asScalar());
 
@@ -204,8 +204,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			return encodeScore(result, prediction, schema);
 		}
 
-		RNumberVector<?> splitpoint = psplit.getNumericValue("splitpoint");
-		RStringVector variableName = psplit.getStringValue("variableName");
+		RNumberVector<?> splitpoint = psplit.getNumericElement("splitpoint");
+		RStringVector variableName = psplit.getStringElement("variableName");
 
 		if(ssplits.size() > 0){
 			throw new IllegalArgumentException();

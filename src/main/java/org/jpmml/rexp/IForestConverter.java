@@ -58,8 +58,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector iForest = getObject();
 
-		RStringVector xcols = iForest.getStringValue("xcols");
-		RBooleanVector colisfactor = iForest.getBooleanValue("colisfactor");
+		RStringVector xcols = iForest.getStringElement("xcols");
+		RBooleanVector colisfactor = iForest.getBooleanElement("colisfactor");
 
 		if(xcols.size() != colisfactor.size()){
 			throw new IllegalArgumentException();
@@ -94,14 +94,14 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector iForest = getObject();
 
-		RGenericVector trees = iForest.getGenericValue("trees");
-		RDoubleVector ntree = iForest.getDoubleValue("ntree");
+		RGenericVector trees = iForest.getGenericElement("trees");
+		RDoubleVector ntree = iForest.getDoubleElement("ntree");
 
 		if(trees == null){
 			throw new IllegalArgumentException();
 		}
 
-		RIntegerVector xrow = trees.getIntegerValue("xrow");
+		RIntegerVector xrow = trees.getIntegerElement("xrow");
 
 		Schema segmentSchema = schema.toAnonymousSchema();
 
@@ -154,14 +154,14 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(RGenericVector trees, int index, Schema schema){
-		RIntegerVector nrnodes = trees.getIntegerValue("nrnodes");
-		RIntegerVector ntree = trees.getIntegerValue("ntree");
-		RIntegerVector nodeStatus = trees.getIntegerValue("nodeStatus");
-		RIntegerVector leftDaughter = trees.getIntegerValue("lDaughter");
-		RIntegerVector rightDaughter = trees.getIntegerValue("rDaughter");
-		RIntegerVector splitAtt = trees.getIntegerValue("splitAtt");
-		RDoubleVector splitPoint = trees.getDoubleValue("splitPoint");
-		RIntegerVector nSam = trees.getIntegerValue("nSam");
+		RIntegerVector nrnodes = trees.getIntegerElement("nrnodes");
+		RIntegerVector ntree = trees.getIntegerElement("ntree");
+		RIntegerVector nodeStatus = trees.getIntegerElement("nodeStatus");
+		RIntegerVector leftDaughter = trees.getIntegerElement("lDaughter");
+		RIntegerVector rightDaughter = trees.getIntegerElement("rDaughter");
+		RIntegerVector splitAtt = trees.getIntegerElement("splitAtt");
+		RDoubleVector splitPoint = trees.getDoubleElement("splitPoint");
+		RIntegerVector nSam = trees.getIntegerElement("nSam");
 
 		int rows = nrnodes.asScalar();
 		int columns = ntree.asScalar();
