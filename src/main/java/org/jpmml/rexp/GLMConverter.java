@@ -72,7 +72,7 @@ public class GLMConverter extends LMConverter {
 		RDoubleVector coefficients = glm.getDoubleElement("coefficients");
 		RGenericVector family = glm.getGenericElement("family");
 
-		Double intercept = coefficients.getElement(getInterceptName(), true);
+		Double intercept = coefficients.getElement(getInterceptName(), false);
 
 		RStringVector familyFamily = family.getStringElement("family");
 		RStringVector familyLink = family.getStringElement("link");

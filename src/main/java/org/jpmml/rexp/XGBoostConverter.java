@@ -57,7 +57,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		RGenericVector booster = getObject();
 
 		RVector<?> fmap = DecorationUtil.getVectorElement(booster, "fmap");
-		RGenericVector schema = booster.getGenericElement("schema", true);
+		RGenericVector schema = booster.getGenericElement("schema", false);
 
 		FeatureMap featureMap;
 
@@ -68,7 +68,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 
 		if(schema != null){
-			RVector<?> missing = schema.getVectorElement("missing", true);
+			RVector<?> missing = schema.getVectorElement("missing", false);
 
 			if(missing != null){
 				featureMap.addMissingValue(ValueUtil.formatValue(missing.asScalar()));
@@ -83,8 +83,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		List<String> targetCategories = null;
 
 		if(schema != null){
-			RStringVector responseName = schema.getStringElement("response_name", true);
-			RStringVector responseLevels = schema.getStringElement("response_levels", true);
+			RStringVector responseName = schema.getStringElement("response_name", false);
+			RStringVector responseLevels = schema.getStringElement("response_levels", false);
 
 			if(responseName != null){
 				targetField = FieldName.create(responseName.asScalar());
@@ -110,7 +110,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector booster = getObject();
 
-		RNumberVector<?> ntreeLimit = booster.getNumericElement("ntreelimit", true);
+		RNumberVector<?> ntreeLimit = booster.getNumericElement("ntreelimit", false);
 
 		Learner learner = ensureLearner();
 

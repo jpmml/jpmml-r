@@ -65,11 +65,11 @@ public class RVector<E> extends RExp implements Iterable<E> {
 	}
 
 	public E getElement(String name){
-		return findElement(name, false);
+		return getElement(name, true);
 	}
 
-	public E getElement(String name, boolean optional){
-		return findElement(name, optional);
+	public E getElement(String name, boolean required){
+		return findElement(name, required);
 	}
 
 	public boolean hasElement(String name){
@@ -82,7 +82,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		return (index > -1);
 	}
 
-	private E findElement(String name, boolean optional){
+	private E findElement(String name, boolean required){
 		RStringVector names = getStringAttribute("names");
 
 		List<String> values = names.getDequotedValues();
@@ -92,11 +92,11 @@ public class RVector<E> extends RExp implements Iterable<E> {
 			return getValue(index);
 		} // End if
 
-		if(optional){
-			return null;
+		if(required){
+			throw new IllegalArgumentException("Missing \'" + name + "\' element");
 		}
 
-		throw new IllegalArgumentException("Missing \'" + name + "\' element");
+		return null;
 	}
 
 	@Override

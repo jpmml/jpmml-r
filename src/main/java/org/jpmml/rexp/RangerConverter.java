@@ -58,7 +58,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector ranger = getObject();
 
-		RGenericVector forest = ranger.getGenericElement("forest", true);
+		RGenericVector forest = ranger.getGenericElement("forest", false);
 		if(forest == null){
 			throw new IllegalArgumentException("Missing \'forest\' element. Please re-train the model object with \'write.forest\' argument set to TRUE");
 		}
@@ -244,7 +244,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector childNodeIDs = forest.getGenericElement("child.nodeIDs");
 		RGenericVector splitVarIDs = forest.getGenericElement("split.varIDs");
 		RGenericVector splitValues = forest.getGenericElement("split.values");
-		RGenericVector terminalClassCounts = forest.getGenericElement("terminal.class.counts", true);
+		RGenericVector terminalClassCounts = forest.getGenericElement("terminal.class.counts", false);
 
 		Schema segmentSchema = schema.toAnonymousSchema();
 

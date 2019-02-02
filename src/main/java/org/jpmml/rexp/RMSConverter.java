@@ -37,7 +37,7 @@ public class RMSConverter extends LMConverter {
 		RExp terms = rms.getElement("terms");
 		RGenericVector design = rms.getGenericElement("Design");
 
-		RGenericVector parms = design.getGenericElement("parms", true);
+		RGenericVector parms = design.getGenericElement("parms", false);
 
 		FormulaContext context = new FormulaContext(){
 

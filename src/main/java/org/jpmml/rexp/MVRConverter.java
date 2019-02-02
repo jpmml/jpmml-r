@@ -110,7 +110,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	private void scaleFeatures(RExpEncoder encoder){
 		RGenericVector mvr = getObject();
 
-		RDoubleVector scale = mvr.getDoubleElement("scale", true);
+		RDoubleVector scale = mvr.getDoubleElement("scale", false);
 		if(scale == null){
 			return;
 		}

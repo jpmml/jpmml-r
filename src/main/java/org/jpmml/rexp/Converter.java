@@ -48,15 +48,15 @@ public class Converter<R extends RExp> {
 		if(object instanceof S4Object){
 			S4Object model = (S4Object)object;
 
-			preProcess = model.getGenericAttribute("preProcess", true);
-			recipe = model.getGenericAttribute("recipe", true);
+			preProcess = model.getGenericAttribute("preProcess", false);
+			recipe = model.getGenericAttribute("recipe", false);
 		} else
 
 		if(object instanceof RGenericVector){
 			RGenericVector model = (RGenericVector)object;
 
-			preProcess = model.getGenericElement("preProcess", true);
-			recipe = model.getGenericElement("recipe", true);
+			preProcess = model.getGenericElement("preProcess", false);
+			recipe = model.getGenericElement("recipe", false);
 		} else
 
 		{
@@ -89,7 +89,7 @@ public class Converter<R extends RExp> {
 		RGenericVector options = getOptions();
 
 		if(options != null){
-			RBooleanVector option = options.getBooleanElement(name, true);
+			RBooleanVector option = options.getBooleanElement(name, false);
 
 			if(option != null){
 				return option.asScalar();
@@ -105,7 +105,7 @@ public class Converter<R extends RExp> {
 		if(object instanceof RGenericVector){
 			RGenericVector model = (RGenericVector)object;
 
-			return model.getGenericElement("pmml_options", true);
+			return model.getGenericElement("pmml_options", false);
 		}
 
 		return null;

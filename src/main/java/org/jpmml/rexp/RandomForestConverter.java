@@ -96,7 +96,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector randomForest = getObject();
 
 		RGenericVector forest = randomForest.getGenericElement("forest");
-		RNumberVector<?> y = randomForest.getNumericElement("y", true);
+		RNumberVector<?> y = randomForest.getNumericElement("y", false);
 		RExp terms = randomForest.getElement("terms");
 
 		RNumberVector<?> ncat = forest.getNumericElement("ncat");
@@ -135,8 +135,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector randomForest = getObject();
 
 		RGenericVector forest = randomForest.getGenericElement("forest");
-		RNumberVector<?> y = randomForest.getNumericElement("y", true);
-		RStringVector xNames = randomForest.getStringElement("xNames", true);
+		RNumberVector<?> y = randomForest.getNumericElement("y", false);
+		RStringVector xNames = randomForest.getStringElement("xNames", false);
 
 		RNumberVector<?> ncat = forest.getNumericElement("ncat");
 		RGenericVector xlevels = forest.getGenericElement("xlevels");

@@ -69,7 +69,7 @@ public class LRMConverter extends RMSConverter {
 
 		String targetCategory = categoricalLabel.getValue(1);
 
-		Double intercept = coefficients.getElement(getInterceptName(), true);
+		Double intercept = coefficients.getElement(getInterceptName(), false);
 
 		List<? extends Feature> features = schema.getFeatures();
 

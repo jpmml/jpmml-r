@@ -80,8 +80,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector frame = rpart.getGenericElement("frame");
 		RExp terms = rpart.getElement("terms");
 
-		RGenericVector xlevels = rpart.getGenericAttribute("xlevels", true);
-		RStringVector ylevels = rpart.getStringAttribute("ylevels", true);
+		RGenericVector xlevels = rpart.getGenericAttribute("xlevels", false);
+		RStringVector ylevels = rpart.getStringAttribute("ylevels", false);
 
 		RIntegerVector var = frame.getFactorElement("var");
 
@@ -105,7 +105,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector frame = rpart.getGenericElement("frame");
 		RStringVector method = rpart.getStringElement("method");
 		RNumberVector<?> splits = rpart.getNumericElement("splits");
-		RIntegerVector csplit = rpart.getIntegerElement("csplit", true);
+		RIntegerVector csplit = rpart.getIntegerElement("csplit", false);
 
 		RIntegerVector var = frame.getIntegerElement("var");
 		RIntegerVector n = frame.getIntegerElement("n");

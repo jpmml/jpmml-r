@@ -39,9 +39,9 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
-		RGenericVector xlevels = lm.getGenericElement("xlevels", true);
+		RGenericVector xlevels = lm.getGenericElement("xlevels", false);
 		RGenericVector model = lm.getGenericElement("model");
-		RGenericVector data = lm.getGenericElement("data", true);
+		RGenericVector data = lm.getGenericElement("data", false);
 
 		RExp terms = model.getAttribute("terms");
 
@@ -91,7 +91,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		RDoubleVector coefficients = lm.getDoubleElement("coefficients");
 
-		Double intercept = coefficients.getElement(getInterceptName(), true);
+		Double intercept = coefficients.getElement(getInterceptName(), false);
 
 		List<? extends Feature> features = schema.getFeatures();
 

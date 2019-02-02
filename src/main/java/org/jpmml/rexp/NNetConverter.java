@@ -49,7 +49,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector nnet = getObject();
 
-		RStringVector lev = nnet.getStringElement("lev", true);
+		RStringVector lev = nnet.getStringElement("lev", false);
 		RExp terms = nnet.getElement("terms");
 		RGenericVector xlevels = nnet.getGenericElement("xlevels");
 		RStringVector coefnames = nnet.getStringElement("coefnames");
@@ -68,11 +68,11 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector nnet = getObject();
 
 		RDoubleVector n = nnet.getDoubleElement("n");
-		RBooleanVector linout = nnet.getBooleanElement("linout", true);
-		RBooleanVector softmax = nnet.getBooleanElement("softmax", true);
-		RBooleanVector censored = nnet.getBooleanElement("censored", true);
+		RBooleanVector linout = nnet.getBooleanElement("linout", false);
+		RBooleanVector softmax = nnet.getBooleanElement("softmax", false);
+		RBooleanVector censored = nnet.getBooleanElement("censored", false);
 		RDoubleVector wts = nnet.getDoubleElement("wts");
-		RStringVector lev = nnet.getStringElement("lev", true);
+		RStringVector lev = nnet.getStringElement("lev", false);
 
 		if(n.size() != 3){
 			throw new IllegalArgumentException();

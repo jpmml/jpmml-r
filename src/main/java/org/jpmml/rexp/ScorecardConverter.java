@@ -51,7 +51,7 @@ public class ScorecardConverter extends GLMConverter {
 		RGenericVector family = glm.getGenericElement("family");
 		RGenericVector scConf = DecorationUtil.getGenericElement(glm, "sc.conf");
 
-		Double intercept = coefficients.getElement(LMConverter.INTERCEPT, true);
+		Double intercept = coefficients.getElement(LMConverter.INTERCEPT, false);
 
 		List<? extends Feature> features = schema.getFeatures();
 

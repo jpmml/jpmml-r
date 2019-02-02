@@ -62,11 +62,11 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector gbm = getObject();
 
 		RGenericVector distribution = gbm.getGenericElement("distribution");
-		RStringVector response_name = gbm.getStringElement("response.name", true);
+		RStringVector response_name = gbm.getStringElement("response.name", false);
 		RGenericVector var_levels = gbm.getGenericElement("var.levels");
 		RStringVector var_names = gbm.getStringElement("var.names");
 		RNumberVector<?> var_type = gbm.getNumericElement("var.type");
-		RStringVector classes = gbm.getStringElement("classes", true);
+		RStringVector classes = gbm.getStringElement("classes", false);
 
 		RStringVector distributionName = distribution.getStringElement("name");
 

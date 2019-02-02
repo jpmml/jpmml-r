@@ -46,7 +46,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector glmnet = getObject();
 
 		RExp beta = glmnet.getElement("beta");
-		RStringVector classnames = glmnet.getStringElement("classnames", true);
+		RStringVector classnames = glmnet.getStringElement("classnames", false);
 
 		if((classnames != null && classnames.size() > 1) && (beta instanceof RGenericVector)){
 			RGenericVector classBetas = (RGenericVector)beta;

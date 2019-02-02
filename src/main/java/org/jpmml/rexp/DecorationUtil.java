@@ -27,7 +27,7 @@ public class DecorationUtil {
 	public RGenericVector getGenericElement(RGenericVector model, String name){
 
 		try {
-			return model.getGenericElement(name, false);
+			return model.getGenericElement(name, true);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}
@@ -37,7 +37,7 @@ public class DecorationUtil {
 	public RNumberVector<?> getNumericElement(RGenericVector model, String name){
 
 		try {
-			return model.getNumericElement(name, false);
+			return model.getNumericElement(name, true);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}
@@ -47,7 +47,7 @@ public class DecorationUtil {
 	public RVector<?> getVectorElement(RGenericVector model, String name){
 
 		try {
-			return model.getVectorElement(name, false);
+			return model.getVectorElement(name, true);
 		} catch(IllegalArgumentException iae){
 			throw toDecorationException(model, name, iae);
 		}

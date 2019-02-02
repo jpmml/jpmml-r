@@ -49,35 +49,35 @@ public class RGenericVector extends RVector<RExp> {
 	}
 
 	public RBooleanVector getBooleanElement(String name){
-		return getBooleanElement(name, false);
+		return getBooleanElement(name, true);
 	}
 
-	public RBooleanVector getBooleanElement(String name, boolean optional){
-		return getVectorElement(RBooleanVector.class, name, optional);
+	public RBooleanVector getBooleanElement(String name, boolean required){
+		return getVectorElement(RBooleanVector.class, name, required);
 	}
 
 	public RDoubleVector getDoubleElement(String name){
-		return getDoubleElement(name, false);
+		return getDoubleElement(name, true);
 	}
 
-	public RDoubleVector getDoubleElement(String name, boolean optional){
-		return getVectorElement(RDoubleVector.class, name, optional);
+	public RDoubleVector getDoubleElement(String name, boolean required){
+		return getVectorElement(RDoubleVector.class, name, required);
 	}
 
 	public RGenericVector getGenericElement(String name){
-		return getGenericElement(name, false);
+		return getGenericElement(name, true);
 	}
 
-	public RGenericVector getGenericElement(String name, boolean optional){
-		return getVectorElement(RGenericVector.class, name, optional);
+	public RGenericVector getGenericElement(String name, boolean required){
+		return getVectorElement(RGenericVector.class, name, required);
 	}
 
 	public RIntegerVector getFactorElement(String name){
-		return getFactorElement(name, false);
+		return getFactorElement(name, true);
 	}
 
-	public RIntegerVector getFactorElement(String name, boolean optional){
-		RIntegerVector factor = getIntegerElement(name, optional);
+	public RIntegerVector getFactorElement(String name, boolean required){
+		RIntegerVector factor = getIntegerElement(name, required);
 
 		if(!RExpUtil.isFactor(factor)){
 			throw new IllegalArgumentException("Invalid \'" + name + "\' element. Expected factor, got integer");
@@ -87,39 +87,39 @@ public class RGenericVector extends RVector<RExp> {
 	}
 
 	public RIntegerVector getIntegerElement(String name){
-		return getIntegerElement(name, false);
+		return getIntegerElement(name, true);
 	}
 
-	public RIntegerVector getIntegerElement(String name, boolean optional){
-		return getVectorElement(RIntegerVector.class, name, optional);
+	public RIntegerVector getIntegerElement(String name, boolean required){
+		return getVectorElement(RIntegerVector.class, name, required);
 	}
 
 	public RNumberVector<?> getNumericElement(String name){
-		return getNumericElement(name, false);
+		return getNumericElement(name, true);
 	}
 
-	public RNumberVector<?> getNumericElement(String name, boolean optional){
-		return getVectorElement(RNumberVector.class, name, optional);
+	public RNumberVector<?> getNumericElement(String name, boolean required){
+		return getVectorElement(RNumberVector.class, name, required);
 	}
 
 	public RStringVector getStringElement(String name){
-		return getStringElement(name, false);
+		return getStringElement(name, true);
 	}
 
-	public RStringVector getStringElement(String name, boolean optional){
-		return getVectorElement(RStringVector.class, name, optional);
+	public RStringVector getStringElement(String name, boolean required){
+		return getVectorElement(RStringVector.class, name, required);
 	}
 
 	public RVector<?> getVectorElement(String name){
-		return getVectorElement(name, false);
+		return getVectorElement(name, true);
 	}
 
-	public RVector<?> getVectorElement(String name, boolean optional){
-		return getVectorElement(RVector.class, name, optional);
+	public RVector<?> getVectorElement(String name, boolean required){
+		return getVectorElement(RVector.class, name, required);
 	}
 
-	private <V extends RVector<E>, E> V getVectorElement(Class<V> clazz, String name, boolean optional){
-		RExp rexp = getElement(name, optional);
+	private <V extends RVector<E>, E> V getVectorElement(Class<V> clazz, String name, boolean required){
+		RExp rexp = getElement(name, required);
 
 		try {
 			return clazz.cast(rexp);

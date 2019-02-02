@@ -132,7 +132,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector predicted = DecorationUtil.getGenericElement(party, "predicted");
 
 		RVector<?> response = predicted.getVectorElement("(response)");
-		RDoubleVector prob = predicted.getDoubleElement("(prob)", true);
+		RDoubleVector prob = predicted.getDoubleElement("(prob)", false);
 
 		Node root = encodeNode(new True(), partyNode, response, prob, schema);
 

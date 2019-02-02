@@ -53,7 +53,7 @@ public class FormulaUtil {
 		Formula formula = new Formula(encoder);
 
 		RIntegerVector factors = terms.getIntegerAttribute("factors");
-		RStringVector dataClasses = terms.getStringAttribute("dataClasses", true);
+		RStringVector dataClasses = terms.getStringAttribute("dataClasses", false);
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);
