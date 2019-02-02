@@ -56,8 +56,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
-		RVector<?> fmap = (RVector<?>)DecorationUtil.getValue(booster, "fmap");
-		RGenericVector schema = (RGenericVector)booster.getValue("schema", true);
+		RVector<?> fmap = DecorationUtil.getVectorValue(booster, "fmap");
+		RGenericVector schema = booster.getGenericValue("schema", true);
 
 		FeatureMap featureMap;
 
@@ -68,7 +68,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 
 		if(schema != null){
-			RVector<?> missing = (RVector<?>)schema.getValue("missing", true);
+			RVector<?> missing = schema.getVectorValue("missing", true);
 
 			if(missing != null){
 				featureMap.addMissingValue(ValueUtil.formatValue(missing.asScalar()));
@@ -83,8 +83,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		List<String> targetCategories = null;
 
 		if(schema != null){
-			RStringVector responseName = (RStringVector)schema.getValue("response_name", true);
-			RStringVector responseLevels = (RStringVector)schema.getValue("response_levels", true);
+			RStringVector responseName = schema.getStringValue("response_name", true);
+			RStringVector responseLevels = schema.getStringValue("response_levels", true);
 
 			if(responseName != null){
 				targetField = FieldName.create(responseName.asScalar());
@@ -110,7 +110,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector booster = getObject();
 
-		RNumberVector<?> ntreeLimit = (RNumberVector<?>)booster.getValue("ntreelimit", true);
+		RNumberVector<?> ntreeLimit = booster.getNumericValue("ntreelimit", true);
 
 		Learner learner = ensureLearner();
 

@@ -39,9 +39,9 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lm = getObject();
 
-		RGenericVector xlevels = (RGenericVector)lm.getValue("xlevels", true);
-		RGenericVector model = (RGenericVector)lm.getValue("model");
-		RGenericVector data = (RGenericVector)lm.getValue("data", true);
+		RGenericVector xlevels = lm.getGenericValue("xlevels", true);
+		RGenericVector model = lm.getGenericValue("model");
+		RGenericVector data = lm.getGenericValue("data", true);
 
 		RExp terms = model.getAttributeValue("terms");
 
@@ -51,7 +51,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			public List<String> getCategories(String variable){
 
 				if(xlevels != null && xlevels.hasValue(variable)){
-					RStringVector levels = (RStringVector)xlevels.getValue(variable);
+					RStringVector levels = xlevels.getStringValue(variable);
 
 					return levels.getValues();
 				}
@@ -63,7 +63,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 			public RVector<?> getData(String variable){
 
 				if(data != null && data.hasValue(variable)){
-					return (RVector<?>)data.getValue(variable);
+					return data.getVectorValue(variable);
 				}
 
 				return super.getData(variable);
@@ -89,7 +89,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector lm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
+		RDoubleVector coefficients = lm.getDoubleValue("coefficients");
 
 		Double intercept = coefficients.getValue(getInterceptName(), true);
 
@@ -111,7 +111,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	public List<String> getCoefficientNames(){
 		RGenericVector lm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)lm.getValue("coefficients");
+		RDoubleVector coefficients = lm.getDoubleValue("coefficients");
 
 		RStringVector coefficientNames = coefficients.names();
 

@@ -35,9 +35,9 @@ public class RMSConverter extends LMConverter {
 		RGenericVector rms = getObject();
 
 		RExp terms = rms.getValue("terms");
-		RGenericVector design = (RGenericVector)rms.getValue("Design");
+		RGenericVector design = rms.getGenericValue("Design");
 
-		RGenericVector parms = (RGenericVector)design.getValue("parms", true);
+		RGenericVector parms = design.getGenericValue("parms", true);
 
 		FormulaContext context = new FormulaContext(){
 
@@ -45,7 +45,7 @@ public class RMSConverter extends LMConverter {
 			public List<String> getCategories(String variable){
 
 				if(parms != null && parms.hasValue(variable)){
-					RStringVector levels = (RStringVector)parms.getValue(variable);
+					RStringVector levels = parms.getStringValue(variable);
 
 					return levels.getValues();
 				}
@@ -71,9 +71,9 @@ public class RMSConverter extends LMConverter {
 	public List<String> getCoefficientNames(){
 		RGenericVector rms = getObject();
 
-		RGenericVector design = (RGenericVector)rms.getValue("Design");
+		RGenericVector design = rms.getGenericValue("Design");
 
-		RStringVector mmcolnames = (RStringVector)design.getValue("mmcolnames");
+		RStringVector mmcolnames = design.getStringValue("mmcolnames");
 
 		List<String> result = new ArrayList<>();
 		result.add(RMSConverter.INTERCEPT);

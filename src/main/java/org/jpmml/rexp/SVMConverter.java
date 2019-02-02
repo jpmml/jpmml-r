@@ -72,16 +72,16 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	public SupportVectorMachineModel encodeModel(Schema schema){
 		RGenericVector svm = getObject();
 
-		RDoubleVector type = (RDoubleVector)svm.getValue("type");
-		RDoubleVector kernel = (RDoubleVector)svm.getValue("kernel");
-		RDoubleVector degree = (RDoubleVector)svm.getValue("degree");
-		RDoubleVector gamma = (RDoubleVector)svm.getValue("gamma");
-		RDoubleVector coef0 = (RDoubleVector)svm.getValue("coef0");
-		RGenericVector yScale = (RGenericVector)svm.getValue("y.scale");
-		RIntegerVector nSv = (RIntegerVector)svm.getValue("nSV");
-		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
-		RDoubleVector rho = (RDoubleVector)svm.getValue("rho");
-		RDoubleVector coefs = (RDoubleVector)svm.getValue("coefs");
+		RDoubleVector type = svm.getDoubleValue("type");
+		RDoubleVector kernel = svm.getDoubleValue("kernel");
+		RDoubleVector degree = svm.getDoubleValue("degree");
+		RDoubleVector gamma = svm.getDoubleValue("gamma");
+		RDoubleVector coef0 = svm.getDoubleValue("coef0");
+		RGenericVector yScale = svm.getGenericValue("y.scale");
+		RIntegerVector nSv = svm.getIntegerValue("nSV");
+		RDoubleVector sv = svm.getDoubleValue("SV");
+		RDoubleVector rho = svm.getDoubleValue("rho");
+		RDoubleVector coefs = svm.getDoubleValue("coefs");
 
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
 		Kernel svmKernel = Kernel.values()[ValueUtil.asInt(kernel.asScalar())];
@@ -119,8 +119,8 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					supportVectorMachineModel = encodeRegression(sv, rho, coefs, schema);
 
 					if(yScale != null && yScale.size() > 0){
-						RDoubleVector yScaledCenter = (RDoubleVector)yScale.getValue("scaled:center");
-						RDoubleVector yScaledScale = (RDoubleVector)yScale.getValue("scaled:scale");
+						RDoubleVector yScaledCenter = yScale.getDoubleValue("scaled:center");
+						RDoubleVector yScaledScale = yScale.getDoubleValue("scaled:scale");
 
 						supportVectorMachineModel.setTargets(ModelUtil.createRescaleTargets(-1d * yScaledScale.asScalar(), yScaledCenter.asScalar(), (ContinuousLabel)schema.getLabel()));
 					}
@@ -138,11 +138,11 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	private void encodeFormula(RExpEncoder encoder){
 		RGenericVector svm = getObject();
 
-		RDoubleVector type = (RDoubleVector)svm.getValue("type");
-		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
-		RVector<?> levels = (RVector<?>)svm.getValue("levels");
+		RDoubleVector type = svm.getDoubleValue("type");
+		RDoubleVector sv = svm.getDoubleValue("SV");
+		RVector<?> levels = svm.getVectorValue("levels");
 		RExp terms = svm.getValue("terms");
-		RGenericVector xlevels = (RGenericVector)DecorationUtil.getValue(svm, "xlevels");
+		RGenericVector xlevels = DecorationUtil.getGenericValue(svm, "xlevels");
 
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
 
@@ -175,9 +175,9 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	private void encodeNonFormula(RExpEncoder encoder){
 		RGenericVector svm = getObject();
 
-		RDoubleVector type = (RDoubleVector)svm.getValue("type");
-		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
-		RVector<?> levels = (RVector<?>)svm.getValue("levels");
+		RDoubleVector type = svm.getDoubleValue("type");
+		RDoubleVector sv = svm.getDoubleValue("SV");
+		RVector<?> levels = svm.getVectorValue("levels");
 
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
 
@@ -228,9 +228,9 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	private void scaleFeatures(RExpEncoder encoder){
 		RGenericVector svm = getObject();
 
-		RDoubleVector sv = (RDoubleVector)svm.getValue("SV");
-		RBooleanVector scaled = (RBooleanVector)svm.getValue("scaled");
-		RGenericVector xScale = (RGenericVector)svm.getValue("x.scale");
+		RDoubleVector sv = svm.getDoubleValue("SV");
+		RBooleanVector scaled = svm.getBooleanValue("scaled");
+		RGenericVector xScale = svm.getGenericValue("x.scale");
 
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
@@ -241,8 +241,8 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		RDoubleVector xScaledCenter = (RDoubleVector)xScale.getValue("scaled:center");
-		RDoubleVector xScaledScale = (RDoubleVector)xScale.getValue("scaled:scale");
+		RDoubleVector xScaledCenter = xScale.getDoubleValue("scaled:center");
+		RDoubleVector xScaledScale = xScale.getDoubleValue("scaled:scale");
 
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);

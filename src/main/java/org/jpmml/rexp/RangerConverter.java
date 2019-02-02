@@ -58,13 +58,13 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector ranger = getObject();
 
-		RGenericVector forest = (RGenericVector)ranger.getValue("forest", true);
+		RGenericVector forest = ranger.getGenericValue("forest", true);
 		if(forest == null){
 			throw new IllegalArgumentException("Missing \'forest\' element. Please re-train the model object with \'write.forest\' argument set to TRUE");
 		}
 
-		RStringVector treeType = (RStringVector)ranger.getValue("treetype");
-		RGenericVector variableLevels = (RGenericVector)DecorationUtil.getValue(ranger, "variable.levels");
+		RStringVector treeType = ranger.getStringValue("treetype");
+		RGenericVector variableLevels = DecorationUtil.getGenericValue(ranger, "variable.levels");
 
 		{
 			FieldName name = FieldName.create("_target");
@@ -80,7 +80,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 				case "Classification":
 				case "Probability estimation":
 					{
-						RStringVector levels = (RStringVector)forest.getValue("levels");
+						RStringVector levels = forest.getStringValue("levels");
 
 						dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
 					}
@@ -92,8 +92,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		RBooleanVector isOrdered = (RBooleanVector)forest.getValue("is.ordered");
-		RStringVector independentVariableNames = (RStringVector)forest.getValue("independent.variable.names");
+		RBooleanVector isOrdered = forest.getBooleanValue("is.ordered");
+		RStringVector independentVariableNames = forest.getStringValue("independent.variable.names");
 
 		for(int i = 0; i < independentVariableNames.size(); i++){
 
@@ -108,7 +108,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			DataField dataField;
 
 			if(variableLevels.hasValue(independentVariableName)){
-				RStringVector levels = (RStringVector)variableLevels.getValue(independentVariableName);
+				RStringVector levels = variableLevels.getStringValue(independentVariableName);
 
 				dataField = encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, levels.getValues());
 			} else
@@ -125,7 +125,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector ranger = getObject();
 
-		RStringVector treetype = (RStringVector)ranger.getValue("treetype");
+		RStringVector treetype = ranger.getStringValue("treetype");
 
 		switch(treetype.asScalar()){
 			case "Regression":
@@ -140,7 +140,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeRegression(RGenericVector ranger, Schema schema){
-		RGenericVector forest = (RGenericVector)ranger.getValue("forest");
+		RGenericVector forest = ranger.getGenericValue("forest");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
@@ -161,9 +161,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeClassification(RGenericVector ranger, Schema schema){
-		RGenericVector forest = (RGenericVector)ranger.getValue("forest");
+		RGenericVector forest = ranger.getGenericValue("forest");
 
-		RStringVector levels = (RStringVector)forest.getValue("levels");
+		RStringVector levels = forest.getStringValue("levels");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
@@ -190,9 +190,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeProbabilityForest(RGenericVector ranger, Schema schema){
-		RGenericVector forest = (RGenericVector)ranger.getValue("forest");
+		RGenericVector forest = ranger.getGenericValue("forest");
 
-		RStringVector levels = (RStringVector)forest.getValue("levels");
+		RStringVector levels = forest.getStringValue("levels");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
@@ -240,11 +240,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private List<TreeModel> encodeForest(RGenericVector forest, MiningFunction miningFunction, ScoreEncoder scoreEncoder, Schema schema){
-		RNumberVector<?> numTrees = (RNumberVector<?>)forest.getValue("num.trees");
-		RGenericVector childNodeIDs = (RGenericVector)forest.getValue("child.nodeIDs");
-		RGenericVector splitVarIDs = (RGenericVector)forest.getValue("split.varIDs");
-		RGenericVector splitValues = (RGenericVector)forest.getValue("split.values");
-		RGenericVector terminalClassCounts = (RGenericVector)forest.getValue("terminal.class.counts", true);
+		RNumberVector<?> numTrees = forest.getNumericValue("num.trees");
+		RGenericVector childNodeIDs = forest.getGenericValue("child.nodeIDs");
+		RGenericVector splitVarIDs = forest.getGenericValue("split.varIDs");
+		RGenericVector splitValues = forest.getGenericValue("split.values");
+		RGenericVector terminalClassCounts = forest.getGenericValue("terminal.class.counts", true);
 
 		Schema segmentSchema = schema.toAnonymousSchema();
 

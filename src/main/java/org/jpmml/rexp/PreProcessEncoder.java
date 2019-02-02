@@ -51,7 +51,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 	public PreProcessEncoder(RGenericVector preProcess){
 		super(preProcess);
 
-		RGenericVector method = (RGenericVector)preProcess.getValue("method");
+		RGenericVector method = preProcess.getGenericValue("method");
 
 		RStringVector methodNames = method.names();
 		for(int i = 0; i < methodNames.size(); i++){
@@ -61,16 +61,16 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 				case "ignore":
 					break;
 				case "range":
-					this.ranges = createArguments((RDoubleVector)preProcess.getValue("ranges"), 2);
+					this.ranges = createArguments(preProcess.getDoubleValue("ranges"), 2);
 					break;
 				case "center":
-					this.mean = createArguments((RDoubleVector)preProcess.getValue("mean"));
+					this.mean = createArguments(preProcess.getDoubleValue("mean"));
 					break;
 				case "scale":
-					this.std = createArguments((RDoubleVector)preProcess.getValue("std"));
+					this.std = createArguments(preProcess.getDoubleValue("std"));
 					break;
 				case "medianImpute":
-					this.median = createArguments((RDoubleVector)preProcess.getValue("median"));
+					this.median = createArguments(preProcess.getDoubleValue("median"));
 					break;
 				default:
 					throw new IllegalArgumentException(methodName);

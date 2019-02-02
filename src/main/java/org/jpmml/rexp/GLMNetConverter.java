@@ -46,7 +46,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector glmnet = getObject();
 
 		RExp beta = glmnet.getValue("beta");
-		RStringVector classnames = (RStringVector)glmnet.getValue("classnames", true);
+		RStringVector classnames = glmnet.getStringValue("classnames", true);
 
 		if((classnames != null && classnames.size() > 1) && (beta instanceof RGenericVector)){
 			RGenericVector classBetas = (RGenericVector)beta;
@@ -82,9 +82,9 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector glmnet = getObject();
 
-		RDoubleVector a0 = (RDoubleVector)glmnet.getValue("a0");
+		RDoubleVector a0 = glmnet.getDoubleValue("a0");
 		RExp beta = glmnet.getValue("beta");
-		RDoubleVector lambda = (RDoubleVector)glmnet.getValue("lambda");
+		RDoubleVector lambda = glmnet.getDoubleValue("lambda");
 
 		Double lambdaS = getLambdaS();
 		if(lambdaS == null){
@@ -102,7 +102,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 	private Double loadLambdaS(){
 		RGenericVector glmnet = getObject();
 
-		RNumberVector<?> lambdaS = (RNumberVector<?>)DecorationUtil.getValue(glmnet, "lambda.s");
+		RNumberVector<?> lambdaS = DecorationUtil.getNumericValue(glmnet, "lambda.s");
 
 		return (lambdaS.asScalar()).doubleValue();
 	}

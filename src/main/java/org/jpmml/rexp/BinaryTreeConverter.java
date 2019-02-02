@@ -116,7 +116,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			RStringVector targetVariableClass = RExpUtil.getClassNames(targetVariable);
 
-			RStringVector targetCategories = (RStringVector)levels.getValue(variableName);
+			RStringVector targetCategories = levels.getStringValue(variableName);
 
 			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CATEGORICAL, RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
 		} else
@@ -135,17 +135,17 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private void encodeVariableList(RGenericVector tree, RExpEncoder encoder){
-		RBooleanVector terminal = (RBooleanVector)tree.getValue("terminal");
-		RGenericVector psplit = (RGenericVector)tree.getValue("psplit");
-		RGenericVector left = (RGenericVector)tree.getValue("left");
-		RGenericVector right = (RGenericVector)tree.getValue("right");
+		RBooleanVector terminal = tree.getBooleanValue("terminal");
+		RGenericVector psplit = tree.getGenericValue("psplit");
+		RGenericVector left = tree.getGenericValue("left");
+		RGenericVector right = tree.getGenericValue("right");
 
 		if((Boolean.TRUE).equals(terminal.asScalar())){
 			return;
 		}
 
-		RNumberVector<?> splitpoint = (RNumberVector<?>)psplit.getValue("splitpoint");
-		RStringVector variableName = (RStringVector)psplit.getValue("variableName");
+		RNumberVector<?> splitpoint = psplit.getNumericValue("splitpoint");
+		RStringVector variableName = psplit.getStringValue("variableName");
 
 		FieldName name = FieldName.create(variableName.asScalar());
 
@@ -186,13 +186,13 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private Node encodeNode(Predicate predicate, RGenericVector tree, Schema schema){
-		RIntegerVector nodeId = (RIntegerVector)tree.getValue("nodeID");
-		RBooleanVector terminal = (RBooleanVector)tree.getValue("terminal");
-		RGenericVector psplit = (RGenericVector)tree.getValue("psplit");
-		RGenericVector ssplits = (RGenericVector)tree.getValue("ssplits");
-		RDoubleVector prediction = (RDoubleVector)tree.getValue("prediction");
-		RGenericVector left = (RGenericVector)tree.getValue("left");
-		RGenericVector right = (RGenericVector)tree.getValue("right");
+		RIntegerVector nodeId = tree.getIntegerValue("nodeID");
+		RBooleanVector terminal = tree.getBooleanValue("terminal");
+		RGenericVector psplit = tree.getGenericValue("psplit");
+		RGenericVector ssplits = tree.getGenericValue("ssplits");
+		RDoubleVector prediction = tree.getDoubleValue("prediction");
+		RGenericVector left = tree.getGenericValue("left");
+		RGenericVector right = tree.getGenericValue("right");
 
 		String id = String.valueOf(nodeId.asScalar());
 
@@ -204,8 +204,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			return encodeScore(result, prediction, schema);
 		}
 
-		RNumberVector<?> splitpoint = (RNumberVector<?>)psplit.getValue("splitpoint");
-		RStringVector variableName = (RStringVector)psplit.getValue("variableName");
+		RNumberVector<?> splitpoint = psplit.getNumericValue("splitpoint");
+		RStringVector variableName = psplit.getStringValue("variableName");
 
 		if(ssplits.size() > 0){
 			throw new IllegalArgumentException();

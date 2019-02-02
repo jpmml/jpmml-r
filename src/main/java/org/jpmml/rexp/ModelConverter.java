@@ -63,7 +63,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		if(object instanceof RGenericVector){
 			RGenericVector model = (RGenericVector)object;
 
-			verification = (RGenericVector)model.getValue("verification", true);
+			verification = model.getGenericValue("verification", true);
 		}
 
 		encodeSchema(encoder);
@@ -74,14 +74,14 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 		verification:
 		if(verification != null){
-			RDoubleVector precision = (RDoubleVector)verification.getValue("precision");
-			RDoubleVector zeroThreshold = (RDoubleVector)verification.getValue("zeroThreshold");
+			RDoubleVector precision = verification.getDoubleValue("precision");
+			RDoubleVector zeroThreshold = verification.getDoubleValue("zeroThreshold");
 
 			VerificationMap data = new VerificationMap(precision.asScalar(), zeroThreshold.asScalar());
 
-			RGenericVector activeValues = (RGenericVector)verification.getValue("active_values");
-			RGenericVector targetValues = (RGenericVector)verification.getValue("target_values", true);
-			RGenericVector outputValues = (RGenericVector)verification.getValue("output_values", true);
+			RGenericVector activeValues = verification.getGenericValue("active_values");
+			RGenericVector targetValues = verification.getGenericValue("target_values", true);
+			RGenericVector outputValues = verification.getGenericValue("output_values", true);
 
 			if(activeValues != null){
 				data.putInputData(encodeVerificationData(activeValues));

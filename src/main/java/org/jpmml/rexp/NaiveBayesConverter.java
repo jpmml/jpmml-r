@@ -54,8 +54,8 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector naiveBayes = getObject();
 
-		RGenericVector tables = (RGenericVector)naiveBayes.getValue("tables");
-		RStringVector levels = (RStringVector)naiveBayes.getValue("levels");
+		RGenericVector tables = naiveBayes.getGenericValue("tables");
+		RStringVector levels = naiveBayes.getStringValue("levels");
 
 		{
 			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, levels.getValues());
@@ -91,8 +91,8 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector naiveBayes = getObject();
 
-		RIntegerVector apriori = (RIntegerVector)naiveBayes.getValue("apriori");
-		RGenericVector tables = (RGenericVector)naiveBayes.getValue("tables");
+		RIntegerVector apriori = naiveBayes.getIntegerValue("apriori");
+		RGenericVector tables = naiveBayes.getGenericValue("tables");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
@@ -104,7 +104,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 
 			FieldName name = feature.getName();
 
-			RDoubleVector table = (RDoubleVector)tables.getValue(name.getValue());
+			RDoubleVector table = tables.getDoubleValue(name.getValue());
 
 			RStringVector tableRows = table.dimnames(0);
 			RStringVector tableColumns = table.dimnames(1);

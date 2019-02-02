@@ -48,6 +48,70 @@ public class RGenericVector extends RVector<RExp> {
 		return this.values.get(index);
 	}
 
+	public RBooleanVector getBooleanValue(String name){
+		return (RBooleanVector)getValue(name);
+	}
+
+	public RBooleanVector getBooleanValue(String name, boolean optional){
+		return (RBooleanVector)getValue(name, optional);
+	}
+
+	public RDoubleVector getDoubleValue(String name){
+		return (RDoubleVector)getValue(name);
+	}
+
+	public RDoubleVector getDoubleValue(String name, boolean optional){
+		return (RDoubleVector)getValue(name, optional);
+	}
+
+	public RGenericVector getGenericValue(String name){
+		return (RGenericVector)getValue(name);
+	}
+
+	public RGenericVector getGenericValue(String name, boolean optional){
+		return (RGenericVector)getValue(name, optional);
+	}
+
+	public RIntegerVector getFactorValue(String name){
+		return getIntegerValue(name);
+	}
+
+	public RIntegerVector getFactorValue(String name, boolean optional){
+		return getIntegerValue(name, optional);
+	}
+
+	public RIntegerVector getIntegerValue(String name){
+		return (RIntegerVector)getValue(name);
+	}
+
+	public RIntegerVector getIntegerValue(String name, boolean optional){
+		return (RIntegerVector)getValue(name, optional);
+	}
+
+	public RNumberVector<?> getNumericValue(String name){
+		return (RNumberVector<?>)getValue(name);
+	}
+
+	public RNumberVector<?> getNumericValue(String name, boolean optional){
+		return (RNumberVector<?>)getValue(name, optional);
+	}
+
+	public RStringVector getStringValue(String name){
+		return (RStringVector)getValue(name);
+	}
+
+	public RStringVector getStringValue(String name, boolean optional){
+		return (RStringVector)getValue(name, optional);
+	}
+
+	public RVector<?> getVectorValue(String name){
+		return (RVector<?>)getValue(name);
+	}
+
+	public RVector<?> getVectorValue(String name, boolean optional){
+		return (RVector<?>)getValue(name, optional);
+	}
+
 	@Override
 	public List<RExp> getValues(){
 		return this.values;

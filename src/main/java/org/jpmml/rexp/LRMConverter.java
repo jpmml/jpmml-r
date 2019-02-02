@@ -42,7 +42,7 @@ public class LRMConverter extends RMSConverter {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector lrm = getObject();
 
-		RIntegerVector freq = (RIntegerVector)lrm.getValue("freq");
+		RIntegerVector freq = lrm.getIntegerValue("freq");
 
 		RStringVector freqNames = freq.dimnames(0);
 
@@ -59,7 +59,7 @@ public class LRMConverter extends RMSConverter {
 	public Model encodeModel(Schema schema){
 		RGenericVector lrm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)lrm.getValue("coefficients");
+		RDoubleVector coefficients = lrm.getDoubleValue("coefficients");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 

@@ -61,14 +61,14 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector gbm = getObject();
 
-		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
-		RStringVector response_name = (RStringVector)gbm.getValue("response.name", true);
-		RGenericVector var_levels = (RGenericVector)gbm.getValue("var.levels");
-		RStringVector var_names = (RStringVector)gbm.getValue("var.names");
-		RNumberVector<?> var_type = (RNumberVector<?>)gbm.getValue("var.type");
-		RStringVector classes = (RStringVector)gbm.getValue("classes", true);
+		RGenericVector distribution = gbm.getGenericValue("distribution");
+		RStringVector response_name = gbm.getStringValue("response.name", true);
+		RGenericVector var_levels = gbm.getGenericValue("var.levels");
+		RStringVector var_names = gbm.getStringValue("var.names");
+		RNumberVector<?> var_type = gbm.getNumericValue("var.type");
+		RStringVector classes = gbm.getStringValue("classes", true);
 
-		RStringVector distributionName = (RStringVector)distribution.getValue("name");
+		RStringVector distributionName = distribution.getStringValue("name");
 
 		{
 			FieldName responseName;
@@ -125,12 +125,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector gbm = getObject();
 
-		RDoubleVector initF = (RDoubleVector)gbm.getValue("initF");
-		RGenericVector trees = (RGenericVector)gbm.getValue("trees");
-		RGenericVector c_splits = (RGenericVector)gbm.getValue("c.splits");
-		RGenericVector distribution = (RGenericVector)gbm.getValue("distribution");
+		RDoubleVector initF = gbm.getDoubleValue("initF");
+		RGenericVector trees = gbm.getGenericValue("trees");
+		RGenericVector c_splits = gbm.getGenericValue("c.splits");
+		RGenericVector distribution = gbm.getGenericValue("distribution");
 
-		RStringVector distributionName = (RStringVector)distribution.getValue("name");
+		RStringVector distributionName = distribution.getStringValue("name");
 
 		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
 

@@ -48,9 +48,9 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector mvr = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
+		RDoubleVector coefficients = mvr.getDoubleValue("coefficients");
 		RExp terms = mvr.getValue("terms");
-		RGenericVector model = (RGenericVector)mvr.getValue("model");
+		RGenericVector model = mvr.getGenericValue("model");
 
 		RStringVector rowNames = coefficients.dimnames(0);
 		RStringVector columnNames = coefficients.dimnames(1);
@@ -76,10 +76,10 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	public GeneralRegressionModel encodeModel(Schema schema){
 		RGenericVector mvr = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)mvr.getValue("coefficients");
-		RDoubleVector xMeans = (RDoubleVector)mvr.getValue("Xmeans");
-		RDoubleVector yMeans = (RDoubleVector)mvr.getValue("Ymeans");
-		RNumberVector<?> ncomp = (RNumberVector<?>)mvr.getValue("ncomp");
+		RDoubleVector coefficients = mvr.getDoubleValue("coefficients");
+		RDoubleVector xMeans = mvr.getDoubleValue("Xmeans");
+		RDoubleVector yMeans = mvr.getDoubleValue("Ymeans");
+		RNumberVector<?> ncomp = mvr.getNumericValue("ncomp");
 
 		RStringVector rowNames = coefficients.dimnames(0);
 		RStringVector columnNames = coefficients.dimnames(1);
@@ -110,7 +110,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 	private void scaleFeatures(RExpEncoder encoder){
 		RGenericVector mvr = getObject();
 
-		RDoubleVector scale = (RDoubleVector)mvr.getValue("scale", true);
+		RDoubleVector scale = mvr.getDoubleValue("scale", true);
 		if(scale == null){
 			return;
 		}

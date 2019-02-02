@@ -79,10 +79,10 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = (RGenericVector)ada.getValue("model");
+		RGenericVector model = ada.getGenericValue("model");
 
-		RGenericVector trees = (RGenericVector)model.getValue("trees");
-		RDoubleVector alpha = (RDoubleVector)model.getValue("alpha");
+		RGenericVector trees = model.getGenericValue("trees");
+		RDoubleVector alpha = model.getDoubleValue("alpha");
 
 		List<TreeModel> treeModels = encodeTreeModels(trees);
 
@@ -96,11 +96,11 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	private void encodeFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = (RGenericVector)ada.getValue("model");
+		RGenericVector model = ada.getGenericValue("model");
 		RExp terms = ada.getValue("terms");
-		RIntegerVector fit = (RIntegerVector)ada.getValue("fit");
+		RIntegerVector fit = ada.getIntegerValue("fit");
 
-		RGenericVector trees = (RGenericVector)model.getValue("trees");
+		RGenericVector trees = model.getGenericValue("trees");
 
 		RExpEncoder termsEncoder = new RExpEncoder();
 
@@ -116,10 +116,10 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 	private void encodeNonFormula(RExpEncoder encoder){
 		RGenericVector ada = getObject();
 
-		RGenericVector model = (RGenericVector)ada.getValue("model");
-		RIntegerVector fit = (RIntegerVector)ada.getValue("fit");
+		RGenericVector model = ada.getGenericValue("model");
+		RIntegerVector fit = ada.getFactorValue("fit");
 
-		RGenericVector trees = (RGenericVector)model.getValue("trees");
+		RGenericVector trees = model.getGenericValue("trees");
 
 		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, RExpUtil.getFactorLevels(fit));
 

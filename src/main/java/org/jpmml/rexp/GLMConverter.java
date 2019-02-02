@@ -42,10 +42,10 @@ public class GLMConverter extends LMConverter {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector glm = getObject();
 
-		RGenericVector family = (RGenericVector)glm.getValue("family");
-		RGenericVector model = (RGenericVector)glm.getValue("model");
+		RGenericVector family = glm.getGenericValue("family");
+		RGenericVector model = glm.getGenericValue("model");
 
-		RStringVector familyFamily = (RStringVector)family.getValue("family");
+		RStringVector familyFamily = family.getStringValue("family");
 
 		super.encodeSchema(encoder);
 
@@ -54,7 +54,7 @@ public class GLMConverter extends LMConverter {
 			case CLASSIFICATION:
 				Label label = encoder.getLabel();
 
-				RIntegerVector variable = (RIntegerVector)model.getValue((label.getName()).getValue());
+				RIntegerVector variable = model.getFactorValue((label.getName()).getValue());
 
 				DataField dataField = (DataField)encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
 
@@ -69,13 +69,13 @@ public class GLMConverter extends LMConverter {
 	public Model encodeModel(Schema schema){
 		RGenericVector glm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)glm.getValue("coefficients");
-		RGenericVector family = (RGenericVector)glm.getValue("family");
+		RDoubleVector coefficients = glm.getDoubleValue("coefficients");
+		RGenericVector family = glm.getGenericValue("family");
 
 		Double intercept = coefficients.getValue(getInterceptName(), true);
 
-		RStringVector familyFamily = (RStringVector)family.getValue("family");
-		RStringVector familyLink = (RStringVector)family.getValue("link");
+		RStringVector familyFamily = family.getStringValue("family");
+		RStringVector familyLink = family.getStringValue("link");
 
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();

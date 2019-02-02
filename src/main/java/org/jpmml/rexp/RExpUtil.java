@@ -66,11 +66,6 @@ public class RExpUtil {
 	}
 
 	static
-	public List<String> getFactorLevels(RNumberVector<?> factor){
-		return getFactorLevels((RIntegerVector)factor);
-	}
-
-	static
 	public List<String> getFactorLevels(RIntegerVector factor){
 
 		if(!factor.isFactor()){

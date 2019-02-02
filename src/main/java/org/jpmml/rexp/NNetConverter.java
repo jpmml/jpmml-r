@@ -49,10 +49,10 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector nnet = getObject();
 
-		RStringVector lev = (RStringVector)nnet.getValue("lev", true);
+		RStringVector lev = nnet.getStringValue("lev", true);
 		RExp terms = nnet.getValue("terms");
-		RGenericVector xlevels = (RGenericVector)nnet.getValue("xlevels");
-		RStringVector coefnames = (RStringVector)nnet.getValue("coefnames");
+		RGenericVector xlevels = nnet.getGenericValue("xlevels");
+		RStringVector coefnames = nnet.getStringValue("coefnames");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
@@ -67,12 +67,12 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 	public Model encodeModel(Schema schema){
 		RGenericVector nnet = getObject();
 
-		RDoubleVector n = (RDoubleVector)nnet.getValue("n");
-		RBooleanVector linout = (RBooleanVector)nnet.getValue("linout", true);
-		RBooleanVector softmax = (RBooleanVector)nnet.getValue("softmax", true);
-		RBooleanVector censored = (RBooleanVector)nnet.getValue("censored", true);
-		RDoubleVector wts = (RDoubleVector)nnet.getValue("wts");
-		RStringVector lev = (RStringVector)nnet.getValue("lev", true);
+		RDoubleVector n = nnet.getDoubleValue("n");
+		RBooleanVector linout = nnet.getBooleanValue("linout", true);
+		RBooleanVector softmax = nnet.getBooleanValue("softmax", true);
+		RBooleanVector censored = nnet.getBooleanValue("censored", true);
+		RDoubleVector wts = nnet.getDoubleValue("wts");
+		RStringVector lev = nnet.getStringValue("lev", true);
 
 		if(n.size() != 3){
 			throw new IllegalArgumentException();

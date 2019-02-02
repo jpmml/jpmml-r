@@ -47,9 +47,9 @@ public class ScorecardConverter extends GLMConverter {
 	public Scorecard encodeModel(Schema schema){
 		RGenericVector glm = getObject();
 
-		RDoubleVector coefficients = (RDoubleVector)glm.getValue("coefficients");
-		RGenericVector family = (RGenericVector)glm.getValue("family");
-		RGenericVector scConf = (RGenericVector)DecorationUtil.getValue(glm, "sc.conf");
+		RDoubleVector coefficients = glm.getDoubleValue("coefficients");
+		RGenericVector family = glm.getGenericValue("family");
+		RGenericVector scConf = DecorationUtil.getGenericValue(glm, "sc.conf");
 
 		Double intercept = coefficients.getValue(LMConverter.INTERCEPT, true);
 
@@ -59,9 +59,9 @@ public class ScorecardConverter extends GLMConverter {
 			throw new IllegalArgumentException();
 		}
 
-		RNumberVector<?> odds = (RNumberVector<?>)scConf.getValue("odds");
-		RNumberVector<?> basePoints = (RNumberVector<?>)scConf.getValue("base_points");
-		RNumberVector<?> pdo = (RNumberVector<?>)scConf.getValue("pdo");
+		RNumberVector<?> odds = scConf.getNumericValue("odds");
+		RNumberVector<?> basePoints = scConf.getNumericValue("base_points");
+		RNumberVector<?> pdo = scConf.getNumericValue("pdo");
 
 		double factor = (pdo.asScalar()).doubleValue() / Math.log(2);
 

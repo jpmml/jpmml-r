@@ -49,10 +49,10 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector nn = getObject();
 
-		RGenericVector modelList = (RGenericVector)nn.getValue("model.list");
+		RGenericVector modelList = nn.getGenericValue("model.list");
 
-		RStringVector response = (RStringVector)modelList.getValue("response");
-		RStringVector variables = (RStringVector)modelList.getValue("variables");
+		RStringVector response = modelList.getStringValue("response");
+		RStringVector variables = modelList.getStringValue("variables");
 
 		{
 			DataField dataField = encoder.createDataField(FieldName.create(response.asScalar()), OpType.CONTINUOUS, DataType.DOUBLE);
@@ -74,8 +74,8 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		RGenericVector nn = getObject();
 
 		RExp actFct = nn.getValue("act.fct");
-		RBooleanVector linearOutput = (RBooleanVector)nn.getValue("linear.output");
-		RGenericVector weights = (RGenericVector)nn.getValue("weights");
+		RBooleanVector linearOutput = nn.getBooleanValue("linear.output");
+		RGenericVector weights = nn.getGenericValue("weights");
 
 		RStringVector actFctType = (RStringVector)actFct.getAttributeValue("type");
 

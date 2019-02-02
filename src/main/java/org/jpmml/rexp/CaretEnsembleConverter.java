@@ -48,8 +48,8 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 	public PMML encodePMML(RExpEncoder encoder){
 		RGenericVector caretEnsemble = getObject();
 
-		RGenericVector models = (RGenericVector)caretEnsemble.getValue("models");
-		RGenericVector ensModel = (RGenericVector)caretEnsemble.getValue("ens_model");
+		RGenericVector models = caretEnsemble.getGenericValue("models");
+		RGenericVector ensModel = caretEnsemble.getGenericValue("ens_model");
 
 		RStringVector modelNames = models.names();
 

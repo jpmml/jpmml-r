@@ -53,9 +53,9 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	public RPartConverter(RGenericVector rpart){
 		super(rpart);
 
-		RGenericVector control = (RGenericVector)rpart.getValue("control");
+		RGenericVector control = rpart.getGenericValue("control");
 
-		RNumberVector<?> useSurrogate = (RNumberVector<?>)control.getValue("usesurrogate");
+		RNumberVector<?> useSurrogate = control.getNumericValue("usesurrogate");
 
 		this.useSurrogate = ValueUtil.asInt(useSurrogate.asScalar());
 
@@ -77,13 +77,13 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector rpart = getObject();
 
-		RGenericVector frame = (RGenericVector)rpart.getValue("frame");
+		RGenericVector frame = rpart.getGenericValue("frame");
 		RExp terms = rpart.getValue("terms");
 
 		RGenericVector xlevels = (RGenericVector)rpart.getAttributeValue("xlevels", true);
 		RStringVector ylevels = (RStringVector)rpart.getAttributeValue("ylevels", true);
 
-		RIntegerVector var = (RIntegerVector)frame.getValue("var");
+		RIntegerVector var = frame.getFactorValue("var");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
@@ -102,15 +102,15 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	public TreeModel encodeModel(Schema schema){
 		RGenericVector rpart = getObject();
 
-		RGenericVector frame = (RGenericVector)rpart.getValue("frame");
-		RStringVector method = (RStringVector)rpart.getValue("method");
-		RNumberVector<?> splits = (RNumberVector<?>)rpart.getValue("splits");
-		RIntegerVector csplit = (RIntegerVector)rpart.getValue("csplit", true);
+		RGenericVector frame = rpart.getGenericValue("frame");
+		RStringVector method = rpart.getStringValue("method");
+		RNumberVector<?> splits = rpart.getNumericValue("splits");
+		RIntegerVector csplit = rpart.getIntegerValue("csplit", true);
 
-		RIntegerVector var = (RIntegerVector)frame.getValue("var");
-		RIntegerVector n = (RIntegerVector)frame.getValue("n");
-		RIntegerVector ncompete = (RIntegerVector)frame.getValue("ncompete");
-		RIntegerVector nsurrogate = (RIntegerVector)frame.getValue("nsurrogate");
+		RIntegerVector var = frame.getIntegerValue("var");
+		RIntegerVector n = frame.getIntegerValue("n");
+		RIntegerVector ncompete = frame.getIntegerValue("ncompete");
+		RIntegerVector nsurrogate = frame.getIntegerValue("nsurrogate");
 
 		RIntegerVector rowNames = (RIntegerVector)frame.getAttributeValue("row.names");
 
@@ -138,7 +138,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
-		RNumberVector<?> yval = (RNumberVector<?>)frame.getValue("yval");
+		RNumberVector<?> yval = frame.getNumericValue("yval");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
@@ -163,7 +163,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
-		RDoubleVector yval2 = (RDoubleVector)frame.getValue("yval2");
+		RDoubleVector yval2 = frame.getDoubleValue("yval2");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
