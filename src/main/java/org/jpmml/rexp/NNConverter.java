@@ -77,7 +77,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		RBooleanVector linearOutput = nn.getBooleanValue("linear.output");
 		RGenericVector weights = nn.getGenericValue("weights");
 
-		RStringVector actFctType = (RStringVector)actFct.getAttributeValue("type");
+		RStringVector actFctType = actFct.getStringAttributeValue("type");
 
 		// Select the first repetition
 		weights = (RGenericVector)weights.getValue(0);

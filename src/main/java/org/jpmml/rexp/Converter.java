@@ -48,8 +48,8 @@ public class Converter<R extends RExp> {
 		if(object instanceof S4Object){
 			S4Object model = (S4Object)object;
 
-			preProcess = (RGenericVector)model.getAttributeValue("preProcess", true);
-			recipe = (RGenericVector)model.getAttributeValue("recipe", true);
+			preProcess = model.getGenericAttributeValue("preProcess", true);
+			recipe = model.getGenericAttributeValue("recipe", true);
 		} else
 
 		if(object instanceof RGenericVector){

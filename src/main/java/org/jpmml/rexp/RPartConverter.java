@@ -80,8 +80,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector frame = rpart.getGenericValue("frame");
 		RExp terms = rpart.getValue("terms");
 
-		RGenericVector xlevels = (RGenericVector)rpart.getAttributeValue("xlevels", true);
-		RStringVector ylevels = (RStringVector)rpart.getAttributeValue("ylevels", true);
+		RGenericVector xlevels = rpart.getGenericAttributeValue("xlevels", true);
+		RStringVector ylevels = rpart.getStringAttributeValue("ylevels", true);
 
 		RIntegerVector var = frame.getFactorValue("var");
 
@@ -112,7 +112,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RIntegerVector ncompete = frame.getIntegerValue("ncompete");
 		RIntegerVector nsurrogate = frame.getIntegerValue("nsurrogate");
 
-		RIntegerVector rowNames = (RIntegerVector)frame.getAttributeValue("row.names");
+		RIntegerVector rowNames = frame.getIntegerAttributeValue("row.names");
 
 		if((rowNames.getValues()).indexOf(Integer.MIN_VALUE) > -1){
 			throw new IllegalArgumentException();

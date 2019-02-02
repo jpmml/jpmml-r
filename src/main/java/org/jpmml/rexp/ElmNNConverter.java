@@ -52,7 +52,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		RExp terms = model.getAttributeValue("terms");
 
-		RStringVector columns = (RStringVector)terms.getAttributeValue("columns");
+		RStringVector columns = terms.getStringAttributeValue("columns");
 
 		FormulaContext context = new ModelFrameFormulaContext(model);
 

@@ -48,7 +48,7 @@ public class RExpUtil {
 
 	static
 	public RStringVector getClassNames(RExp rexp){
-		RStringVector result = (RStringVector)rexp.getAttributeValue("class");
+		RStringVector result = rexp.getStringAttributeValue("class");
 
 		return result;
 	}

@@ -54,7 +54,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			beta = (S4Object)classBetas.getValue(0);
 		} // End if
 
-		RGenericVector dimnames = (RGenericVector)beta.getAttributeValue("Dimnames");
+		RGenericVector dimnames = beta.getGenericAttributeValue("Dimnames");
 
 		if(classnames != null){
 			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, classnames.getValues());
@@ -117,10 +117,10 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
 	static
 	public List<Double> getCoefficients(S4Object beta, int column){
-		RIntegerVector i = (RIntegerVector)beta.getAttributeValue("i");
-		RIntegerVector p = (RIntegerVector)beta.getAttributeValue("p");
-		RIntegerVector dim = (RIntegerVector)beta.getAttributeValue("Dim");
-		RDoubleVector x = (RDoubleVector)beta.getAttributeValue("x");
+		RIntegerVector i = beta.getIntegerAttributeValue("i");
+		RIntegerVector p = beta.getIntegerAttributeValue("p");
+		RIntegerVector dim = beta.getIntegerAttributeValue("Dim");
+		RDoubleVector x = beta.getDoubleAttributeValue("x");
 
 		double[] result = new double[dim.getValue(0)];
 

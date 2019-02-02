@@ -55,8 +55,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector fitted = party.getGenericValue("fitted");
 		RExp terms = party.getValue("terms");
 
-		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
+		RIntegerVector factors = terms.getIntegerAttributeValue("factors");
+		RIntegerVector response = terms.getIntegerAttributeValue("response");
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);

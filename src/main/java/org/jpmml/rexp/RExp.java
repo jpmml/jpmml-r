@@ -29,17 +29,57 @@ public class RExp {
 	}
 
 	public RStringVector names(){
-		return (RStringVector)getAttributeValue("names");
+		return getStringAttributeValue("names");
 	}
 
 	public RIntegerVector dim(){
-		return (RIntegerVector)getAttributeValue("dim");
+		return getIntegerAttributeValue("dim");
 	}
 
 	public RStringVector dimnames(int index){
-		RGenericVector dimnames = (RGenericVector)getAttributeValue("dimnames");
+		RGenericVector dimnames = getGenericAttributeValue("dimnames");
 
 		return (RStringVector)dimnames.getValue(index);
+	}
+
+	public RBooleanVector getBooleanAttributeValue(String name){
+		return (RBooleanVector)getAttributeValue(name);
+	}
+
+	public RBooleanVector getBooleanAttributeValue(String name, boolean optional){
+		return (RBooleanVector)getAttributeValue(name, optional);
+	}
+
+	public RDoubleVector getDoubleAttributeValue(String name){
+		return (RDoubleVector)getAttributeValue(name);
+	}
+
+	public RDoubleVector getDoubleAttributeValue(String name, boolean optional){
+		return (RDoubleVector)getAttributeValue(name, optional);
+	}
+
+	public RGenericVector getGenericAttributeValue(String name){
+		return (RGenericVector)getAttributeValue(name);
+	}
+
+	public RGenericVector getGenericAttributeValue(String name, boolean optional){
+		return (RGenericVector)getAttributeValue(name, optional);
+	}
+
+	public RIntegerVector getIntegerAttributeValue(String name){
+		return (RIntegerVector)getAttributeValue(name);
+	}
+
+	public RIntegerVector getIntegerAttributeValue(String name, boolean optional){
+		return (RIntegerVector)getAttributeValue(name, optional);
+	}
+
+	public RStringVector getStringAttributeValue(String name){
+		return (RStringVector)getAttributeValue(name);
+	}
+
+	public RStringVector getStringAttributeValue(String name, boolean optional){
+		return (RStringVector)getAttributeValue(name, optional);
 	}
 
 	public RExp getAttributeValue(String name){

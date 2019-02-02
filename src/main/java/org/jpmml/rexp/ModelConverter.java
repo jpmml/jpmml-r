@@ -57,7 +57,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		if(object instanceof S4Object){
 			S4Object model = (S4Object)object;
 
-			verification = (RGenericVector)model.getAttributeValue("verification", true);
+			verification = model.getGenericAttributeValue("verification", true);
 		} else
 
 		if(object instanceof RGenericVector){

@@ -52,8 +52,8 @@ public class FormulaUtil {
 	public Formula createFormula(RExp terms, FormulaContext context, RExpEncoder encoder){
 		Formula formula = new Formula(encoder);
 
-		RIntegerVector factors = (RIntegerVector)terms.getAttributeValue("factors");
-		RStringVector dataClasses = (RStringVector)terms.getAttributeValue("dataClasses", true);
+		RIntegerVector factors = terms.getIntegerAttributeValue("factors");
+		RStringVector dataClasses = terms.getStringAttributeValue("dataClasses", true);
 
 		RStringVector variableRows = factors.dimnames(0);
 		RStringVector termColumns = factors.dimnames(1);

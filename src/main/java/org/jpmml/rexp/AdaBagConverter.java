@@ -42,7 +42,7 @@ public class AdaBagConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		RGenericVector trees = bagging.getGenericValue("trees");
 		RExp terms = bagging.getValue("terms");
-		RIntegerVector vardepSummary = (RIntegerVector)bagging.getAttributeValue("vardep.summary");
+		RIntegerVector vardepSummary = bagging.getIntegerAttributeValue("vardep.summary");
 
 		RExpEncoder termsEncoder = new RExpEncoder();
 

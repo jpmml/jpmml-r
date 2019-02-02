@@ -32,7 +32,7 @@ public class SchemaUtil {
 
 	static
 	public void setLabel(Formula formula, RExp terms, RExp levels, RExpEncoder encoder){
-		RIntegerVector response = (RIntegerVector)terms.getAttributeValue("response");
+		RIntegerVector response = terms.getIntegerAttributeValue("response");
 
 		int responseIndex = response.asScalar();
 		if(responseIndex != 0){
