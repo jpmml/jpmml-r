@@ -49,67 +49,83 @@ public class RGenericVector extends RVector<RExp> {
 	}
 
 	public RBooleanVector getBooleanElement(String name){
-		return (RBooleanVector)getElement(name);
+		return getBooleanElement(name, false);
 	}
 
 	public RBooleanVector getBooleanElement(String name, boolean optional){
-		return (RBooleanVector)getElement(name, optional);
+		return getVectorElement(RBooleanVector.class, name, optional);
 	}
 
 	public RDoubleVector getDoubleElement(String name){
-		return (RDoubleVector)getElement(name);
+		return getDoubleElement(name, false);
 	}
 
 	public RDoubleVector getDoubleElement(String name, boolean optional){
-		return (RDoubleVector)getElement(name, optional);
+		return getVectorElement(RDoubleVector.class, name, optional);
 	}
 
 	public RGenericVector getGenericElement(String name){
-		return (RGenericVector)getElement(name);
+		return getGenericElement(name, false);
 	}
 
 	public RGenericVector getGenericElement(String name, boolean optional){
-		return (RGenericVector)getElement(name, optional);
+		return getVectorElement(RGenericVector.class, name, optional);
 	}
 
 	public RIntegerVector getFactorElement(String name){
-		return getIntegerElement(name);
+		return getFactorElement(name, false);
 	}
 
 	public RIntegerVector getFactorElement(String name, boolean optional){
-		return getIntegerElement(name, optional);
+		RIntegerVector factor = getIntegerElement(name, optional);
+
+		if(!RExpUtil.isFactor(factor)){
+			throw new IllegalArgumentException("Invalid \'" + name + "\' element. Expected factor, got integer");
+		}
+
+		return factor;
 	}
 
 	public RIntegerVector getIntegerElement(String name){
-		return (RIntegerVector)getElement(name);
+		return getIntegerElement(name, false);
 	}
 
 	public RIntegerVector getIntegerElement(String name, boolean optional){
-		return (RIntegerVector)getElement(name, optional);
+		return getVectorElement(RIntegerVector.class, name, optional);
 	}
 
 	public RNumberVector<?> getNumericElement(String name){
-		return (RNumberVector<?>)getElement(name);
+		return getNumericElement(name, false);
 	}
 
 	public RNumberVector<?> getNumericElement(String name, boolean optional){
-		return (RNumberVector<?>)getElement(name, optional);
+		return getVectorElement(RNumberVector.class, name, optional);
 	}
 
 	public RStringVector getStringElement(String name){
-		return (RStringVector)getElement(name);
+		return getStringElement(name, false);
 	}
 
 	public RStringVector getStringElement(String name, boolean optional){
-		return (RStringVector)getElement(name, optional);
+		return getVectorElement(RStringVector.class, name, optional);
 	}
 
 	public RVector<?> getVectorElement(String name){
-		return (RVector<?>)getElement(name);
+		return getVectorElement(name, false);
 	}
 
 	public RVector<?> getVectorElement(String name, boolean optional){
-		return (RVector<?>)getElement(name, optional);
+		return getVectorElement(RVector.class, name, optional);
+	}
+
+	private <V extends RVector<E>, E> V getVectorElement(Class<V> clazz, String name, boolean optional){
+		RExp rexp = getElement(name, optional);
+
+		try {
+			return clazz.cast(rexp);
+		} catch(ClassCastException cce){
+			throw new IllegalArgumentException("Invalid \'" + name + "\' element. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+		}
 	}
 
 	@Override

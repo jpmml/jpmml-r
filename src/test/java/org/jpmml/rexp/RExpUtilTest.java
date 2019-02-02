@@ -25,6 +25,18 @@ import static org.junit.Assert.assertEquals;
 public class RExpUtilTest {
 
 	@Test
+	public void getVectorType(){
+		assertEquals("logical", RExpUtil.getVectorType(RBooleanVector.class));
+		assertEquals("numeric", RExpUtil.getVectorType(RDoubleVector.class));
+		assertEquals("integer", RExpUtil.getVectorType(RIntegerVector.class));
+		assertEquals("numeric", RExpUtil.getVectorType(RNumberVector.class));
+		assertEquals("character", RExpUtil.getVectorType(RStringVector.class));
+
+		assertEquals("vector", RExpUtil.getVectorType(RVector.class));
+		assertEquals("non-vector", RExpUtil.getVectorType(RExp.class));
+	}
+
+	@Test
 	public void makeName(){
 		assertEquals("X", RExpUtil.makeName(""));
 

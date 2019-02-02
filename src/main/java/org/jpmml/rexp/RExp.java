@@ -43,7 +43,7 @@ public class RExp {
 	}
 
 	public RExp getAttribute(String name){
-		return findAttribute(name, false);
+		return getAttribute(name, false);
 	}
 
 	public RExp getAttribute(String name, boolean optional){
@@ -51,51 +51,61 @@ public class RExp {
 	}
 
 	public RBooleanVector getBooleanAttribute(String name){
-		return (RBooleanVector)getAttribute(name);
+		return getBooleanAttribute(name, false);
 	}
 
 	public RBooleanVector getBooleanAttribute(String name, boolean optional){
-		return (RBooleanVector)getAttribute(name, optional);
+		return getVectorAttribute(RBooleanVector.class, name, optional);
 	}
 
 	public RDoubleVector getDoubleAttribute(String name){
-		return (RDoubleVector)getAttribute(name);
+		return getDoubleAttribute(name, false);
 	}
 
 	public RDoubleVector getDoubleAttribute(String name, boolean optional){
-		return (RDoubleVector)getAttribute(name, optional);
+		return getVectorAttribute(RDoubleVector.class, name, optional);
 	}
 
 	public RGenericVector getGenericAttribute(String name){
-		return (RGenericVector)getAttribute(name);
+		return getGenericAttribute(name, false);
 	}
 
 	public RGenericVector getGenericAttribute(String name, boolean optional){
-		return (RGenericVector)getAttribute(name, optional);
+		return getVectorAttribute(RGenericVector.class, name, optional);
 	}
 
 	public RIntegerVector getIntegerAttribute(String name){
-		return (RIntegerVector)getAttribute(name);
+		return getIntegerAttribute(name, false);
 	}
 
 	public RIntegerVector getIntegerAttribute(String name, boolean optional){
-		return (RIntegerVector)getAttribute(name, optional);
+		return getVectorAttribute(RIntegerVector.class, name, optional);
 	}
 
 	public RStringVector getStringAttribute(String name){
-		return (RStringVector)getAttribute(name);
+		return getStringAttribute(name, false);
 	}
 
 	public RStringVector getStringAttribute(String name, boolean optional){
-		return (RStringVector)getAttribute(name, optional);
+		return getVectorAttribute(RStringVector.class, name, optional);
 	}
 
-	public boolean hasAttribute(String tag){
+	private <V extends RVector<E>, E> V getVectorAttribute(Class<V> clazz, String name, boolean optional){
+		RExp rexp = getAttribute(name, optional);
+
+		try {
+			return clazz.cast(rexp);
+		} catch(ClassCastException cce){
+			throw new IllegalArgumentException("Invalid \'" + name + "\' attribute. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+		}
+	}
+
+	public boolean hasAttribute(String name){
 		RPair attribute = getAttributes();
 
 		while(attribute != null){
 
-			if(attribute.tagEquals(tag)){
+			if(attribute.tagEquals(name)){
 				return true;
 			}
 
@@ -105,12 +115,12 @@ public class RExp {
 		return false;
 	}
 
-	private RExp findAttribute(String tag, boolean optional){
+	private RExp findAttribute(String name, boolean optional){
 		RPair attribute = getAttributes();
 
 		while(attribute != null){
 
-			if(attribute.tagEquals(tag)){
+			if(attribute.tagEquals(name)){
 				return attribute.getValue();
 			}
 
@@ -121,7 +131,7 @@ public class RExp {
 			return null;
 		}
 
-		throw new IllegalArgumentException(tag);
+		throw new IllegalArgumentException("Missing \'" + name + "\' attribute");
 	}
 
 	public RPair getAttributes(){

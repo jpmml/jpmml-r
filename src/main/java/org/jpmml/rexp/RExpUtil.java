@@ -18,7 +18,9 @@
  */
 package org.jpmml.rexp;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
@@ -44,6 +46,24 @@ public class RExpUtil {
 		}
 
 		throw new IllegalArgumentException(type);
+	}
+
+	static
+	public String getVectorType(Class<?> clazz){
+		String vectorType = RExpUtil.vectorTypes.get(clazz);
+
+		if(vectorType == null){
+
+			if(RVector.class.isAssignableFrom(clazz)){
+				return "vector";
+			} else
+
+			{
+				return "non-vector";
+			}
+		}
+
+		return vectorType;
 	}
 
 	static
@@ -109,5 +129,15 @@ public class RExpUtil {
 		}
 
 		return sb.toString();
+	}
+
+	private static final Map<Class<?>, String> vectorTypes = new LinkedHashMap<>();
+
+	static {
+		vectorTypes.put(RBooleanVector.class, "logical");
+		vectorTypes.put(RDoubleVector.class, "numeric");
+		vectorTypes.put(RIntegerVector.class, "integer");
+		vectorTypes.put(RNumberVector.class, "numeric");
+		vectorTypes.put(RStringVector.class, "character");
 	}
 }

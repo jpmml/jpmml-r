@@ -19,7 +19,7 @@
 package org.jpmml.rexp;
 
 abstract
-public class RNumberVector<V extends Number> extends RVector<V> {
+public class RNumberVector<E extends Number> extends RVector<E> {
 
 	public RNumberVector(RPair attributes){
 		super(attributes);

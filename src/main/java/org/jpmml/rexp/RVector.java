@@ -24,7 +24,7 @@ import java.util.List;
 import org.dmg.pmml.DataType;
 
 abstract
-public class RVector<V> extends RExp implements Iterable<V> {
+public class RVector<E> extends RExp implements Iterable<E> {
 
 	public RVector(RPair attributes){
 		super(attributes);
@@ -37,20 +37,20 @@ public class RVector<V> extends RExp implements Iterable<V> {
 	public int size();
 
 	abstract
-	public V getValue(int index);
+	public E getValue(int index);
 
 	abstract
-	public List<V> getValues();
+	public List<E> getValues();
 
 	@Override
-	public Iterator<V> iterator(){
-		List<V> values = getValues();
+	public Iterator<E> iterator(){
+		List<E> values = getValues();
 
 		return values.iterator();
 	}
 
-	public V asScalar(){
-		List<V> values = getValues();
+	public E asScalar(){
+		List<E> values = getValues();
 		if(values.size() != 1){
 			throw new IllegalStateException();
 		}
@@ -58,17 +58,17 @@ public class RVector<V> extends RExp implements Iterable<V> {
 		return values.get(0);
 	}
 
-	public int indexOf(V value){
-		List<V> values = getValues();
+	public int indexOf(E value){
+		List<E> values = getValues();
 
 		return values.indexOf(value);
 	}
 
-	public V getElement(String name){
+	public E getElement(String name){
 		return findElement(name, false);
 	}
 
-	public V getElement(String name, boolean optional){
+	public E getElement(String name, boolean optional){
 		return findElement(name, optional);
 	}
 
@@ -82,7 +82,7 @@ public class RVector<V> extends RExp implements Iterable<V> {
 		return (index > -1);
 	}
 
-	private V findElement(String name, boolean optional){
+	private E findElement(String name, boolean optional){
 		RStringVector names = getStringAttribute("names");
 
 		List<String> values = names.getDequotedValues();
@@ -96,7 +96,7 @@ public class RVector<V> extends RExp implements Iterable<V> {
 			return null;
 		}
 
-		throw new IllegalArgumentException(name);
+		throw new IllegalArgumentException("Missing \'" + name + "\' element");
 	}
 
 	@Override
