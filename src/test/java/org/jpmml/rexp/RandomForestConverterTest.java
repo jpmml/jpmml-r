@@ -33,10 +33,10 @@ public class RandomForestConverterTest extends ConverterTest {
 	public void selectValues(){
 		List<String> values = Arrays.asList("1", "2", "3", "4");
 
-		Predicate<String> truePredicate = new Predicate<String>(){
+		Predicate<Object> truePredicate = new Predicate<Object>(){
 
 			@Override
-			public boolean test(String value){
+			public boolean test(Object value){
 				return true;
 			}
 		};

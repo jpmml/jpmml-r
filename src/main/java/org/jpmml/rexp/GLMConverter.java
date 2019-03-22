@@ -30,6 +30,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
 public class GLMConverter extends LMConverter {
@@ -80,24 +81,20 @@ public class GLMConverter extends LMConverter {
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
-		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(coefficients.size() - (intercept != null ? 1 : 0), features);
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
 		MiningFunction miningFunction = getMiningFunction(familyFamily.asScalar());
 
-		String targetCategory = null;
+		Object targetCategory = null;
 
 		switch(miningFunction){
 			case CLASSIFICATION:
 				{
 					CategoricalLabel categoricalLabel = (CategoricalLabel)label;
 
-					if(categoricalLabel.size() != 2){
-						throw new IllegalArgumentException();
-					}
+					SchemaUtil.checkSize(2, categoricalLabel);
 
 					targetCategory = categoricalLabel.getValue(1);
 				}

@@ -36,6 +36,7 @@ import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 
 public class CaretEnsembleConverter extends Converter<RGenericVector> {
@@ -103,9 +104,8 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 				case CLASSIFICATION:
 					{
 						CategoricalLabel categoricalLabel = (CategoricalLabel)segmentSchema.getLabel();
-						if(categoricalLabel.size() != 2){
-							throw new IllegalArgumentException();
-						}
+
+						SchemaUtil.checkSize(2, categoricalLabel);
 
 						outputField = ModelUtil.createProbabilityField(name, DataType.DOUBLE, categoricalLabel.getValue(1))
 							.setFinalResult(Boolean.FALSE);

@@ -154,18 +154,18 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		switch(svmType){
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
-				SchemaUtil.setLabel(formula, terms, levels, encoder);
+				FormulaUtil.setLabel(formula, terms, levels, encoder);
 				break;
 			case ONE_CLASSIFICATION:
 				encoder.setLabel(new ContinuousLabel(null, DataType.DOUBLE));
 				break;
 			case EPS_REGRESSION:
 			case NU_REGRESSION:
-				SchemaUtil.setLabel(formula, terms, null, encoder);
+				FormulaUtil.setLabel(formula, terms, null, encoder);
 				break;
 		}
 
-		SchemaUtil.addFeatures(formula, columnNames, true, encoder);
+		FormulaUtil.addFeatures(formula, columnNames, true, encoder);
 
 		scaleFeatures(encoder);
 	}

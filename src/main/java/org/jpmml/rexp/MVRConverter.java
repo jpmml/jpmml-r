@@ -67,7 +67,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		SchemaUtil.addFeatures(formula, rowNames, true, encoder);
+		FormulaUtil.addFeatures(formula, rowNames, true, encoder);
 
 		scaleFeatures(encoder);
 	}

@@ -43,8 +43,8 @@ import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.ValueUtil;
-import org.jpmml.rexp.tree.NodeUtil;
+import org.jpmml.converter.SchemaUtil;
+import org.jpmml.converter.tree.ClassifierNode;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -194,7 +194,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RGenericVector left = tree.getGenericElement("left");
 		RGenericVector right = tree.getGenericElement("right");
 
-		String id = String.valueOf(nodeId.asScalar());
+		Integer id = nodeId.asScalar();
 
 		if((Boolean.TRUE).equals(terminal.asScalar())){
 			Node result = new LeafNode()
@@ -226,7 +226,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 			List<Integer> splitValues = (List<Integer>)splitpoint.getValues();
 
 			leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, true));
@@ -236,7 +236,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		{
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			String value = ValueUtil.formatValue((Double)splitpoint.asScalar());
+			Double value = (Double)splitpoint.asScalar();
 
 			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
@@ -314,18 +314,16 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	private Node encodeClassificationScore(Node node, RDoubleVector probabilities, Schema schema){
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-		if(categoricalLabel.size() != probabilities.size()){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(probabilities.size(), categoricalLabel);
 
-		node = NodeUtil.toComplexNode(node);
+		node = new ClassifierNode(node);
 
 		List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
 		Double maxProbability = null;
 
 		for(int i = 0; i < categoricalLabel.size(); i++){
-			String value = categoricalLabel.getValue(i);
+			Object value = categoricalLabel.getValue(i);
 			Double probability = probabilities.getValue(i);
 
 			if(maxProbability == null || (maxProbability).compareTo(probability) < 0){

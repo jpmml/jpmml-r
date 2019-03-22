@@ -71,7 +71,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			RVector<?> missing = schema.getVectorElement("missing", false);
 
 			if(missing != null){
-				featureMap.addMissingValue(ValueUtil.formatValue(missing.asScalar()));
+				featureMap.addMissingValue(org.jpmml.model.ValueUtil.toString(missing.asScalar()));
 			}
 		}
 

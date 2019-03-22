@@ -23,9 +23,9 @@ import java.util.List;
 
 import com.google.common.collect.Iterables;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.Entity;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
+import org.dmg.pmml.neural_network.NeuralEntity;
 import org.dmg.pmml.neural_network.NeuralInputs;
 import org.dmg.pmml.neural_network.NeuralLayer;
 import org.dmg.pmml.neural_network.NeuralNetwork;
@@ -36,6 +36,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.neural_network.NeuralNetworkUtil;
 
@@ -58,9 +59,9 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		SchemaUtil.setLabel(formula, terms, lev, encoder);
+		FormulaUtil.setLabel(formula, terms, lev, encoder);
 
-		SchemaUtil.addFeatures(formula, coefnames, true, encoder);
+		FormulaUtil.addFeatures(formula, coefnames, true, encoder);
 	}
 
 	@Override
@@ -97,9 +98,8 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		}
 
 		int nInput = ValueUtil.asInt(n.getValue(0));
-		if(nInput != features.size()){
-			throw new IllegalArgumentException();
-		}
+
+		SchemaUtil.checkSize(nInput, features);
 
 		NeuralInputs neuralInputs = NeuralNetworkUtil.createNeuralInputs(features, DataType.DOUBLE);
 
@@ -107,7 +107,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 		List<NeuralLayer> neuralLayers = new ArrayList<>();
 
-		List<? extends Entity> entities = neuralInputs.getNeuralInputs();
+		List<? extends NeuralEntity> entities = neuralInputs.getNeuralInputs();
 
 		int nHidden = ValueUtil.asInt(n.getValue(1));
 		if(nHidden > 0){
@@ -189,7 +189,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private NeuralLayer encodeNeuralLayer(String prefix, int n, List<? extends Entity> entities, RDoubleVector wts, int offset){
+	private NeuralLayer encodeNeuralLayer(String prefix, int n, List<? extends NeuralEntity> entities, RDoubleVector wts, int offset){
 		NeuralLayer neuralLayer = new NeuralLayer();
 
 		for(int i = 0; i < n; i++){

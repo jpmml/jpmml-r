@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.Entity;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.neural_network.NeuralEntity;
 import org.dmg.pmml.neural_network.NeuralInputs;
 import org.dmg.pmml.neural_network.NeuralLayer;
 import org.dmg.pmml.neural_network.NeuralNetwork;
@@ -58,11 +58,11 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		SchemaUtil.setLabel(formula, terms, null, encoder);
+		FormulaUtil.setLabel(formula, terms, null, encoder);
 
-		List<String> names = SchemaUtil.removeSpecialSymbol(columns.getValues(), "(Intercept)", 0);
+		List<String> names = FormulaUtil.removeSpecialSymbol(columns.getValues(), "(Intercept)", 0);
 
-		SchemaUtil.addFeatures(formula, names, true, encoder);
+		FormulaUtil.addFeatures(formula, names, true, encoder);
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 		NeuralInputs neuralInputs = NeuralNetworkUtil.createNeuralInputs(features, DataType.DOUBLE);
 
-		List<? extends Entity> entities = neuralInputs.getNeuralInputs();
+		List<? extends NeuralEntity> entities = neuralInputs.getNeuralInputs();
 
 		List<NeuralLayer> neuralLayers = new ArrayList<>(2);
 

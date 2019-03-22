@@ -50,7 +50,7 @@ public class AdaBagConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, content, termsEncoder);
 
-		SchemaUtil.setLabel(formula, terms, vardepSummary.names(), encoder);
+		FormulaUtil.setLabel(formula, terms, vardepSummary.names(), encoder);
 
 		encodeTreeSchemas(trees, encoder);
 	}

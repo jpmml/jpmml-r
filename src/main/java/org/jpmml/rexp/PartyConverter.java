@@ -28,7 +28,8 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.tree.ComplexNode;
+import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -39,7 +40,7 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.tree.ClassifierNode;
 
 public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
@@ -118,9 +119,9 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		SchemaUtil.setLabel(formula, terms, levels, encoder);
+		FormulaUtil.setLabel(formula, terms, levels, encoder);
 
-		SchemaUtil.addFeatures(formula, termColumns, false, encoder);
+		FormulaUtil.addFeatures(formula, termColumns, false, encoder);
 	}
 
 	@Override
@@ -166,11 +167,29 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
-		Node result = new ComplexNode()
-			.setId(String.valueOf(id.asScalar()))
+		boolean factorResponse = RExpUtil.isFactor(response);
+
+		Node result;
+
+		if(factorResponse){
+			result = new ClassifierNode();
+		} else
+
+		{
+			if(kids == null){
+				result = new LeafNode();
+			} else
+
+			{
+				result = new BranchNode();
+			}
+		}
+
+		result
+			.setId(Integer.valueOf(id.asScalar()))
 			.setPredicate(predicate);
 
-		if(RExpUtil.isFactor(response)){
+		if(factorResponse){
 			RIntegerVector factor = (RIntegerVector)response;
 
 			int index = id.asScalar() - 1;
@@ -184,7 +203,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			List<ScoreDistribution> scoreDistributions = result.getScoreDistributions();
 
 			for(int i = 0; i < categoricalLabel.size(); i++){
-				String value = categoricalLabel.getValue(i);
+				Object value = categoricalLabel.getValue(i);
 				Double probability = probabilities.get(i);
 
 				ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
@@ -222,7 +241,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			Predicate leftPredicate;
 			Predicate rightPredicate;
 
-			String value = ValueUtil.formatValue(breaks.asScalar());
+			Double value = breaks.asScalar();
 
 			if(right.asScalar()){
 				leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
@@ -247,7 +266,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				throw new IllegalArgumentException();
 			}
 
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 
 			for(int i = 0; i < kids.size(); i++){
 				Predicate childPredicate;
@@ -274,15 +293,15 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private List<String> selectValues(List<String> values, RIntegerVector index, int flag){
-		List<String> result = new ArrayList<>();
+	private List<Object> selectValues(List<?> values, RIntegerVector index, int flag){
+		List<Object> result = new ArrayList<>();
 
 		if(values.size() != index.size()){
 			throw new IllegalArgumentException();
 		}
 
 		for(int i = 0; i < values.size(); i++){
-			String value = values.get(i);
+			Object value = values.get(i);
 
 			if(index.getValue(i) == flag){
 				result.add(value);

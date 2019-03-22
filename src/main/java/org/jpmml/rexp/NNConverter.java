@@ -23,11 +23,11 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.Entity;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.neural_network.NeuralEntity;
 import org.dmg.pmml.neural_network.NeuralInputs;
 import org.dmg.pmml.neural_network.NeuralLayer;
 import org.dmg.pmml.neural_network.NeuralNetwork;
@@ -102,7 +102,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 
 		List<NeuralLayer> neuralLayers = new ArrayList<>();
 
-		List<? extends Entity> entities = neuralInputs.getNeuralInputs();
+		List<? extends NeuralEntity> entities = neuralInputs.getNeuralInputs();
 
 		for(int i = 0; i < weights.size(); i++){
 			boolean hidden = (i < (weights.size() - 1));

@@ -42,7 +42,9 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
+import org.jpmml.converter.Feature;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.model.ValueUtil;
 
 public class FormulaUtil {
 
@@ -153,13 +155,13 @@ public class FormulaUtil {
 			}
 
 			List<String> categoryNames;
-			List<String> categoryValues;
+			List<?> categoryValues;
 
 			if((DataType.BOOLEAN).equals(dataType)){
 				opType = OpType.CATEGORICAL;
 
 				categoryNames = Arrays.asList("FALSE", "TRUE");
-				categoryValues = Arrays.asList("false", "true");
+				categoryValues = Arrays.asList(Boolean.FALSE, Boolean.TRUE);
 			} else
 
 			{
@@ -223,6 +225,103 @@ public class FormulaUtil {
 		}
 
 		return formula;
+	}
+
+	static
+	public void setLabel(Formula formula, RExp terms, RExp levels, RExpEncoder encoder){
+		RIntegerVector response = terms.getIntegerAttribute("response");
+
+		int responseIndex = response.asScalar();
+		if(responseIndex != 0){
+			DataField dataField = (DataField)formula.getField(responseIndex - 1);
+
+			FieldName name = dataField.getName();
+
+			if(encoder.getDataField(name) == null){
+				encoder.addDataField(dataField);
+			} // End if
+
+			if(levels instanceof RStringVector){
+				RStringVector stringLevels = (RStringVector)levels;
+
+				dataField = (DataField)encoder.toCategorical(name, stringLevels.getValues());
+			} else
+
+			if(levels instanceof RIntegerVector){
+				RIntegerVector factorLevels = (RIntegerVector)levels;
+
+				if(!factorLevels.isFactor()){
+					throw new IllegalArgumentException();
+				}
+
+				dataField = (DataField)encoder.toCategorical(name, factorLevels.getLevelValues());
+			} else
+
+			if(levels != null){
+				throw new IllegalArgumentException();
+			}
+
+			encoder.setLabel(dataField);
+		} else
+
+		{
+			throw new IllegalArgumentException();
+		}
+	}
+
+	static
+	public void addFeatures(Formula formula, RStringVector names, boolean allowInteractions, RExpEncoder encoder){
+		addFeatures(formula, names.getValues(), allowInteractions, encoder);
+	}
+
+	static
+	public void addFeatures(Formula formula, List<String> names, boolean allowInteractions, RExpEncoder encoder){
+
+		for(int i = 0; i < names.size(); i++){
+			String name = names.get(i);
+
+			Feature feature;
+
+			if(allowInteractions){
+				feature = formula.resolveFeature(name);
+			} else
+
+			{
+				feature = formula.resolveFeature(FieldName.create(name));
+			}
+
+			encoder.addFeature(feature);
+		}
+	}
+
+	static
+	public List<String> removeSpecialSymbol(List<String> names, String specialName){
+		int index = names.indexOf(specialName);
+
+		if(index > -1){
+			names = new ArrayList<>(names);
+
+			names.remove(index);
+		}
+
+		return names;
+	}
+
+	static
+	public List<String> removeSpecialSymbol(List<String> names, String specialName, int specialNameIndex){
+		String name = names.get(specialNameIndex);
+
+		if((name).equals(specialName)){
+			names = new ArrayList<>(names);
+
+			names.remove(specialNameIndex);
+		} else
+
+		{
+			throw new IllegalArgumentException();
+		}
+
+		return names;
 	}
 
 	static
@@ -424,7 +523,7 @@ public class FormulaUtil {
 				throw new IllegalArgumentException();
 			}
 
-			String to = constant.getValue();
+			String to = ValueUtil.toString(constant.getValue());
 
 			result.put(from, to);
 		}
@@ -442,7 +541,9 @@ public class FormulaUtil {
 		for(FunctionExpression.Argument objectArgument : objectArguments){
 			Constant constant = (Constant)objectArgument.getExpression();
 
-			result.add(constant.getValue());
+			String string = ValueUtil.toString(constant.getValue());
+
+			result.add(string);
 		}
 
 		return result;

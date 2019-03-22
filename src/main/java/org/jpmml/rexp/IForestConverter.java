@@ -189,7 +189,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		int status = nodeStatus.get(index);
 		int size = nodeSize.get(index);
 
-		String id = String.valueOf(index + 1);
+		Integer id = Integer.valueOf(index + 1);
 
 		// Interior node
 		if(status == -3){
@@ -197,7 +197,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			ContinuousFeature feature = (ContinuousFeature)schema.getFeature(att - 1);
 
-			String value = ValueUtil.formatValue(splitValue.get(index));
+			Double value = splitValue.get(index);
 
 			Predicate leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 			Predicate rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);

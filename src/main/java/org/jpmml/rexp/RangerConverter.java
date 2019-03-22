@@ -46,7 +46,7 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
-import org.jpmml.rexp.tree.NodeUtil;
+import org.jpmml.converter.tree.ClassifierNode;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
@@ -205,7 +205,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				node = NodeUtil.toComplexNode(node);
+				node = new ClassifierNode(node);
 
 				List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
@@ -301,12 +301,12 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 			int splitLevelIndex = ValueUtil.asInt(Math.floor(splitValue.doubleValue()));
 
 			FieldName name = categoricalFeature.getName();
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 
-			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
 
-			List<String> leftValues = filterValues(values.subList(0, splitLevelIndex), valueFilter);
-			List<String> rightValues = filterValues(values.subList(splitLevelIndex, values.size()), valueFilter);
+			List<Object> leftValues = filterValues(values.subList(0, splitLevelIndex), valueFilter);
+			List<Object> rightValues = filterValues(values.subList(splitLevelIndex, values.size()), valueFilter);
 
 			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
 			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
@@ -318,10 +318,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		{
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			String value = ValueUtil.formatValue(splitValue);
-
-			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, splitValue);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, splitValue);
 		}
 
 		Node leftChild = encodeNode(leftPredicate, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
@@ -335,7 +333,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private <E> List<E> filterValues(List<E> values, java.util.function.Predicate<E> valueFilter){
+	private List<Object> filterValues(List<?> values, java.util.function.Predicate<Object> valueFilter){
 		return values.stream()
 			.filter(valueFilter)
 			.collect(Collectors.toList());

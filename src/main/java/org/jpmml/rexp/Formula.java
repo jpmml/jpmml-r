@@ -41,6 +41,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.HasDerivedName;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.PowerFeature;
+import org.jpmml.model.ValueUtil;
 
 public class Formula {
 
@@ -123,7 +124,9 @@ public class Formula {
 					Constant constant = (Constant)expressions.get(1);
 
 					try {
-						int power = Integer.parseInt(constant.getValue());
+						String string = ValueUtil.toString(constant.getValue());
+
+						int power = Integer.parseInt(string);
 
 						feature = new PowerFeature(encoder, fieldRef.getField(), DataType.DOUBLE, power);
 					} catch(NumberFormatException nfe){
@@ -138,7 +141,7 @@ public class Formula {
 		this.fields.add(field);
 	}
 
-	public void addField(Field<?> field, List<String> categoryNames, List<String> categoryValues){
+	public void addField(Field<?> field, List<String> categoryNames, List<?> categoryValues){
 		RExpEncoder encoder = getEncoder();
 
 		if(categoryNames.size() != categoryValues.size()){
@@ -159,7 +162,7 @@ public class Formula {
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);
-			String categoryValue = categoryValues.get(i);
+			Object categoryValue = categoryValues.get(i);
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 

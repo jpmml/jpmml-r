@@ -89,7 +89,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 					break;
 				case "adaboost":
 				case "bernoulli":
-					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.STRING, GBMConverter.BINARY_CLASSES);
+					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.INTEGER, GBMConverter.BINARY_CLASSES);
 					break;
 				case "multinomial":
 					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.STRING, classes.getValues());
@@ -132,7 +132,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector distributionName = distribution.getStringElement("name");
 
-		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
+		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
 		List<TreeModel> treeModels = new ArrayList<>();
 
@@ -172,7 +172,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeBinaryClassification(List<TreeModel> treeModels, Double initF, double coefficient, Schema schema){
-		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
+		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
 		MiningModel miningModel = createMiningModel(treeModels, initF, segmentSchema)
 			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue"), OpType.CONTINUOUS, DataType.DOUBLE));
@@ -183,7 +183,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-		Schema segmentSchema = new Schema(new ContinuousLabel(null, DataType.DOUBLE), schema.getFeatures());
+		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
 		List<Model> miningModels = new ArrayList<>();
 
@@ -214,7 +214,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
 
-		String id = String.valueOf(i + 1);
+		Integer id = Integer.valueOf(i + 1);
 
 		Integer var = splitVar.getValue(i);
 		if(var == -1){
@@ -261,7 +261,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
 			FieldName name = categoricalFeature.getName();
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 
 			int index = ValueUtil.asInt(split);
 
@@ -269,10 +269,10 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			List<Integer> splitValues = c_split.getValues();
 
-			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
 
-			List<String> leftValues = selectValues(values, valueFilter, splitValues, true);
-			List<String> rightValues = selectValues(values, valueFilter, splitValues, false);
+			List<Object> leftValues = selectValues(values, valueFilter, splitValues, true);
+			List<Object> rightValues = selectValues(values, valueFilter, splitValues, false);
 
 			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
 			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
@@ -284,10 +284,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		{
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			String value = ValueUtil.formatValue(split);
-
-			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, value);
-			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_THAN, split);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, split);
 		}
 
 		Node result = new BranchNode()
@@ -332,16 +330,16 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private <E> List<E> selectValues(List<E> values, java.util.function.Predicate<E> valueFilter, List<Integer> splitValues, boolean left){
+	private List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, List<Integer> splitValues, boolean left){
 
 		if(values.size() != splitValues.size()){
 			throw new IllegalArgumentException();
 		}
 
-		List<E> result = new ArrayList<>();
+		List<Object> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){
-			E value = values.get(i);
+			Object value = values.get(i);
 			Integer splitValue = splitValues.get(i);
 
 			boolean append;
@@ -362,5 +360,5 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		return result;
 	}
 
-	private static final List<String> BINARY_CLASSES = Arrays.asList("0", "1");
+	private static final List<Integer> BINARY_CLASSES = Arrays.asList(0, 1);
 }

@@ -35,13 +35,13 @@ public class TreeModelConverter<R extends RExp> extends ModelConverter<R> {
 		super(object);
 	}
 
-	public Predicate createSimpleSetPredicate(Feature feature, List<String> values){
+	public Predicate createSimpleSetPredicate(Feature feature, List<?> values){
 		PredicateManager predicateManager = getPredicateManager();
 
 		return predicateManager.createSimpleSetPredicate(feature, values);
 	}
 
-	public Predicate createSimplePredicate(Feature feature, SimplePredicate.Operator operator, String value){
+	public Predicate createSimplePredicate(Feature feature, SimplePredicate.Operator operator, Object value){
 		PredicateManager predicateManager = getPredicateManager();
 
 		return predicateManager.createSimplePredicate(feature, operator, value);

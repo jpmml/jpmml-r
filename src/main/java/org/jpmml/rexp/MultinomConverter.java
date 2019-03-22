@@ -30,6 +30,7 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class MultinomConverter extends ModelConverter<RGenericVector> {
@@ -51,11 +52,11 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		SchemaUtil.setLabel(formula, terms, lev, encoder);
+		FormulaUtil.setLabel(formula, terms, lev, encoder);
 
-		List<String> names = SchemaUtil.removeSpecialSymbol(vcoefnames.getValues(), "(Intercept)", 0);
+		List<String> names = FormulaUtil.removeSpecialSymbol(vcoefnames.getValues(), "(Intercept)", 0);
 
-		SchemaUtil.addFeatures(formula, names, true, encoder);
+		FormulaUtil.addFeatures(formula, names, true, encoder);
 	}
 
 	@Override
@@ -75,10 +76,7 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 		List<? extends Feature> features = schema.getFeatures();
 
 		if(categoricalLabel.size() == 2){
-
-			if(wts.size() != (1 + (features.size() + 1))){
-				throw new IllegalArgumentException();
-			}
+			SchemaUtil.checkSize(wts.size() - 2, features);
 
 			int offset = 1;
 
@@ -89,10 +87,7 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 		} else
 
 		if(categoricalLabel.size() > 2){
-
-			if(wts.size() != categoricalLabel.size() * (1 + (features.size() + 1))){
-				throw new IllegalArgumentException();
-			} // End if
+			SchemaUtil.checkSize(wts.size() - (2 * categoricalLabel.size()), categoricalLabel, features);
 
 			if(softmax != null && softmax.asScalar()){
 

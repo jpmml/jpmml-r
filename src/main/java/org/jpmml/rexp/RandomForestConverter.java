@@ -121,14 +121,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		if(y instanceof RIntegerVector){
-			SchemaUtil.setLabel(formula, terms, y, encoder);
+			FormulaUtil.setLabel(formula, terms, y, encoder);
 		} else
 
 		{
-			SchemaUtil.setLabel(formula, terms, null, encoder);
+			FormulaUtil.setLabel(formula, terms, null, encoder);
 		}
 
-		SchemaUtil.addFeatures(formula, xlevels.names(), false, encoder);
+		FormulaUtil.addFeatures(formula, xlevels.names(), false, encoder);
 	}
 
 	private void encodeNonFormula(RExpEncoder encoder){
@@ -244,7 +244,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){
 
 			@Override
-			public String encode(Integer value){
+			public Object encode(Integer value){
 				return categoricalLabel.getValue(value - 1);
 			}
 		};
@@ -296,7 +296,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private <P extends Number> Node encodeNode(Predicate predicate, int i, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<? extends Number> bestvar, List<Double> xbestsplit, List<P> nodepred, CategoryManager categoryManager, Schema schema){
-		String id = String.valueOf(i + 1);
+		Integer id = Integer.valueOf(i + 1);
 
 		int var = ValueUtil.asInt(bestvar.get(i));
 		if(var == 0){
@@ -335,12 +335,12 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
 			FieldName name = categoricalFeature.getName();
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 
-			java.util.function.Predicate<String> valueFilter = categoryManager.getValueFilter(name);
+			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
 
-			List<String> leftValues = selectValues(values, valueFilter, split, true);
-			List<String> rightValues = selectValues(values, valueFilter, split, false);
+			List<Object> leftValues = selectValues(values, valueFilter, split, true);
+			List<Object> rightValues = selectValues(values, valueFilter, split, false);
 
 			leftCategoryManager = categoryManager.fork(name, leftValues);
 			rightCategoryManager = categoryManager.fork(name, rightValues);
@@ -352,10 +352,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		{
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			String value = ValueUtil.formatValue(split);
-
-			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
-			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
+			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, split);
+			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, split);
 		}
 
 		Node result = new BranchNode()
@@ -382,13 +380,13 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	<E> List<E> selectValues(List<E> values, java.util.function.Predicate<E> valueFilter, Double split, boolean left){
+	List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, Double split, boolean left){
 		UnsignedLong bits = toUnsignedLong(split.doubleValue());
 
-		List<E> result = new ArrayList<>();
+		List<Object> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){
-			E value = values.get(i);
+			Object value = values.get(i);
 
 			boolean append;
 

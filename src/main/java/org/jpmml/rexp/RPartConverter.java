@@ -39,9 +39,9 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.rexp.tree.CountingBranchNode;
-import org.jpmml.rexp.tree.CountingLeafNode;
-import org.jpmml.rexp.tree.NodeUtil;
+import org.jpmml.converter.tree.ClassifierNode;
+import org.jpmml.converter.tree.CountingBranchNode;
+import org.jpmml.converter.tree.CountingLeafNode;
 
 public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
@@ -89,11 +89,11 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		SchemaUtil.setLabel(formula, terms, ylevels, encoder);
+		FormulaUtil.setLabel(formula, terms, ylevels, encoder);
 
-		List<String> names = SchemaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
+		List<String> names = FormulaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
 
-		SchemaUtil.addFeatures(formula, names, false, encoder);
+		FormulaUtil.addFeatures(formula, names, false, encoder);
 
 		this.formula = formula;
 	}
@@ -167,7 +167,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
-		List<String> categories = categoricalLabel.getValues();
+		List<?> categories = categoricalLabel.getValues();
 
 		final
 		boolean hasScoreDistribution = hasScoreDistribution();
@@ -200,7 +200,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public Node encode(Node node, int offset){
-				String score = categories.get(this.classes.get(offset) - 1);
+				Object score = categories.get(this.classes.get(offset) - 1);
 				Integer recordCount = n.getValue(offset);
 
 				node
@@ -208,7 +208,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 					.setRecordCount(recordCount.doubleValue());
 
 				if(hasScoreDistribution){
-					node = NodeUtil.toComplexNode(node);
+					node = new ClassifierNode(node);
 
 					List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
@@ -266,7 +266,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	private Node encodeNode(Predicate predicate, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
 		int offset = getIndex(rowNames, rowName);
 
-		String id = String.valueOf(rowName);
+		Integer id = Integer.valueOf(rowName);
 
 		int splitVar = var.getValue(offset) - 1;
 		if(splitVar == 0){
@@ -382,10 +382,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 				rightOperator = SimplePredicate.Operator.LESS_THAN;
 			}
 
-			String value = ValueUtil.formatValue(splitValue);
-
-			leftPredicate = createSimplePredicate(feature, leftOperator, value);
-			rightPredicate = createSimplePredicate(feature, rightOperator, value);
+			leftPredicate = createSimplePredicate(feature, leftOperator, splitValue);
+			rightPredicate = createSimplePredicate(feature, rightOperator, splitValue);
 		} else
 
 		{
@@ -398,7 +396,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 			List<Integer> csplitRow = FortranMatrixUtil.getRow(csplit.getValues(), csplitRows, csplitColumns, ValueUtil.asInt(splitValue) - 1);
 
-			List<String> values = categoricalFeature.getValues();
+			List<?> values = categoricalFeature.getValues();
 
 			leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 1));
 			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
@@ -441,11 +439,11 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
-	private List<String> selectValues(List<String> values, List<Integer> valueFlags, int flag){
-		List<String> result = new ArrayList<>(values.size());
+	private <E> List<E> selectValues(List<E> values, List<Integer> valueFlags, int flag){
+		List<E> result = new ArrayList<>(values.size());
 
 		for(int i = 0; i < values.size(); i++){
-			String value = values.get(i);
+			E value = values.get(i);
 			Integer valueFlag = valueFlags.get(i);
 
 			if(valueFlag == flag){

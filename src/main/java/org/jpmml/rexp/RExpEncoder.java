@@ -40,7 +40,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.ValueUtil;
+import org.jpmml.converter.TypeUtil;
 import org.jpmml.model.visitors.FieldRenamer;
 
 public class RExpEncoder extends ModelEncoder {
@@ -92,19 +92,17 @@ public class RExpEncoder extends ModelEncoder {
 	}
 
 	@Override
-	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<String> values){
+	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<?> values){
 
 		if(dataType == null){
-			dataType = ValueUtil.getDataType(values);
+			dataType = TypeUtil.getDataType(values);
 		}
 
 		return super.createDataField(name, opType, dataType, values);
 	}
 
 	public Schema createSchema(){
-		Schema schema = new Schema(getLabel(), getFeatures());
-
-		return schema;
+		return new Schema(getLabel(), getFeatures());
 	}
 
 	public void setLabel(DataField dataField){

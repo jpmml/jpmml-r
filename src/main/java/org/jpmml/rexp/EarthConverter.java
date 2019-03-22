@@ -37,6 +37,7 @@ import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
@@ -155,9 +156,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		List<? extends Feature> features = schema.getFeatures();
 
-		if(coefficients.size() != (features.size() + 1)){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(coefficients.size() - 1, features);
 
 		List<Double> featureCoefficients = (coefficients.getValues()).subList(1, features.size() + 1);
 

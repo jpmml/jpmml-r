@@ -74,10 +74,10 @@ public class MultNetConverter extends GLMNetConverter {
 				.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 			for(int i = 0; i < categoricalLabel.size(); i++){
-				String targetCategory = categoricalLabel.getValue(i);
+				Object targetCategory = categoricalLabel.getValue(i);
 
 				List<Double> categoryA0 = FortranMatrixUtil.getRow(a0.getValues(), a0Rows, a0Columns, i);
-				S4Object categoryBeta = (S4Object)categoryBetas.getElement(targetCategory);
+				S4Object categoryBeta = (S4Object)categoryBetas.getElement(org.jpmml.model.ValueUtil.toString(targetCategory));
 
 				Double intercept = categoryA0.get(column);
 				List<Double> coefficients = getCoefficients(categoryBeta, column);

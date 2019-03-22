@@ -24,6 +24,7 @@ import java.util.List;
 import org.dmg.pmml.Model;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class LMConverter extends ModelConverter<RGenericVector> {
@@ -76,11 +77,11 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 	protected void encodeSchema(RExp terms, FormulaContext context, RExpEncoder encoder){
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		SchemaUtil.setLabel(formula, terms, null, encoder);
+		FormulaUtil.setLabel(formula, terms, null, encoder);
 
-		List<String> names = SchemaUtil.removeSpecialSymbol(getCoefficientNames(), getInterceptName());
+		List<String> names = FormulaUtil.removeSpecialSymbol(getCoefficientNames(), getInterceptName());
 
-		SchemaUtil.addFeatures(formula, names, true, encoder);
+		FormulaUtil.addFeatures(formula, names, true, encoder);
 
 		this.formula = formula;
 	}
@@ -95,9 +96,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<? extends Feature> features = schema.getFeatures();
 
-		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(coefficients.size() - (intercept != null ? 1 : 0), features);
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 

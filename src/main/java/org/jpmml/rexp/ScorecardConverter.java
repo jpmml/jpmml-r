@@ -36,6 +36,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 
 public class ScorecardConverter extends GLMConverter {
 
@@ -55,9 +56,7 @@ public class ScorecardConverter extends GLMConverter {
 
 		List<? extends Feature> features = schema.getFeatures();
 
-		if(coefficients.size() != (features.size() + (intercept != null ? 1 : 0))){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(coefficients.size() - (intercept != null ? 1 : 0), features);
 
 		RNumberVector<?> odds = scConf.getNumericElement("odds");
 		RNumberVector<?> basePoints = scConf.getNumericElement("base_points");

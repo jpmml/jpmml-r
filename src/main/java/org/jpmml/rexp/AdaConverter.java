@@ -106,7 +106,7 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, termsEncoder);
 
-		SchemaUtil.setLabel(formula, terms, fit, encoder);
+		FormulaUtil.setLabel(formula, terms, fit, encoder);
 
 		encodeTreeSchemas(trees, encoder);
 	}
