@@ -18,7 +18,6 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.FieldName;
 import org.junit.Test;
 
 public class SVMConverterTest extends ConverterTest {
@@ -30,7 +29,7 @@ public class SVMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAnomalyFormulaAudit() throws Exception {
-		evaluate("LibSVMAnomalyFormula", "Audit", excludeFields(SVMConverterTest.decisionFunctionFields));
+		evaluate("LibSVMAnomalyFormula", "Audit");
 	}
 
 	@Test
@@ -50,13 +49,11 @@ public class SVMConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAnomalyFormulaIris() throws Exception {
-		evaluate("LibSVMAnomalyFormula", "Iris", excludeFields(SVMConverterTest.decisionFunctionFields));
+		evaluate("LibSVMAnomalyFormula", "Iris");
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
 		evaluate("LibSVM", "Iris");
 	}
-
-	private static final FieldName[] decisionFunctionFields = {FieldName.create("decisionFunction")};
 }

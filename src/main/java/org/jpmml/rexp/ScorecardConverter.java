@@ -120,7 +120,7 @@ public class ScorecardConverter extends GLMConverter {
 	}
 
 	static
-	private Double formatScore(Double score){
-		return (double)Math.round(score);
+	private Number formatScore(Double score){
+		return Math.round(score);
 	}
 }

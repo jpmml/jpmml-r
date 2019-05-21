@@ -29,6 +29,7 @@ import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
@@ -40,7 +41,6 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.tree.ClassifierNode;
 
 public class PartyConverter extends TreeModelConverter<RGenericVector> {
 

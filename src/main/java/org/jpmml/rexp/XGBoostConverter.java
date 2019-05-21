@@ -77,7 +77,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Learner learner = ensureLearner();
 
-		ObjFunction obj = learner.getObj();
+		ObjFunction obj = learner.obj();
 
 		FieldName targetField = FieldName.create("_target");
 		List<String> targetCategories = null;

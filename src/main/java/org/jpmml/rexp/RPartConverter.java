@@ -30,6 +30,9 @@ import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
+import org.dmg.pmml.tree.ClassifierNode;
+import org.dmg.pmml.tree.CountingBranchNode;
+import org.dmg.pmml.tree.CountingLeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CategoricalFeature;
@@ -39,9 +42,6 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
-import org.jpmml.converter.tree.ClassifierNode;
-import org.jpmml.converter.tree.CountingBranchNode;
-import org.jpmml.converter.tree.CountingLeafNode;
 
 public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
@@ -149,7 +149,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 				node
 					.setScore(score)
-					.setRecordCount(recordCount.doubleValue());
+					.setRecordCount(recordCount);
 
 				return node;
 			}
@@ -205,7 +205,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 				node
 					.setScore(score)
-					.setRecordCount(recordCount.doubleValue());
+					.setRecordCount(recordCount);
 
 				if(hasScoreDistribution){
 					node = new ClassifierNode(node);
@@ -217,7 +217,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 						ScoreDistribution scoreDistribution = new ScoreDistribution()
 							.setValue(categories.get(i))
-							.setRecordCount(recordCounts.get(offset).doubleValue());
+							.setRecordCount(recordCounts.get(offset));
 
 						scoreDistributions.add(scoreDistribution);
 					}

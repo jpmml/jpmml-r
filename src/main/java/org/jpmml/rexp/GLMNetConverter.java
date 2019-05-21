@@ -27,6 +27,7 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.ValueUtil;
 
 abstract
 public class GLMNetConverter extends ModelConverter<RGenericVector> {
@@ -104,7 +105,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
 		RNumberVector<?> lambdaS = DecorationUtil.getNumericElement(glmnet, "lambda.s");
 
-		return (lambdaS.asScalar()).doubleValue();
+		return ValueUtil.asDouble(lambdaS.asScalar());
 	}
 
 	public Double getLambdaS(){

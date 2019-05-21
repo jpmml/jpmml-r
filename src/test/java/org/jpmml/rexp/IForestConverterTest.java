@@ -18,20 +18,17 @@
  */
 package org.jpmml.rexp;
 
-import org.dmg.pmml.FieldName;
 import org.junit.Test;
 
 public class IForestConverterTest extends ConverterTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("IForest", "Auto", excludeFields(IForestConverterTest.pathLengthFields));
+		evaluate("IForest", "Auto");
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("IForest", "Iris", excludeFields(IForestConverterTest.pathLengthFields));
+		evaluate("IForest", "Iris");
 	}
-
-	private static final FieldName[] pathLengthFields = {FieldName.create("rawPathLength"), FieldName.create("normalizedPathLength")};
 }

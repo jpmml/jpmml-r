@@ -34,6 +34,7 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
@@ -46,7 +47,6 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
-import org.jpmml.converter.tree.ClassifierNode;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
@@ -209,13 +209,13 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 				List<ScoreDistribution> scoreDistributions = node.getScoreDistributions();
 
-				Double maxProbability = null;
+				Number maxProbability = null;
 
 				for(int i = 0; i < terminalClassCount.size(); i++){
 					String value = levels.getValue(i);
-					Double probability = ValueUtil.asDouble(terminalClassCount.getValue(i));
+					Number probability = terminalClassCount.getValue(i);
 
-					if(maxProbability == null || (maxProbability).compareTo(probability) < 0){
+					if(maxProbability == null || ((Comparable)maxProbability).compareTo(probability) < 0){
 						node.setScore(value);
 
 						maxProbability = probability;

@@ -34,6 +34,7 @@ import org.dmg.pmml.ScoreDistribution;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.BranchNode;
+import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
@@ -44,7 +45,6 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
-import org.jpmml.converter.tree.ClassifierNode;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -158,7 +158,6 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
 			} else
 
-
 			if(splitpoint instanceof RDoubleVector){
 				dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
 			} else
@@ -236,7 +235,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		{
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			Double value = (Double)splitpoint.asScalar();
+			Number value = splitpoint.asScalar();
 
 			leftPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.LESS_OR_EQUAL, value);
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, value);
