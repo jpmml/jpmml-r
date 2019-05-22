@@ -32,7 +32,6 @@ import org.dmg.pmml.regression.RegressionModel;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SigmoidTransformation;
 import org.jpmml.converter.mining.MiningModelUtil;
 
 public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
@@ -86,9 +85,9 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(null))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_SUM, treeModels, alpha.getValues()))
-			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("adaValue"), OpType.CONTINUOUS, DataType.DOUBLE, new SigmoidTransformation(-2d)));
+			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("adaValue"), OpType.CONTINUOUS, DataType.DOUBLE));
 
-		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 1d, 0d, RegressionModel.NormalizationMethod.NONE, true, schema);
+		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 2d, 0d, RegressionModel.NormalizationMethod.LOGIT, true, schema);
 	}
 
 	private void encodeFormula(RExpEncoder encoder){
