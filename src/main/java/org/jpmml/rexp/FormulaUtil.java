@@ -42,6 +42,7 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.model.ValueUtil;
@@ -357,7 +358,7 @@ public class FormulaUtil {
 		expressionFields.putAll(noArgument);
 
 		// XXX: "Missing values in test give missing values in the result"
-		Apply apply = PMMLUtil.createApply("if")
+		Apply apply = PMMLUtil.createApply(PMMLFunctions.IF)
 			.addExpressions(prepareExpression(testArgument, expressionFields, encoder))
 			.addExpressions(prepareExpression(yesArgument, expressionFields, encoder), prepareExpression(noArgument, expressionFields, encoder));
 

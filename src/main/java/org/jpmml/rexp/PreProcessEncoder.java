@@ -30,6 +30,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
@@ -104,27 +105,27 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 			Double max = ranges.get(1);
 
 			if(!ValueUtil.isZero(min)){
-				expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(min));
+				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(min));
 			} // End if
 
 			if(!ValueUtil.isOne(max - min)){
-				expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(max - min));
+				expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(max - min));
 			}
 		}
 
 		Double mean = this.mean.get(name);
 		if(mean != null && !ValueUtil.isZero(mean)){
-			expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(mean));
+			expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(mean));
 		}
 
 		Double std = this.std.get(name);
 		if(std != null && !ValueUtil.isOne(std)){
-			expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(std));
+			expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(std));
 		}
 
 		Double median = this.median.get(name);
 		if(median != null){
-			expression = PMMLUtil.createApply("if", PMMLUtil.createApply("isNotMissing", new FieldRef(name)), expression, PMMLUtil.createConstant(median));
+			expression = PMMLUtil.createApply(PMMLFunctions.IF, PMMLUtil.createApply(PMMLFunctions.ISNOTMISSING, new FieldRef(name)), expression, PMMLUtil.createConstant(median));
 		}
 
 		return expression;

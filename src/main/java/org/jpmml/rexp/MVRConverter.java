@@ -27,6 +27,7 @@ import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
@@ -131,7 +132,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			Apply apply = PMMLUtil.createApply("/", continuousFeature.ref(), PMMLUtil.createConstant(factor));
+			Apply apply = PMMLUtil.createApply(PMMLFunctions.DIVIDE, continuousFeature.ref(), PMMLUtil.createConstant(factor));
 
 			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 

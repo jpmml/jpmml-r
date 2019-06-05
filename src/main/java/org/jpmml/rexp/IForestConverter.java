@@ -29,6 +29,7 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
@@ -123,7 +124,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public Expression createExpression(FieldRef fieldRef){
-				return PMMLUtil.createApply("/", fieldRef, PMMLUtil.createConstant(avgPathLength(xrow.asScalar())));
+				return PMMLUtil.createApply(PMMLFunctions.DIVIDE, fieldRef, PMMLUtil.createConstant(avgPathLength(xrow.asScalar())));
 			}
 		};
 
@@ -142,7 +143,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public Expression createExpression(FieldRef fieldRef){
-				return PMMLUtil.createApply("pow", PMMLUtil.createConstant(2d), PMMLUtil.createApply("*", PMMLUtil.createConstant(-1d), fieldRef));
+				return PMMLUtil.createApply(PMMLFunctions.POW, PMMLUtil.createConstant(2d), PMMLUtil.createApply(PMMLFunctions.MULTIPLY, PMMLUtil.createConstant(-1d), fieldRef));
 			}
 		};
 

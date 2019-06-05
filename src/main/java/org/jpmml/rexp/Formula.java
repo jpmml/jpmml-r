@@ -33,6 +33,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.CategoricalFeature;
@@ -117,7 +118,7 @@ public class Formula {
 			if(expression instanceof Apply){
 				Apply apply = (Apply)expression;
 
-				if(checkApply(apply, "pow", FieldRef.class, Constant.class)){
+				if(checkApply(apply, PMMLFunctions.POW, FieldRef.class, Constant.class)){
 					List<Expression> expressions = apply.getExpressions();
 
 					FieldRef fieldRef = (FieldRef)expressions.get(0);

@@ -29,6 +29,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
@@ -187,15 +188,15 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		switch(dir){
 			case -1:
-				expression = PMMLUtil.createApply("-", PMMLUtil.createConstant(cut), feature.ref());
+				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, PMMLUtil.createConstant(cut), feature.ref());
 				break;
 			case 1:
-				expression = PMMLUtil.createApply("-", feature.ref(), PMMLUtil.createConstant(cut));
+				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, feature.ref(), PMMLUtil.createConstant(cut));
 				break;
 			default:
 				throw new IllegalArgumentException();
 		}
 
-		return PMMLUtil.createApply("max", expression, PMMLUtil.createConstant(0d));
+		return PMMLUtil.createApply(PMMLFunctions.MAX, expression, PMMLUtil.createConstant(0d));
 	}
 }

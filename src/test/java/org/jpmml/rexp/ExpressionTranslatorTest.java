@@ -28,197 +28,186 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
+import org.dmg.pmml.PMMLFunctions;
+import org.jpmml.converter.PMMLUtil;
+import org.jpmml.model.ReflectionUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ExpressionTranslatorTest {
 
 	@Test
 	public void translate(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("(1.0 + log(A / B)) ^ 2");
+		String string = "(1.0 + log(A / B)) ^ 2";
 
-		List<Expression> expressions = checkApply(apply, "pow", Apply.class, Constant.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.POW)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.ADD)
+				.addExpressions(PMMLUtil.createConstant("1.0", DataType.DOUBLE))
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.LN)
+					.addExpressions(PMMLUtil.createApply(PMMLFunctions.DIVIDE)
+						.addExpressions(new FieldRef(FieldName.create("A")), new FieldRef(FieldName.create("B")))
+					)
+				)
+			)
+			.addExpressions(PMMLUtil.createConstant("2", null));
 
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		checkConstant((Constant)right, "2", null);
-
-		expressions = checkApply((Apply)left, "+", Constant.class, Apply.class);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkConstant((Constant)left, "1.0", DataType.DOUBLE);
-
-		expressions = checkApply((Apply)right, "ln", Apply.class);
-
-		left = expressions.get(0);
-
-		expressions = checkApply((Apply)left, "/", FieldRef.class, FieldRef.class);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkFieldRef((FieldRef)left, FieldName.create("A"));
-		checkFieldRef((FieldRef)right, FieldName.create("B"));
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateIfExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("if(is.na(x)) TRUE else FALSE");
+		String string = "if(is.na(x)) TRUE else FALSE";
 
-		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Constant.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.IF)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.ISMISSING)
+				.addExpressions(new FieldRef(FieldName.create("x")))
+			)
+			.addExpressions(PMMLUtil.createConstant("true", DataType.BOOLEAN), PMMLUtil.createConstant("false", DataType.BOOLEAN));
 
-		Expression condition = expressions.get(0);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		checkApply((Apply)condition, "isMissing", FieldRef.class);
-
-		Expression first = expressions.get(1);
-		Expression second = expressions.get(2);
-
-		checkConstant((Constant)first, "true", DataType.BOOLEAN);
-		checkConstant((Constant)second, "false", DataType.BOOLEAN);
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateLogicalExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("a >= 0.0 & b >= 0.0 | c <= 0.0");
+		String string = "a >= 0.0 & b >= 0.0 | c <= 0.0";
 
-		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.OR)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.AND)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL)
+					.addExpressions(new FieldRef(FieldName.create("a")), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
+				)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL)
+					.addExpressions(new FieldRef(FieldName.create("b")), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
+				)
+			)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.LESSOREQUAL)
+				.addExpressions(new FieldRef(FieldName.create("c")), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
+			);
 
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		expressions = checkApply((Apply)left, "and", Apply.class, Apply.class);
-		checkApply((Apply)right, "lessOrEqual", FieldRef.class, Constant.class);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkApply((Apply)left, "greaterOrEqual", FieldRef.class, Constant.class);
-		checkApply((Apply)right, "greaterOrEqual", FieldRef.class, Constant.class);
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateLogicalExpressionChain(){
 		String string = "(x == 0) | ((x == 1) | (x == 2)) | x == 3";
 
-		Apply apply = (Apply)ExpressionTranslator.translateExpression(string, false);
+		Apply left = PMMLUtil.createApply(PMMLFunctions.EQUAL)
+			.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", null));
 
-		List<Expression> expressions = checkApply(apply, "or", Apply.class, Apply.class);
+		Apply middleLeft = PMMLUtil.createApply(PMMLFunctions.EQUAL)
+			.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("1", null));
 
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
+		Apply middleRight = PMMLUtil.createApply(PMMLFunctions.EQUAL)
+			.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("2", null));
 
-		checkApply((Apply)left, "or", Apply.class, Apply.class);
-		checkApply((Apply)right, "equal", FieldRef.class, Constant.class);
+		Apply right = PMMLUtil.createApply(PMMLFunctions.EQUAL)
+			.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("3", null));
 
-		apply = (Apply)ExpressionTranslator.translateExpression(string, true);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.OR)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.OR)
+				.addExpressions(left)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.OR)
+					.addExpressions(middleLeft, middleRight)
+				)
+			)
+			.addExpressions(right);
 
-		checkApply(apply, "or", Apply.class, Apply.class, Apply.class, Apply.class);
+		Expression actual = ExpressionTranslator.translateExpression(string, false);
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
+
+		expected = PMMLUtil.createApply(PMMLFunctions.OR)
+			.addExpressions(left, middleLeft, middleRight, right);
+
+		actual = ExpressionTranslator.translateExpression(string, true);
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateRelationalExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"");
+		String string = "if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"";
 
-		List<Expression> expressions = checkApply(apply, "if", Apply.class, Constant.class, Apply.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.IF)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.LESSTHAN)
+				.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", null))
+			)
+			.addExpressions(PMMLUtil.createConstant("negative", null))
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.IF)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.GREATERTHAN)
+					.addExpressions(new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", null))
+				)
+				.addExpressions(PMMLUtil.createConstant("positive", null))
+				.addExpressions(PMMLUtil.createConstant("zero", null))
+			);
 
-		Expression condition = expressions.get(0);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		checkApply((Apply)condition, "lessThan", FieldRef.class, Constant.class);
-
-		Expression first = expressions.get(1);
-		Expression second = expressions.get(2);
-
-		checkConstant((Constant)first, "negative", null);
-
-		expressions = checkApply((Apply)second, "if", Apply.class, Constant.class, Constant.class);
-
-		condition = expressions.get(0);
-
-		checkApply((Apply)condition, "greaterThan", FieldRef.class, Constant.class);
-
-		first = expressions.get(1);
-		second = expressions.get(2);
-
-		checkConstant((Constant)first, "positive", null);
-		checkConstant((Constant)second, "zero", null);
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateArithmeticExpressionChain(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("A + B - X + C");
+		String string = "A + B - X + C";
 
-		List<Expression> expressions = checkApply(apply, "+", Apply.class, FieldRef.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.ADD)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.SUBTRACT)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.ADD)
+					.addExpressions(new FieldRef(FieldName.create("A")), new FieldRef(FieldName.create("B")))
+				)
+				.addExpressions(new FieldRef(FieldName.create("X")))
+			)
+			.addExpressions(new FieldRef(FieldName.create("C")));
 
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		expressions = checkApply((Apply)left, "-", Apply.class, FieldRef.class);
-		checkFieldRef((FieldRef)right, FieldName.create("C"));
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		expressions = checkApply((Apply)left, "+", FieldRef.class, FieldRef.class);
-		checkFieldRef((FieldRef)right, FieldName.create("X"));
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkFieldRef((FieldRef)left, FieldName.create("A"));
-		checkFieldRef((FieldRef)right, FieldName.create("B"));
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateExponentiationExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("-2^-3");
+		String string = "-2^-3";
 
-		List<Expression> expressions = checkApply(apply, "*", Constant.class, Apply.class);
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.MULTIPLY)
+			.addExpressions(PMMLUtil.createConstant(-1))
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.POW)
+				.addExpressions(PMMLUtil.createConstant("2", null), PMMLUtil.createConstant("-3", null))
+			);
 
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
+		Expression actual = ExpressionTranslator.translateExpression(string);
 
-		checkConstant((Constant)left, "-1", null);
+		assertTrue(ReflectionUtil.equals(expected, actual));
 
-		expressions = checkApply((Apply)right, "pow", Constant.class, Constant.class);
+		string = "-2^-2*1.5";
 
-		left = expressions.get(0);
-		right = expressions.get(1);
+		expected = PMMLUtil.createApply(PMMLFunctions.MULTIPLY)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.MULTIPLY)
+				.addExpressions(PMMLUtil.createConstant(-1))
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.POW)
+					.addExpressions(PMMLUtil.createConstant("2", null), PMMLUtil.createConstant("-2", null))
+				)
+			)
+			.addExpressions(PMMLUtil.createConstant("1.5", DataType.DOUBLE));
 
-		checkConstant((Constant)left, "2", null);
-		checkConstant((Constant)right, "-3", null);
+		actual = ExpressionTranslator.translateExpression(string);
 
-		apply = (Apply)ExpressionTranslator.translateExpression("-2^-2*1.5");
-
-		expressions = checkApply(apply, "*", Apply.class, Constant.class);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		expressions = checkApply((Apply)left, "*", Constant.class, Apply.class);
-		checkConstant((Constant)right, "1.5", DataType.DOUBLE);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkConstant((Constant)left, "-1", null);
-		expressions = checkApply((Apply)right, "pow", Constant.class, Constant.class);
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkConstant((Constant)left, "2", null);
-		checkConstant((Constant)right, "-2", null);
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateFunctionExpression(){
-		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression("parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))");
+		String string = "parent(first = child(A, log(A)), child(1 + B, right = 0), \"third\" = child(left = 0, c(A, B, C)))";
+
+		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression(string);
 
 		checkFunctionExpression(functionExpression, "parent", "first", null, "third");
 
@@ -238,86 +227,84 @@ public class ExpressionTranslatorTest {
 		assertEquals("first = child(A, log(A))", first.format());
 		assertEquals("child(A, log(A))", first.formatExpression());
 
+		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first.getExpression(), "child", null, null);
+
+		assertTrue(ReflectionUtil.equals(new FieldRef(FieldName.create("A")), expressions.get(0)));
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.LN, new FieldRef(FieldName.create("A"))), expressions.get(1)));
+
 		assertEquals("child(1 + B, right = 0)", second.format());
 		assertEquals("child(1 + B, right = 0)", second.formatExpression());
+
+		expressions = checkFunctionExpression((FunctionExpression)second.getExpression(), "child", null, "right");
+
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.ADD, PMMLUtil.createConstant("1", null), new FieldRef(FieldName.create("B"))), expressions.get(0)));
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createConstant("0", null), expressions.get(1)));
 
 		assertEquals("\"third\" = child(left = 0, c(A, B, C))", third.format());
 		assertEquals("child(left = 0, c(A, B, C))", third.formatExpression());
 
-		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first.getExpression(), "child", null, null);
-
-		Expression left = expressions.get(0);
-		Expression right = expressions.get(1);
-
-		checkFieldRef((FieldRef)left, FieldName.create("A"));
-		checkApply((Apply)right, "ln", FieldRef.class);
-
-		expressions = checkFunctionExpression((FunctionExpression)second.getExpression(), "child", null, "right");
-
-		left = expressions.get(0);
-		right = expressions.get(1);
-
-		checkApply((Apply)left, "+", Constant.class, FieldRef.class);
-		checkConstant((Constant)right, "0", null);
-
 		expressions = checkFunctionExpression((FunctionExpression)third.getExpression(), "child", "left", null);
 
-		left = expressions.get(0);
-		right = expressions.get(1);
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createConstant("0", null), expressions.get(0)));
 
-		checkConstant((Constant)left, "0", null);
-		checkFunctionExpression((FunctionExpression)right, "c", null, null, null);
+		checkFunctionExpression((FunctionExpression)expressions.get(1), "c", null, null, null);
 	}
 
 	@Test
 	public void translateParenthesizedExpression(){
-		Apply apply = (Apply)ExpressionTranslator.translateExpression("TRUE | TRUE & FALSE");
+		String string = "TRUE | TRUE & FALSE";
 
-		checkApply(apply, "or", Constant.class, Apply.class);
+		Constant trueConstant = PMMLUtil.createConstant("true", DataType.BOOLEAN);
+		Constant falseConstant = PMMLUtil.createConstant("false", DataType.BOOLEAN);
 
-		apply = (Apply)ExpressionTranslator.translateExpression("(TRUE | TRUE) & FALSE");
+		Expression expected = PMMLUtil.createApply(PMMLFunctions.OR)
+			.addExpressions(trueConstant)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.AND)
+				.addExpressions(trueConstant, falseConstant)
+			);
 
-		checkApply(apply, "and", Apply.class, Constant.class);
+		Expression actual = ExpressionTranslator.translateExpression(string);
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
+
+		string = "(TRUE | TRUE) & FALSE";
+
+		expected = PMMLUtil.createApply(PMMLFunctions.AND)
+			.addExpressions(PMMLUtil.createApply(PMMLFunctions.OR)
+				.addExpressions(trueConstant, trueConstant)
+			)
+			.addExpressions(falseConstant);
+
+		actual = ExpressionTranslator.translateExpression(string);
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	@Test
 	public void translateInterval(){
-		Interval interval = ExpressionTranslator.translateInterval("(-10.0E+0, +10.0E-0]");
+		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED)
+			.setLeftMargin(new Double("-10.0E0"))
+			.setRightMargin(new Double("+10.0E0"));
 
-		assertEquals(Interval.Closure.OPEN_CLOSED, interval.getClosure());
-		assertEquals(new Double("-10.0E0"), interval.getLeftMargin());
-		assertEquals(new Double("+10.0E0"), interval.getRightMargin());
+		Interval actual = ExpressionTranslator.translateInterval("(-10.0E+0, +10.0E-0]");
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
 
 		try {
-			interval = ExpressionTranslator.translateInterval("(0, NaN)");
+			ExpressionTranslator.translateInterval("(0, NaN)");
 
 			fail();
 		} catch(IllegalArgumentException iae){
 			// Ignored
 		}
 
-		interval = ExpressionTranslator.translateInterval("[-Inf, +Inf]");
+		expected = new Interval(Interval.Closure.CLOSED_CLOSED)
+			.setLeftMargin(null)
+			.setRightMargin(null);
 
-		assertEquals(Interval.Closure.CLOSED_CLOSED, interval.getClosure());
-		assertEquals(null, interval.getLeftMargin());
-		assertEquals(null, interval.getRightMargin());
-	}
+		actual = ExpressionTranslator.translateInterval("[-Inf, +Inf]");
 
-	static
-	private List<Expression> checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
-		assertEquals(function, apply.getFunction());
-
-		List<Expression> expressions = apply.getExpressions();
-		assertEquals(expressionClazzes.length, expressions.size());
-
-		for(int i = 0; i < expressionClazzes.length; i++){
-			Class<? extends Expression> expressionClazz = expressionClazzes[i];
-			Expression expression = expressions.get(i);
-
-			assertEquals(expressionClazz, expression.getClass());
-		}
-
-		return expressions;
+		assertTrue(ReflectionUtil.equals(expected, actual));
 	}
 
 	static
@@ -341,16 +328,5 @@ public class ExpressionTranslatorTest {
 		}
 
 		return expressions;
-	}
-
-	static
-	private void checkFieldRef(FieldRef fieldRef, FieldName name){
-		assertEquals(name, fieldRef.getField());
-	}
-
-	static
-	private void checkConstant(Constant constant, String value, DataType dataType){
-		assertEquals(value, constant.getValue());
-		assertEquals(dataType, constant.getDataType());
 	}
 }

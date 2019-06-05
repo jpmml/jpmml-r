@@ -29,6 +29,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
+import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.support_vector_machine.LinearKernel;
 import org.dmg.pmml.support_vector_machine.PolynomialKernel;
 import org.dmg.pmml.support_vector_machine.RadialBasisKernel;
@@ -99,7 +100,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 						@Override
 						public Expression createExpression(FieldRef fieldRef){
-							return PMMLUtil.createApply("lessOrEqual", fieldRef, PMMLUtil.createConstant(0d));
+							return PMMLUtil.createApply(PMMLFunctions.LESSOREQUAL, fieldRef, PMMLUtil.createConstant(0d));
 						}
 					};
 
@@ -263,11 +264,11 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			Expression expression = continuousFeature.ref();
 
 			if(!ValueUtil.isZero(center)){
-				expression = PMMLUtil.createApply("-", expression, PMMLUtil.createConstant(center));
+				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(center));
 			} // End if
 
 			if(!ValueUtil.isOne(scale)){
-				expression = PMMLUtil.createApply("/", expression, PMMLUtil.createConstant(scale));
+				expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(scale));
 			}
 
 			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
