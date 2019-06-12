@@ -83,6 +83,40 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private String translateLogicalOperator(Token operator){
+		
+		switch(operator.kind){
+			case AND:
+				return PMMLFunctions.AND;
+			case OR:
+				return PMMLFunctions.OR;
+			default:
+				throw new IllegalArgumentException(operator.image);
+		}
+	}
+
+	static
+	private String translateRelationalOperator(Token operator){
+		
+		switch(operator.kind){
+			case EQUAL:
+				return PMMLFunctions.EQUAL;
+			case NOT_EQUAL:
+				return PMMLFunctions.NOTEQUAL;
+			case LESS_THAN:
+				return PMMLFunctions.LESSTHAN;
+			case LESS_OR_EQUAL:
+				return PMMLFunctions.LESSOREQUAL;
+			case GREATER_THAN:
+				return PMMLFunctions.GREATERTHAN;
+			case GREATER_OR_EQUAL:
+				return PMMLFunctions.GREATEROREQUAL;
+			default:
+				throw new IllegalArgumentException(operator.image);
+		}
+	}
+
+	static
 	private String translateFunction(String function){
 
 		switch(function){
@@ -115,43 +149,42 @@ public class ExpressionTranslator {
 	}
 
 	static
-	private String translateLogicalOperator(String operator){
+	private String translateValue(Token value){
+		String image = value.image;
 
-		switch(operator){
-			case "&":
-				return PMMLFunctions.AND;
-			case "|":
-				return PMMLFunctions.OR;
+		switch(value.kind){
+			case FALSE:
+			case TRUE:
+				return image.toLowerCase();
+			case INF:
+				return "Infinity";
+			case NAN:
+				return "NaN";
+			case STRING:
+				return image.substring(1, image.length() - 1);
 			default:
-				throw new IllegalArgumentException(operator);
+				return image;
 		}
 	}
 
 	static
-	private String translateRelationalOperator(String operator){
-
-		switch(operator){
-			case "==":
-				return PMMLFunctions.EQUAL;
-			case "!=":
-				return PMMLFunctions.NOTEQUAL;
-			case "<":
-				return PMMLFunctions.LESSTHAN;
-			case "<=":
-				return PMMLFunctions.LESSOREQUAL;
-			case ">":
-				return PMMLFunctions.GREATERTHAN;
-			case ">=":
-				return PMMLFunctions.GREATEROREQUAL;
+	private String translateTag(Token tag){
+		String image = tag.image;
+		
+		switch(tag.kind){
+			case IDENTIFIER:
+				return image;
+			case STRING:
+				return image.substring(1, image.length() - 1);
 			default:
-				throw new IllegalArgumentException(operator);
+				throw new IllegalArgumentException();
 		}
 	}
 
 	static
 	private Interval.Closure translateClosure(String leftBound, String rightBound){
 		String closure = (leftBound + rightBound);
-
+		
 		switch(closure){
 			case "()":
 				return Interval.Closure.OPEN_OPEN;
@@ -163,39 +196,6 @@ public class ExpressionTranslator {
 				return Interval.Closure.CLOSED_CLOSED;
 			default:
 				throw new IllegalArgumentException(closure);
-		}
-	}
-
-	static
-	private String translateValue(Token value){
-		String image = value.image;
-
-		switch(value.kind){
-			case ExpressionTranslatorConstants.FALSE:
-			case ExpressionTranslatorConstants.TRUE:
-				return image.toLowerCase();
-			case ExpressionTranslatorConstants.INF:
-				return "Infinity";
-			case ExpressionTranslatorConstants.NAN:
-				return "NaN";
-			case ExpressionTranslatorConstants.STRING:
-				return image.substring(1, image.length() - 1);
-			default:
-				return image;
-		}
-	}
-
-	static
-	private String translateTag(Token tag){
-		String image = tag.image;
-
-		switch(tag.kind){
-			case ExpressionTranslatorConstants.IDENTIFIER:
-				return image;
-			case ExpressionTranslatorConstants.STRING:
-				return image.substring(1, image.length() - 1);
-			default:
-				throw new IllegalArgumentException();
 		}
 	}
 
@@ -224,10 +224,21 @@ SPECIAL_TOKEN:
 
 TOKEN:
 {
+	< PLUS: "+" >
+	|
+	< MINUS: "-" >
+	|
 	< MULTIPLY: "*" >
 	|
 	< DIVIDE: "/" >
 	|
+	< POWER: "^" >
+	|
+	< POWER_MULTIPLY: "**" >
+}
+
+TOKEN:
+{
 	< LPAREN: "(" >
 	|
 	< RPAREN: ")" >
@@ -235,14 +246,6 @@ TOKEN:
 	< LBRACKET: "[" >
 	|
 	< RBRACKET: "]" >
-	|
-	< PLUS: "+" >
-	|
-	< MINUS: "-" >
-	|
-	< POWER: "^" >
-	|
-	< POWER_MULTIPLY: "**" >
 }
 
 TOKEN:
@@ -417,7 +420,7 @@ Expression OrExpression():
 	Expression right;
 }
 {
-	left = AndExpression() (operator = <OR> right = AndExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator.image), left, right); })*
+	left = AndExpression() (operator = <OR> right = AndExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -431,7 +434,7 @@ Expression AndExpression():
 	Expression right;
 }
 {
-	left = NegationExpression() (operator = <AND> right = NegationExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator.image), left, right); })*
+	left = NegationExpression() (operator = <AND> right = NegationExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -462,7 +465,7 @@ Expression RelationalExpression():
 	Expression right;
 }
 {
-	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression() { left = PMMLUtil.createApply(translateRelationalOperator(operator.image), left, right); })?
+	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression() { left = PMMLUtil.createApply(translateRelationalOperator(operator), left, right); })?
 
 	{
 		return left;
@@ -674,17 +677,17 @@ Expression ParenthesizedExpression():
 Constant Constant():
 {
 	Token value;
-	DataType dataType = null;
+	DataType dataType;
 }
 {
 	(
-		value = <INT>
+		value = <INT> { dataType = DataType.INTEGER; }
 		|
 		( value = <FLOAT> | value = <INF> | value = <NAN> ) { dataType = DataType.DOUBLE; }
 		|
 		(value = <FALSE> | value = <TRUE>) { dataType = DataType.BOOLEAN; }
 		|
-		value = <STRING>
+		value = <STRING> { dataType = DataType.STRING; }
 	)
 
 	{

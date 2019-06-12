@@ -520,11 +520,11 @@ public class FormulaUtil {
 			}
 
 			Constant constant = (Constant)objectArgument.getExpression();
-			if(constant.getDataType() != null && (DataType.STRING).equals(constant.getDataType())){
+
+			String to = (String)constant.getValue();
+			if(to == null){
 				throw new IllegalArgumentException();
 			}
-
-			String to = ValueUtil.toString(constant.getValue());
 
 			result.put(from, to);
 		}
