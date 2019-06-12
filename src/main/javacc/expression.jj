@@ -96,6 +96,22 @@ public class ExpressionTranslator {
 	}
 
 	static
+	private String translateArithmeticOperator(Token operator){
+		
+		switch(operator.kind){
+			case PLUS:
+			case MINUS:
+			case MULTIPLY:
+			case DIVIDE:
+				return operator.image;
+			case MODULO:
+				return PMMLFunctions.MODULO;
+			default:
+				throw new IllegalArgumentException(operator.image);
+		}
+	}
+
+	static
 	private String translateRelationalOperator(Token operator){
 		
 		switch(operator.kind){
@@ -231,6 +247,8 @@ TOKEN:
 	< MULTIPLY: "*" >
 	|
 	< DIVIDE: "/" >
+	|
+	< MODULO: "%" >
 	|
 	< POWER: "^" >
 	|
@@ -479,7 +497,7 @@ Expression AdditiveExpression():
 	Expression right;
 }
 {
-	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression() { left = PMMLUtil.createApply(operator.image, left, right); })*
+	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression() { left = PMMLUtil.createApply(translateArithmeticOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -493,7 +511,7 @@ Expression MultiplicativeExpression():
 	Expression right;
 }
 {
-	left = UnaryExpression() ((operator = <MULTIPLY> | operator = <DIVIDE>) right = UnaryExpression() { left = PMMLUtil.createApply(operator.image, left, right); })*
+	left = UnaryExpression() ((operator = <MULTIPLY> | operator = <DIVIDE> | operator = <MODULO>) right = UnaryExpression() { left = PMMLUtil.createApply(translateArithmeticOperator(operator), left, right); })*
 
 	{
 		return left;
