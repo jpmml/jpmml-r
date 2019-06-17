@@ -76,18 +76,16 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector rowNames = centers.dimnames(0);
 		for(int i = 0; i < rowNames.size(); i++){
-			Cluster cluster = new Cluster()
+			Cluster cluster = new Cluster(PMMLUtil.createRealArray(FortranMatrixUtil.getRow(centers.getValues(), rows, columns, i)))
 				.setId(String.valueOf(i + 1))
 				.setName(rowNames.getValue(i))
-				.setSize(size.getValue(i))
-				.setArray(PMMLUtil.createRealArray(FortranMatrixUtil.getRow(centers.getValues(), rows, columns, i)));
+				.setSize(size.getValue(i));
 
 			clusters.add(cluster);
 		}
 
-		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE)
-			.setCompareFunction(CompareFunction.ABS_DIFF)
-			.setMeasure(new SquaredEuclidean());
+		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE, new SquaredEuclidean())
+			.setCompareFunction(CompareFunction.ABS_DIFF);
 
 		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema.getLabel()), comparisonMeasure, ClusteringModelUtil.createClusteringFields(schema.getFeatures()), clusters)
 			.setOutput(ClusteringModelUtil.createOutput(FieldName.create("cluster"), DataType.DOUBLE, clusters));

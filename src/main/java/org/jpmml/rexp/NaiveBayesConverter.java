@@ -109,7 +109,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 			RStringVector tableRows = table.dimnames(0);
 			RStringVector tableColumns = table.dimnames(1);
 
-			BayesInput bayesInput = new BayesInput(name);
+			BayesInput bayesInput = new BayesInput(name, null, null);
 
 			if(feature instanceof CategoricalFeature){
 				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
@@ -144,8 +144,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 					double mean = stats.get(0);
 					double variance = Math.pow(stats.get(1), 2);
 
-					TargetValueStat targetValueStat = new TargetValueStat(tableRows.getValue(row))
-						.setContinuousDistribution(new GaussianDistribution(mean, variance));
+					TargetValueStat targetValueStat = new TargetValueStat(tableRows.getValue(row), new GaussianDistribution(mean, variance));
 
 					targetValueStats.addTargetValueStats(targetValueStat);
 				}

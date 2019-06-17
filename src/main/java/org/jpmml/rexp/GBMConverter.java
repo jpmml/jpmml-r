@@ -198,7 +198,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
-		Node root = encodeNode(new True(), 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
+		Node root = encodeNode(True.INSTANCE, 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
@@ -220,10 +220,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		if(var == -1){
 			Double value = prediction.getValue(i);
 
-			Node result = new LeafNode()
-				.setId(id)
-				.setScore(value)
-				.setPredicate(predicate);
+			Node result = new LeafNode(value, predicate)
+				.setId(id);
 
 			return result;
 		}
@@ -288,9 +286,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, split);
 		}
 
-		Node result = new BranchNode()
-			.setId(id)
-			.setPredicate(predicate);
+		Node result = new BranchNode(null, predicate)
+			.setId(id);
 
 		List<Node> nodes = result.getNodes();
 

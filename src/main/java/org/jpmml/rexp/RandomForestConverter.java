@@ -280,7 +280,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	private <P extends Number> TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder<P> scoreEncoder, List<? extends Number> leftDaughter, List<? extends Number> rightDaughter, List<P> nodepred, List<? extends Number> bestvar, List<Double> xbestsplit, Schema schema){
 		RGenericVector randomForest = getObject();
 
-		Node root = encodeNode(new True(), 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
+		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
@@ -302,10 +302,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		if(var == 0){
 			P prediction = nodepred.get(i);
 
-			Node result = new LeafNode()
-				.setId(id)
-				.setScore(scoreEncoder.encode(prediction))
-				.setPredicate(predicate);
+			Node result = new LeafNode(scoreEncoder.encode(prediction), predicate)
+				.setId(id);
 
 			return result;
 		}
@@ -356,9 +354,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 			rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_THAN, split);
 		}
 
-		Node result = new BranchNode()
-			.setId(id)
-			.setPredicate(predicate);
+		Node result = new BranchNode(null, predicate)
+			.setId(id);
 
 		List<Node> nodes = result.getNodes();
 

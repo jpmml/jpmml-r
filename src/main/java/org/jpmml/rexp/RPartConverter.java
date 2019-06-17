@@ -155,7 +155,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Node root = encodeNode(new True(), 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node root = encodeNode(True.INSTANCE, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
@@ -227,7 +227,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		Node root = encodeNode(new True(), 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
+		Node root = encodeNode(True.INSTANCE, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
 		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root);
 
@@ -270,9 +270,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		int splitVar = var.getValue(offset) - 1;
 		if(splitVar == 0){
-			Node result = new CountingLeafNode()
-				.setId(id)
-				.setPredicate(predicate);
+			Node result = new CountingLeafNode(null, predicate)
+				.setId(id);
 
 			return scoreEncoder.encode(result, offset);
 		}
@@ -302,10 +301,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		Predicate rightPredicate = predicates.get(1);
 
 		if(this.useSurrogate > 0 && splitNumSurrogate > 0){
-			CompoundPredicate leftCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+			CompoundPredicate leftCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE, null)
 				.addPredicates(leftPredicate);
 
-			CompoundPredicate rightCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+			CompoundPredicate rightCompoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE, null)
 				.addPredicates(rightPredicate);
 
 			RStringVector splitRowNames = splits.dimnames(0);
@@ -344,9 +343,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			}
 		}
 
-		Node result = new CountingBranchNode()
+		Node result = new CountingBranchNode(null, predicate)
 			.setId(id)
-			.setPredicate(predicate)
 			.addNodes(leftChild, rightChild);
 
 		return scoreEncoder.encode(result, offset);
@@ -415,13 +413,13 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		{
-			compoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE)
+			compoundPredicate = new CompoundPredicate(CompoundPredicate.BooleanOperator.SURROGATE, null)
 				.addPredicates(predicate);
 
 			node.setPredicate(compoundPredicate);
 		}
 
-		compoundPredicate.addPredicates(new True());
+		compoundPredicate.addPredicates(True.INSTANCE);
 	}
 
 	private Feature getFeature(FieldName name){

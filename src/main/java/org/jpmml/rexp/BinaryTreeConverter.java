@@ -176,7 +176,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	}
 
 	private TreeModel encodeTreeModel(RGenericVector tree, Schema schema){
-		Node root = encodeNode(new True(), tree, schema);
+		Node root = encodeNode(True.INSTANCE, tree, schema);
 
 		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -196,9 +196,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		Integer id = nodeId.asScalar();
 
 		if((Boolean.TRUE).equals(terminal.asScalar())){
-			Node result = new LeafNode()
-				.setId(id)
-				.setPredicate(predicate);
+			Node result = new LeafNode(null, predicate)
+				.setId(id);
 
 			return encodeScore(result, prediction, schema);
 		}
@@ -244,9 +243,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		Node leftChild = encodeNode(leftPredicate, left, schema);
 		Node rightChild = encodeNode(rightPredicate, right, schema);
 
-		Node result = new BranchNode()
+		Node result = new BranchNode(null, predicate)
 			.setId(id)
-			.setPredicate(predicate)
 			.addNodes(leftChild, rightChild);
 
 		return result;

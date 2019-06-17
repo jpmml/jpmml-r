@@ -97,7 +97,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 			switch(miningFunction){
 				case REGRESSION:
 					{
-						outputField = ModelUtil.createPredictedField(name, DataType.DOUBLE, OpType.CONTINUOUS)
+						outputField = ModelUtil.createPredictedField(name, OpType.CONTINUOUS, DataType.DOUBLE)
 							.setFinalResult(Boolean.FALSE);
 					}
 					break;

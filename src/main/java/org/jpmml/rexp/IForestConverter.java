@@ -168,7 +168,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		int columns = ntree.asScalar();
 
 		Node root = encodeNode(
-			new True(),
+			True.INSTANCE,
 			0,
 			0,
 			FortranMatrixUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
@@ -206,9 +206,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			Node leftChild = encodeNode(leftPredicate, leftDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 			Node rightChild = encodeNode(rightPredicate, rightDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
-			Node result = new BranchNode()
+			Node result = new BranchNode(null, predicate)
 				.setId(id)
-				.setPredicate(predicate)
 				.addNodes(leftChild, rightChild);
 
 			return result;
@@ -216,10 +215,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 		// Terminal node
 		if(status == -1){
-			Node result = new LeafNode()
-				.setId(id)
-				.setScore(depth + avgPathLength(size))
-				.setPredicate(predicate);
+			Node result = new LeafNode(depth + avgPathLength(size), predicate)
+				.setId(id);
 
 			return result;
 		} else

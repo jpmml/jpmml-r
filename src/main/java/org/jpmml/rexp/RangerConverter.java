@@ -263,7 +263,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> leftChildIDs = (RNumberVector<?>)childNodeIDs.getValue(0);
 		RNumberVector<?> rightChildIDs = (RNumberVector<?>)childNodeIDs.getValue(1);
 
-		Node root = encodeNode(new True(), 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
+		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
@@ -279,8 +279,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> terminalClassCount = (terminalClassCounts != null ? (RNumberVector<?>)terminalClassCounts.getValue(index) : null);
 
 		if(leftIndex == 0 && rightIndex == 0){
-			Node result = new LeafNode()
-				.setPredicate(predicate);
+			Node result = new LeafNode(null, predicate);
 
 			return scoreEncoder.encode(result, splitValue, terminalClassCount);
 		}
@@ -325,8 +324,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		Node leftChild = encodeNode(leftPredicate, leftIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, leftCategoryManager, schema);
 		Node rightChild = encodeNode(rightPredicate, rightIndex, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, rightCategoryManager, schema);
 
-		Node result = new BranchNode()
-			.setPredicate(predicate)
+		Node result = new BranchNode(null, predicate)
 			.addNodes(leftChild, rightChild);
 
 		return result;

@@ -85,13 +85,15 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
 		Kernel svmKernel = Kernel.values()[ValueUtil.asInt(kernel.asScalar())];
 
+		org.dmg.pmml.support_vector_machine.Kernel pmmlKernel = svmKernel.createKernel(degree.asScalar(), gamma.asScalar(), coef0.asScalar());
+
 		SupportVectorMachineModel supportVectorMachineModel;
 
 		switch(svmType){
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
 				{
-					supportVectorMachineModel = encodeClassification(sv, nSv, rho, coefs, schema);
+					supportVectorMachineModel = encodeClassification(pmmlKernel, sv, nSv, rho, coefs, schema);
 				}
 				break;
 			case ONE_CLASSIFICATION:
@@ -104,7 +106,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 						}
 					};
 
-					supportVectorMachineModel = encodeRegression(sv, rho, coefs, schema)
+					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema)
 						.setOutput(ModelUtil.createPredictedOutput(FieldName.create("decisionFunction"), OpType.CONTINUOUS, DataType.DOUBLE, outlier));
 
 					if(yScale != null && yScale.size() > 0){
@@ -115,7 +117,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			case EPS_REGRESSION:
 			case NU_REGRESSION:
 				{
-					supportVectorMachineModel = encodeRegression(sv, rho, coefs, schema);
+					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema);
 
 					if(yScale != null && yScale.size() > 0){
 						RDoubleVector yScaledCenter = yScale.getDoubleElement("scaled:center");
@@ -128,8 +130,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			default:
 				throw new IllegalArgumentException();
 		}
-
-		supportVectorMachineModel.setKernel(svmKernel.createKernel(degree.asScalar(), gamma.asScalar(), coef0.asScalar()));
 
 		return supportVectorMachineModel;
 	}
@@ -278,19 +278,19 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private SupportVectorMachineModel encodeClassification(RDoubleVector sv, RIntegerVector nSv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
+	private SupportVectorMachineModel encodeClassification(org.dmg.pmml.support_vector_machine.Kernel kernel, RDoubleVector sv, RIntegerVector nSv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		return LibSVMUtil.createClassification(new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), nSv.getValues(), rowNames.getValues(), rho.getValues(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
+		return LibSVMUtil.createClassification(kernel, new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), nSv.getValues(), rowNames.getValues(), rho.getValues(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
 	}
 
 	static
-	private SupportVectorMachineModel encodeRegression(RDoubleVector sv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
+	private SupportVectorMachineModel encodeRegression(org.dmg.pmml.support_vector_machine.Kernel kernel, RDoubleVector sv, RDoubleVector rho, RDoubleVector coefs, Schema schema){
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		return LibSVMUtil.createRegression(new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), rowNames.getValues(), rho.asScalar(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
+		return LibSVMUtil.createRegression(kernel, new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), rowNames.getValues(), rho.asScalar(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
 	}
 
 	private static final Function<Double, Double> FUNCTION_NEGATE = new Function<Double, Double>(){

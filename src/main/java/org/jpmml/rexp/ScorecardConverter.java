@@ -85,14 +85,10 @@ public class ScorecardConverter extends GLMConverter {
 
 			BinaryFeature binaryFeature = (BinaryFeature)feature;
 
-			SimplePredicate simplePredicate = new SimplePredicate()
-				.setField(binaryFeature.getName())
-				.setOperator(SimplePredicate.Operator.EQUAL)
-				.setValue(binaryFeature.getValue());
+			SimplePredicate simplePredicate = new SimplePredicate(binaryFeature.getName(), SimplePredicate.Operator.EQUAL, binaryFeature.getValue());
 
-			Attribute attribute = new Attribute()
-				.setPartialScore(formatScore(-1d * coefficient * factor))
-				.setPredicate(simplePredicate);
+			Attribute attribute = new Attribute(simplePredicate)
+				.setPartialScore(formatScore(-1d * coefficient * factor));
 
 			characteristic.addAttributes(attribute);
 		}
@@ -103,9 +99,8 @@ public class ScorecardConverter extends GLMConverter {
 		for(Map.Entry<FieldName, Characteristic> entry : entries){
 			Characteristic characteristic = entry.getValue();
 
-			Attribute attribute = new Attribute()
-				.setPartialScore(0d)
-				.setPredicate(new True());
+			Attribute attribute = new Attribute(True.INSTANCE)
+				.setPartialScore(0d);
 
 			characteristic.addAttributes(attribute);
 

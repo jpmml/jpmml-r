@@ -135,7 +135,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RVector<?> response = predicted.getVectorElement("(response)");
 		RDoubleVector prob = predicted.getDoubleElement("(prob)", false);
 
-		Node root = encodeNode(new True(), partyNode, response, prob, schema);
+		Node root = encodeNode(True.INSTANCE, partyNode, response, prob, schema);
 
 		TreeModel treeModel;
 
@@ -172,22 +172,20 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		Node result;
 
 		if(factorResponse){
-			result = new ClassifierNode();
+			result = new ClassifierNode(null, predicate);
 		} else
 
 		{
 			if(kids == null){
-				result = new LeafNode();
+				result = new LeafNode(null, predicate);
 			} else
 
 			{
-				result = new BranchNode();
+				result = new BranchNode(null, predicate);
 			}
 		}
 
-		result
-			.setId(Integer.valueOf(id.asScalar()))
-			.setPredicate(predicate);
+		result.setId(Integer.valueOf(id.asScalar()));
 
 		if(factorResponse){
 			RIntegerVector factor = (RIntegerVector)response;
