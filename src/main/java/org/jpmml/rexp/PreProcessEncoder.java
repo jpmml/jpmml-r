@@ -125,7 +125,9 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 
 		Double median = this.median.get(name);
 		if(median != null){
-			expression = PMMLUtil.createApply(PMMLFunctions.IF, PMMLUtil.createApply(PMMLFunctions.ISNOTMISSING, new FieldRef(name)), expression, PMMLUtil.createConstant(median));
+			expression = PMMLUtil.createApply(PMMLFunctions.IF)
+				.addExpressions(PMMLUtil.createApply(PMMLFunctions.ISNOTMISSING, new FieldRef(name)))
+				.addExpressions(expression, PMMLUtil.createConstant(median));
 		}
 
 		return expression;
