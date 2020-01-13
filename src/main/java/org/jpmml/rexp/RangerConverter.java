@@ -221,9 +221,9 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 						maxProbability = probability;
 					}
 
-					ScoreDistribution scoreDisctibution = new ScoreDistribution(value, probability);
+					ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
 
-					scoreDistributions.add(scoreDisctibution);
+					scoreDistributions.add(scoreDistribution);
 				}
 
 				return node;
