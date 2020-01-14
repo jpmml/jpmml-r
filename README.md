@@ -3,67 +3,90 @@ JPMML-R
 
 Java library and command-line application for converting [R](https://www.r-project.org/) models to PMML.
 
+# Table of Contents #
+
+* [Features](#features)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [The R side of operations](#the-r-side-of-operations)
+  * [The JPMML-R side of operations](#the-jpmml-r-side-of-operations)
+* [Documentation](#documentation)
+* [License](#license)
+* [Additional information](#additional-information)
+
 # Features #
 
 * Fast and memory-efficient:
   * Can produce a 5 GB Random Forest PMML file in less than 1 minute on a desktop PC
 * Supported model and transformation types:
-  * [`ada` package](https://cran.r-project.org/package=ada):
+  * [`ada`](https://cran.r-project.org/package=ada) package:
     * `ada` - Stochastic Boosting (SB) classification
-  * [`adabag` package](https://cran.r-project.org/package=adabag):
+  * [`adabag`](https://cran.r-project.org/package=adabag) package:
     * `bagging` - Bagging classification
     * `boosting` - Boosting classification
-  * [`caret` package](https://cran.r-project.org/package=caret):
+  * [`caret`](https://cran.r-project.org/package=caret) package:
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train` - Selected JPMML-R model types
-  * [`caretEnsemble` package](https://cran.r-project.org/package=caretEnsemble):
+  * [`caretEnsemble`](https://cran.r-project.org/package=caretEnsemble) package:
     * `caretEnsemble` - Ensemble regression and classification
-  * [`CHAID` package](https://r-forge.r-project.org/R/?group_id=343):
+  * [`CHAID`](https://r-forge.r-project.org/R/?group_id=343) package:
     * `party` - CHi-squared Automated Interaction Detection (CHAID) classification
-  * [`earth` package](https://cran.r-project.org/package=earth):
+  * [`earth`](https://cran.r-project.org/package=earth) package:
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
-  * [`elmNN` package](https://cran.r-project.org/package=elmNN):
+  * [`elmNN`](https://cran.r-project.org/package=elmNN) package:
     * `elmNN` - Extreme Learning Machine (ELM) regression
-  * [`evtree` package](https://cran.r-project.org/package=evtree):
+  * [`evtree`](https://cran.r-project.org/package=evtree) package:
     * `party` - Evolutionary Learning of Trees (EvTree) regression and classification
-  * [`e1071` package](https://cran.r-project.org/package=e1071):
+  * [`e1071`](https://cran.r-project.org/package=e1071) package:
     * `naiveBayes` - Naive Bayes (NB) classification
     * `svm` - Support Vector Machine (SVM) regression, classification and anomaly detection
-  * [`gbm` package](https://cran.r-project.org/package=gbm):
+  * [`gbm`](https://cran.r-project.org/package=gbm) package:
     * `gbm` - Gradient Boosting Machine (GBM) regression and classification
-  * [`glmnet` package](https://cran.r-project.org/package=glmnet):
+  * [`glmnet`](https://cran.r-project.org/package=glmnet) package:
     * `glmnet` (`elnet`, `fishnet`, `lognet` and `multnet` subtypes) - Generalized Linear Model with lasso or elasticnet regularization (GLMNet) regression and classification
     * `cv.glmnet` - Cross-validated GLMNet regression and calculation
-  * [`IsolationForest` package](https://r-forge.r-project.org/R/?group_id=479):
+  * [`IsolationForest`](https://r-forge.r-project.org/R/?group_id=479) package:
     * `iForest` - Isolation Forest (IF) anomaly detection
-  * [`neuralnet` package](https://cran.r-project.org/package=neuralnet):
+  * [`neuralnet`](https://cran.r-project.org/package=neuralnet) package:
     * `nn` - Neural Network (NN) regression
-  * [`nnet` package](https://cran.r-project.org/package=nnet):
+  * [`nnet`](https://cran.r-project.org/package=nnet) package:
     * `multinom` - Multinomial log-linear classification
     * `nnet.formula` - Neural Network (NNet) regression and classification
-  * [`party` package](https://cran.r-project.org/package=party):
+  * [`party`](https://cran.r-project.org/package=party) package:
     * `ctree` - Conditional Inference Tree (CIT) classification
-  * [`partykit` package](https://cran.r-project.org/package=partykit):
+  * [`partykit`](https://cran.r-project.org/package=partykit) package:
     * `party` - Recursive Partytioning (Party) regression and classification
-  * [`pls` package](https://cran.r-project.org/package=pls)
+  * [`pls`](https://cran.r-project.org/package=pls) package:
     * `mvr` - Multivariate Regression (MVR) regression
-  * [`randomForest` package](https://cran.r-project.org/package=randomForest):
+  * [`randomForest`](https://cran.r-project.org/package=randomForest) package:
     * `randomForest` - Random Forest (RF) regression and classification
-  * [`ranger` package](https://cran.r-project.org/package=ranger):
+  * [`ranger`](https://cran.r-project.org/package=ranger) package:
     * `ranger` - Random Forest (RF) regression and classification
-  * [`rms` package](https://cran.r-project.org/package=rms):
+  * [`rms`](https://cran.r-project.org/package=rms) package:
     * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression
-  * [`rpart` package](https://cran.r-project.org/package=rpart):
+  * [`rpart`](https://cran.r-project.org/package=rpart) package:
     * `rpart` - Recursive Partitioning (RPart) regression and classification
-  * [`r2pmml` package](https://github.com/jpmml/r2pmml):
+  * [`r2pmml`](https://github.com/jpmml/r2pmml) package:
     * `scorecard` - Scorecard regression
   * `stats` package:
     * `glm` - Generalized Linear Model (GLM) regression and classification
     * `kmeans` - K-Means clustering
     * `lm` - Linear Model (LM) regression
-  * [`xgboost` package](https://cran.r-project.org/package=xgboost):
+  * [`xgboost`](https://cran.r-project.org/package=xgboost) package:
     * `xgb.Booster` - XGBoost (XGB) regression and classification
+* Data pre-processing using [model formulae](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html):
+  * Interaction terms
+  * `base::I(..)` function terms:
+    * Logical operators `&`, `|` and `!`
+    * Relational operators `==`, `!=`, `<`, `<=`, `>=` and `>`
+    * Arithmetic operators `+`, `-`, `*`, `/`, and `%`
+    * Exponentiation operators `^` and `**`
+    * The `is.na` function
+    * Arithmetic functions `abs`, `ceiling`, `exp`, `floor`, `log`, `log10`, `round` and `sqrt`
+  * `base::cut()` and `base::ifelse()` function terms
+  * `plyr::revalue()` and `plyr::mapvalues()` function terms
 * Production quality:
   * Complete test coverage.
   * Fully compliant with the [JPMML-Evaluator](https://github.com/jpmml/jpmml-evaluator) library.
@@ -116,6 +139,12 @@ The conversion of large files (1 GB and beyond) can be sped up by increasing the
 ```
 java -Xms4G -Xmx8G -jar target/jpmml-r-executable-1.3-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
+
+# Documentation #
+
+Slightly outdated:
+
+* [Converting R to PMML](https://www.slideshare.net/VilluRuusmann/converting-r-to-pmml-82182483)
 
 # License #
 
