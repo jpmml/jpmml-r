@@ -50,6 +50,9 @@ import org.jpmml.converter.mining.MiningModelUtil;
 
 public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
+	boolean hasDependentVar = false;
+
+
 	public RangerConverter(RGenericVector ranger){
 		super(ranger);
 	}
@@ -95,9 +98,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RBooleanVector isOrdered = forest.getBooleanElement("is.ordered");
 		RStringVector independentVariableNames = forest.getStringElement("independent.variable.names");
 
+		this.hasDependentVar = (isOrdered.size() == (independentVariableNames.size() + 1));
+
 		for(int i = 0; i < independentVariableNames.size(); i++){
 
-			if(!isOrdered.getValue(i + 1)){
+			if(!isOrdered.getValue(this.hasDependentVar ? (i + 1) : i)){
 				throw new IllegalArgumentException();
 			}
 
@@ -292,7 +297,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 
 		int splitVarIndex = ValueUtil.asInt(splitVarIDs.getValue(index));
 
-		Feature feature = schema.getFeature(splitVarIndex - 1);
+		Feature feature = schema.getFeature(this.hasDependentVar ? (splitVarIndex - 1) : splitVarIndex);
 
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
