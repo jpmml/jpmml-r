@@ -142,16 +142,23 @@ java -Xms4G -Xmx8G -jar target/jpmml-r-executable-1.3-SNAPSHOT.jar --rds-input r
 
 # Documentation #
 
+Up-to-date:
+
+* [Converting logistic regression models to PMML documents](https://openscoring.io/blog/2020/01/19/converting_logistic_regression_pmml/)
+* [Deploying R language models on Apache Spark ML](https://openscoring.io/blog/2019/02/09/deploying_rlang_model_sparkml/)
+
 Slightly outdated:
 
 * [Converting R to PMML](https://www.slideshare.net/VilluRuusmann/converting-r-to-pmml-82182483)
 
 # License #
 
-JPMML-R is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](https://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
+JPMML-R is licensed under the terms and conditions of the [GNU Affero General Public License, Version 3.0](https://www.gnu.org/licenses/agpl-3.0.html).
+
+If you would like to use JPMML-R in a proprietary software project, then it is possible to enter into a licensing agreement which makes JPMML-R available under the terms and conditions of the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) instead.
 
 # Additional information #
 
 JPMML-R is developed and maintained by Openscoring Ltd, Estonia.
 
-Interested in using JPMML software in your application? Please contact [info@openscoring.io](mailto:info@openscoring.io)
+Interested in using [Java PMML API](https://github.com/jpmml) software in your company? Please contact [info@openscoring.io](mailto:info@openscoring.io)
