@@ -1,3 +1,4 @@
+library("mlr")
 library("plyr")
 
 source("util.R")
@@ -26,6 +27,21 @@ generateLMCustFormulaAuto = function(){
 
 generateLMFormulaAuto()
 generateLMCustFormulaAuto()
+
+generateWrappedLMFormulaAuto = function(){
+	auto.task = makeRegrTask(data = auto, target = "mpg")
+	regr.lm = makeLearner("regr.lm")
+
+	auto.mlr = train(regr.lm, auto.task)
+	print(auto.mlr)
+
+	mpg = as.data.frame(predict(auto.mlr, newdata = auto))
+
+	storeRds(auto.mlr, "WrappedLMFormulaAuto")
+	storeCsv(data.frame("mpg" = mpg$response), "WrappedLMFormulaAuto")
+}
+
+generateWrappedLMFormulaAuto()
 
 wine_quality = loadWineQualityCsv("WineQuality")
 

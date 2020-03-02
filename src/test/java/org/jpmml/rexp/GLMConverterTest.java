@@ -29,6 +29,11 @@ public class GLMConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateWrappedFormulaAudit() throws Exception {
+		evaluate("WrappedGLMFormula", "Audit");
+	}
+
+	@Test
 	public void evaluateCustFormulaAudit() throws Exception {
 		evaluate("GLMCustFormula", "Audit");
 	}

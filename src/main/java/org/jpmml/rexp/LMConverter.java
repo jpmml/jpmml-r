@@ -41,35 +41,70 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 		RGenericVector lm = getObject();
 
 		RGenericVector xlevels = lm.getGenericElement("xlevels", false);
-		RGenericVector model = lm.getGenericElement("model");
+		RGenericVector model = lm.getGenericElement("model", false);
 		RGenericVector data = lm.getGenericElement("data", false);
 
-		RExp terms = model.getAttribute("terms");
+		RExp terms;
 
-		FormulaContext context = new ModelFrameFormulaContext(model){
+		FormulaContext context;
 
-			@Override
-			public List<String> getCategories(String variable){
+		if(model != null){
+			terms = model.getAttribute("terms");
 
-				if(xlevels != null && xlevels.hasElement(variable)){
-					RStringVector levels = xlevels.getStringElement(variable);
+			context = new ModelFrameFormulaContext(model){
 
-					return levels.getValues();
+				@Override
+				public List<String> getCategories(String variable){
+
+					if(xlevels != null && xlevels.hasElement(variable)){
+						RStringVector levels = xlevels.getStringElement(variable);
+
+						return levels.getValues();
+					}
+
+					return super.getCategories(variable);
 				}
 
-				return super.getCategories(variable);
-			}
+				@Override
+				public RVector<?> getData(String variable){
 
-			@Override
-			public RVector<?> getData(String variable){
+					if(data != null && data.hasElement(variable)){
+						return data.getVectorElement(variable);
+					}
 
-				if(data != null && data.hasElement(variable)){
-					return data.getVectorElement(variable);
+					return super.getData(variable);
+				}
+			};
+		} else
+
+		{
+			terms = lm.getElement("terms");
+
+			context = new FormulaContext(){
+
+				@Override
+				public List<String> getCategories(String variable){
+
+					if(xlevels != null && xlevels.hasElement(variable)){
+						RStringVector levels = xlevels.getStringElement(variable);
+
+						return levels.getValues();
+					}
+
+					return null;
 				}
 
-				return super.getData(variable);
-			}
-		};
+				@Override
+				public RVector<?> getData(String variable){
+
+					if(data != null && data.hasElement(variable)){
+						return data.getVectorElement(variable);
+					}
+
+					return null;
+				}
+			};
+		}
 
 		encodeSchema(terms, context, encoder);
 	}

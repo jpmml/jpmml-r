@@ -91,6 +91,7 @@ public class ConverterFactory {
 		converters.put("scorecard", ScorecardConverter.class);
 		converters.put("svm", SVMConverter.class);
 		converters.put("train", TrainConverter.class);
+		converters.put("WrappedModel", WrappedModelConverter.class);
 		converters.put("xgb.Booster", XGBoostConverter.class);
 	}
 }

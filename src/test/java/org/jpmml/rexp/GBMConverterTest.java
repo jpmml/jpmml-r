@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.evaluator.PMMLEquivalence;
 import org.junit.Test;
 
 public class GBMConverterTest extends ConverterTest {
@@ -25,6 +26,11 @@ public class GBMConverterTest extends ConverterTest {
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {
 		evaluate("GBMAdaBoost", "AuditNA");
+	}
+
+	@Test
+	public void evaluateWrappedAdaBoostAuditNA() throws Exception {
+		evaluate("WrappedGBMAdaBoost", "AuditNA", new PMMLEquivalence(5e-13, 5e-13));
 	}
 
 	@Test

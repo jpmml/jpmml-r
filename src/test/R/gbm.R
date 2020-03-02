@@ -1,6 +1,7 @@
 library("caret")
 library("dplyr")
 library("gbm")
+library("mlr")
 library("r2pmml")
 
 source("util.R")
@@ -43,6 +44,24 @@ set.seed(42)
 generateGBMAdaBoostAuditNA()
 generateGBMBernoulliAuditNA()
 
+generateWrappedGBMAdaBoostAudit = function(){
+	audit.task = makeClassifTask(data = audit, target = "Adjusted")
+	classif.gbm = makeLearner("classif.gbm", distribution = "adaboost", shrinkage = 0.1, n.trees = 100, predict.type = "prob")
+
+	audit.lmr = mlr::train(classif.gbm, audit.task)
+	audit.lmr = decorate(audit.lmr, invert_levels = TRUE)
+	print(audit.lmr)
+
+	adjusted = as.data.frame(predict(audit.lmr, newdata = audit))
+
+	storeRds(audit.lmr, "WrappedGBMAdaBoostAuditNA")
+	storeCsv(data.frame("Adjusted" = adjusted$response, "probability(0)" = adjusted$prob.0, "probability(1)" = adjusted$prob.1, check.names = FALSE), "WrappedGBMAdaBoostAuditNA")
+}
+
+set.seed(42)
+
+generateWrappedGBMAdaBoostAudit()
+
 iris = loadIrisCsv("Iris")
 
 iris_x = iris[, -ncol(iris)]
@@ -82,7 +101,7 @@ generateGBMFormulaIris()
 generateGBMIris()
 
 generateTrainGBMFormulaIris = function(){
-	iris.train = train(Species ~ ., data = iris, method = "gbm", response.name = "Species")
+	iris.train = caret::train(Species ~ ., data = iris, method = "gbm", response.name = "Species")
 	iris.train = verify(iris.train, newdata = sample_n(iris, 10))
 	print(iris.train)
 
@@ -131,7 +150,7 @@ auto.caret = auto
 auto.caret$origin = as.integer(auto.caret$origin)
 
 generateTrainGBMFormulaAutoNA = function(){
-	auto.train = train(mpg ~ ., data = auto.caret, method = "gbm", na.action = na.pass, response.name = "mpg")
+	auto.train = caret::train(mpg ~ ., data = auto.caret, method = "gbm", na.action = na.pass, response.name = "mpg")
 	auto.train = verify(auto.train, newdata = sample_n(auto.caret, 50), na.action = na.pass)
 	print(auto.train)
 

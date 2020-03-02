@@ -34,6 +34,16 @@ public class DecorationUtil {
 	}
 
 	static
+	public RBooleanVector getBooleanElement(RGenericVector model, String name){
+
+		try {
+			return model.getBooleanElement(name, true);
+		} catch(IllegalArgumentException iae){
+			throw toDecorationException(model, name, iae);
+		}
+	}
+
+	static
 	public RNumberVector<?> getNumericElement(RGenericVector model, String name){
 
 		try {

@@ -48,6 +48,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `cv.glmnet` - Cross-validated GLMNet regression and calculation
   * [`IsolationForest`](https://r-forge.r-project.org/R/?group_id=479) package:
     * `iForest` - Isolation Forest (IF) anomaly detection
+  * [`mlr`](https://cran.r-project.org/package=mlr) package:
+    * `WrappedModel` - Selected JPMML-R model types.
   * [`neuralnet`](https://cran.r-project.org/package=neuralnet) package:
     * `nn` - Neural Network (NN) regression
   * [`nnet`](https://cran.r-project.org/package=nnet) package:

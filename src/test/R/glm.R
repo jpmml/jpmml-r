@@ -1,4 +1,5 @@
 library("caret")
+library("mlr")
 library("plyr")
 library("dplyr")
 library("recipes")
@@ -38,7 +39,7 @@ generateGLMFormulaAudit()
 generateGLMCustFormulaAudit()
 
 generateTrainGLMFormulaAudit = function(){
-	audit.train = train(audit.recipe, data = audit, method = "glm")
+	audit.train = caret::train(audit.recipe, data = audit, method = "glm")
 	audit.train = verify(audit.train, newdata = sample_n(audit, 100))
 	print(audit.train)
 
@@ -50,6 +51,24 @@ generateTrainGLMFormulaAudit = function(){
 }
 
 generateTrainGLMFormulaAudit()
+
+audit$Deductions = NULL
+
+generateWrappedGLMFormulaAudit = function(){
+	audit.task = makeClassifTask(data = audit, target = "Adjusted")
+	classif.glm = makeLearner("classif.binomial", predict.type = "prob")
+
+	audit.lmr = mlr::train(classif.glm, audit.task)
+	audit.lmr = decorate(audit.lmr, invert_levels = FALSE)
+	print(audit.lmr)
+
+	adjusted = as.data.frame(predict(audit.lmr, newdata = audit))
+
+	storeRds(audit.lmr, "WrappedGLMFormulaAudit")
+	storeCsv(data.frame("Adjusted" = adjusted$response, "probability(0)" = adjusted$prob.0, "probability(1)" = adjusted$prob.1, check.names = FALSE), "WrappedGLMFormulaAudit")
+}
+
+generateWrappedGLMFormulaAudit()
 
 auto = loadAutoCsv("Auto")
 
@@ -79,7 +98,7 @@ generateGLMFormulaAuto()
 generateGLMCustFormulaAuto()
 
 generateTrainGLMFormulaAuto = function(){
-	auto.train = train(auto.recipe, data = auto, method = "glm")
+	auto.train = caret::train(auto.recipe, data = auto, method = "glm")
 	auto.train = verify(auto.train, newdata = sample_n(auto, 50))
 	print(auto.train)
 

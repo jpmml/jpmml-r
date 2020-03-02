@@ -44,7 +44,7 @@ public class GLMConverter extends LMConverter {
 		RGenericVector glm = getObject();
 
 		RGenericVector family = glm.getGenericElement("family");
-		RGenericVector model = glm.getGenericElement("model");
+		RGenericVector model = glm.getGenericElement("model", false);
 
 		RStringVector familyFamily = family.getStringElement("family");
 
@@ -55,11 +55,13 @@ public class GLMConverter extends LMConverter {
 			case CLASSIFICATION:
 				Label label = encoder.getLabel();
 
-				RIntegerVector variable = model.getFactorElement((label.getName()).getValue());
+				if(model != null){
+					RIntegerVector variable = model.getFactorElement((label.getName()).getValue());
 
-				DataField dataField = (DataField)encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
+					DataField dataField = (DataField)encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
 
-				encoder.setLabel(dataField);
+					encoder.setLabel(dataField);
+				}
 				break;
 			default:
 				break;

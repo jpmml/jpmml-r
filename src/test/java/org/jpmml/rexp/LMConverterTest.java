@@ -28,6 +28,11 @@ public class LMConverterTest extends ConverterTest {
 	}
 
 	@Test
+	public void evaluateMLRFormulaAuto() throws Exception {
+		evaluate("WrappedLMFormula", "Auto");
+	}
+
+	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
 		evaluate("LMCustFormula", "Auto");
 	}
