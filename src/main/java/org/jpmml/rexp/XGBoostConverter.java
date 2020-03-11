@@ -56,6 +56,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	public void encodeSchema(RExpEncoder encoder){
 		RGenericVector booster = getObject();
 
+		RStringVector featureNames = booster.getStringElement("feature_names", false);
 		RVector<?> fmap = DecorationUtil.getVectorElement(booster, "fmap");
 		RGenericVector schema = booster.getGenericElement("schema", false);
 
@@ -100,6 +101,10 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		encoder.setLabel(label);
 
 		List<Feature> features = featureMap.encodeFeatures(encoder);
+
+		if(featureNames != null && featureNames.size() != features.size()){
+			throw new IllegalArgumentException("Invalid \'fmap\' element. Expected " + featureNames.size() + " features, got " + features.size() + " features");
+		}
 
 		for(Feature feature : features){
 			encoder.addFeature(feature);
