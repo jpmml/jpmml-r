@@ -25,12 +25,17 @@ import org.junit.Test;
 public class XGBoostConverterTest extends ConverterTest {
 
 	public XGBoostConverterTest(){
-		super(new FloatEquivalence(1));
+		super();
 	}
 
 	@Test
 	public void evaluateAutoNA() throws Exception {
-		evaluate("XGBoost", "AutoNA");
+		evaluate("XGBoost", "AutoNA", new FloatEquivalence(6));
+	}
+
+	@Test
+	public void evaluateAudit() throws Exception {
+		evaluate("XGBoost", "Audit", new PMMLEquivalence(5e-6, 5e-6));
 	}
 
 	@Test
