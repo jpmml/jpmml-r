@@ -29,13 +29,13 @@ public class XGBoostConverterTest extends ConverterTest {
 	}
 
 	@Test
-	public void evaluateAutoNA() throws Exception {
-		evaluate("XGBoost", "AutoNA", new FloatEquivalence(6));
+	public void evaluateAuto() throws Exception {
+		evaluate("XGBoost", "Auto", new FloatEquivalence(2));
 	}
 
 	@Test
-	public void evaluateAudit() throws Exception {
-		evaluate("XGBoost", "Audit", new PMMLEquivalence(5e-6, 5e-6));
+	public void evaluateAuditNA() throws Exception {
+		evaluate("XGBoost", "AuditNA", new PMMLEquivalence(5e-6, 5e-6));
 	}
 
 	@Test
