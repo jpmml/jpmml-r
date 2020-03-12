@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -84,7 +85,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 			RGenericVector outputValues = verification.getGenericElement("output_values", false);
 
 			if(activeValues != null){
-				data.putInputData(encodeVerificationData(activeValues));
+				data.putInputData(encodeActiveValues(activeValues));
 			} // End if
 
 			if(targetValues != null && outputValues == null){
@@ -101,11 +102,11 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 					}
 				}
 
-				data.putResultData(encodeVerificationData(targetValues, Collections.singletonList(name.getValue())));
+				data.putResultData(encodeTargetValues(targetValues, label));
 			} else
 
 			if(outputValues != null){
-				data.putResultData(encodeVerificationData(outputValues));
+				data.putResultData(encodeOutputValues(outputValues));
 			} else
 
 			{
@@ -120,20 +121,40 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		return pmml;
 	}
 
-	static
-	private Map<VerificationField, List<?>> encodeVerificationData(RGenericVector dataFrame){
-		RStringVector names = dataFrame.names();
+	protected Map<VerificationField, List<?>> encodeActiveValues(RGenericVector dataFrame){
+		return encodeVerificationData(dataFrame);
+	}
 
-		return encodeVerificationData(dataFrame, names.getDequotedValues());
+	protected Map<VerificationField, List<?>> encodeTargetValues(RGenericVector dataFrame, Label label){
+		List<RExp> columns = dataFrame.getValues();
+		FieldName name = label.getName();
+
+		return encodeVerificationData(columns, Collections.singletonList(name));
+	}
+
+	protected Map<VerificationField, List<?>> encodeOutputValues(RGenericVector dataFrame){
+		return encodeVerificationData(dataFrame);
 	}
 
 	static
-	private Map<VerificationField, List<?>> encodeVerificationData(RGenericVector dataFrame, List<String> names){
+	protected Map<VerificationField, List<?>> encodeVerificationData(RGenericVector dataFrame){
+		List<RExp> columns = dataFrame.getValues();
+		RStringVector columnNames = dataFrame.names();
+
+		List<FieldName> names = (columnNames.getDequotedValues()).stream()
+			.map(columnName -> FieldName.create(columnName))
+			.collect(Collectors.toList());
+
+		return encodeVerificationData(columns, names);
+	}
+
+	static
+	protected Map<VerificationField, List<?>> encodeVerificationData(List<? extends RExp> columns, List<FieldName> names){
 		Map<VerificationField, List<?>> result = new LinkedHashMap<>();
 
-		for(int i = 0; i < dataFrame.size(); i++){
-			String name = names.get(i);
-			RVector<?> column = (RVector<?>)dataFrame.getValue(i);
+		for(int i = 0; i < columns.size(); i++){
+			FieldName name = names.get(i);
+			RVector<?> column = (RVector<?>)columns.get(i);
 
 			List<?> values;
 
@@ -164,7 +185,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 				values = column.getValues();
 			}
 
-			VerificationField verificationField = ModelUtil.createVerificationField(FieldName.create(name));
+			VerificationField verificationField = ModelUtil.createVerificationField(name);
 
 			result.put(verificationField, values);
 		}

@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.VerificationField;
 import org.dmg.pmml.mining.MiningModel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
@@ -43,6 +45,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	private Learner learner = null;
 
+	private FeatureMap featureMap = null;
+
 	private boolean compact = true;
 
 
@@ -57,16 +61,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		RGenericVector booster = getObject();
 
 		RStringVector featureNames = booster.getStringElement("feature_names", false);
-		RVector<?> fmap = DecorationUtil.getVectorElement(booster, "fmap");
 		RGenericVector schema = booster.getGenericElement("schema", false);
 
-		FeatureMap featureMap;
+		FeatureMap featureMap = ensureFeatureMap();
 
-		try {
-			featureMap = loadFeatureMap(fmap);
-		} catch(IOException ioe){
-			throw new IllegalArgumentException(ioe);
-		}
+		if(featureNames != null){
+			checkFeatureMap(featureMap, featureNames);
+		} // End if
 
 		if(schema != null){
 			RVector<?> missing = schema.getVectorElement("missing", false);
@@ -101,11 +102,6 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		encoder.setLabel(label);
 
 		List<Feature> features = featureMap.encodeFeatures(encoder);
-
-		if(featureNames != null && featureNames.size() != features.size()){
-			throw new IllegalArgumentException("Invalid \'fmap\' element. Expected " + featureNames.size() + " features, got " + features.size() + " features");
-		}
-
 		for(Feature feature : features){
 			encoder.addFeature(feature);
 		}
@@ -130,6 +126,92 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
+	@Override
+	protected Map<VerificationField, List<?>> encodeActiveValues(RGenericVector dataFrame){
+		FeatureMap featureMap = ensureFeatureMap();
+
+		checkFeatureMap(featureMap, dataFrame);
+
+		List<FeatureMap.Entry> entries = featureMap.getEntries();
+
+		Map<FieldName, RVector<?>> data = new LinkedHashMap<>();
+
+		for(int i = 0; i < dataFrame.size(); i++){
+			FeatureMap.Entry entry = entries.get(i);
+			RVector<?> column = (RVector<?>)dataFrame.getValue(i);
+
+			FieldName name = FieldName.create(entry.getName());
+			String value = entry.getValue();
+
+			String type = entry.getType();
+			switch(type){
+				case "i":
+					{
+						RIntegerVector factorColumn = (RIntegerVector)data.get(name);
+						if(factorColumn == null){
+							factorColumn = new RIntegerVector(null, null){
+
+								private List<String> factorValues = new ArrayList<>();
+
+								{
+									for(int i = 0; i < column.size(); i++){
+										this.factorValues.add(null);
+									}
+								}
+
+								@Override
+								public boolean isFactor(){
+									return true;
+								}
+
+								@Override
+								public List<String> getFactorValues(){
+									return this.factorValues;
+								}
+							};
+
+							data.put(name, factorColumn);
+						}
+
+						List<String> factorValues = factorColumn.getFactorValues();
+
+						List<? extends Number> mask = (List)column.getValues();
+
+						for(int row = 0; row < mask.size(); row++){
+							Number rowMask = mask.get(row);
+
+							if(rowMask != null && rowMask.doubleValue() == 1d){
+								factorValues.set(row, value);
+							}
+						}
+					}
+					break;
+				case "q":
+				case "int":
+					{
+						data.put(name, column);
+					}
+					break;
+				default:
+					throw new IllegalArgumentException(type);
+			}
+		}
+
+		List<RVector<?>> columns = new ArrayList<>(data.values());
+		List<FieldName> names = new ArrayList<>(data.keySet());
+
+		return encodeVerificationData(columns, names);
+	}
+
+	private FeatureMap ensureFeatureMap(){
+
+		if(this.featureMap == null){
+			this.featureMap = loadFeatureMap();
+		}
+
+		return this.featureMap;
+	}
+
 	private Learner ensureLearner(){
 
 		if(this.learner == null){
@@ -137,6 +219,18 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 
 		return this.learner;
+	}
+
+	private FeatureMap loadFeatureMap(){
+		RGenericVector booster = getObject();
+
+		RVector<?> fmap = DecorationUtil.getVectorElement(booster, "fmap");
+
+		try {
+			return loadFeatureMap(fmap);
+		} catch(IOException ioe){
+			throw new IllegalArgumentException(ioe);
+		}
 	}
 
 	private Learner loadLearner(){
@@ -148,6 +242,15 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			return loadLearner(raw);
 		} catch(IOException ioe){
 			throw new IllegalArgumentException(ioe);
+		}
+	}
+
+	static
+	private void checkFeatureMap(FeatureMap featureMap, RVector<?> vector){
+		List<FeatureMap.Entry> entries = featureMap.getEntries();
+
+		if(vector.size() != entries.size()){
+			throw new IllegalArgumentException("Invalid \'fmap\' element. Expected " + vector.size() + " features, got " + entries.size() + " features");
 		}
 	}
 
