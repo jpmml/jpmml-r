@@ -18,7 +18,7 @@
  */
 package org.jpmml.rexp;
 
-import org.jpmml.evaluator.Batch;
+import org.jpmml.evaluator.testing.Batch;
 import org.junit.Test;
 
 public class GLMConverterTest extends ConverterTest {
@@ -47,8 +47,8 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateFormulaAuto() throws Exception {
 		evaluate("GLMFormula", "Auto");
 
-		try(Batch batch = createBatch("GLMFormula", "Auto", name -> true, LMConverter.class)){
-			evaluate(batch, null);
+		try(Batch batch = createBatch("GLMFormula", "Auto", LMConverter.class)){
+			evaluate(batch);
 		}
 	}
 
@@ -56,8 +56,8 @@ public class GLMConverterTest extends ConverterTest {
 	public void evaluateCustFormulaAuto() throws Exception {
 		evaluate("GLMCustFormula", "Auto");
 
-		try(Batch batch = createBatch("GLMCustFormula", "Auto", name -> true, LMConverter.class)){
-			evaluate(batch, null);
+		try(Batch batch = createBatch("GLMCustFormula", "Auto", LMConverter.class)){
+			evaluate(batch);
 		}
 	}
 

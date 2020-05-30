@@ -45,7 +45,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.model.ValueUtil;
+import org.jpmml.converter.ValueUtil;
 
 public class FormulaUtil {
 
@@ -542,7 +542,7 @@ public class FormulaUtil {
 		for(FunctionExpression.Argument objectArgument : objectArguments){
 			Constant constant = (Constant)objectArgument.getExpression();
 
-			String string = ValueUtil.toString(constant.getValue());
+			String string = ValueUtil.asString(constant.getValue());
 
 			result.add(string);
 		}

@@ -169,7 +169,6 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		List<?> categories = categoricalLabel.getValues();
 
-		final
 		boolean hasScoreDistribution = hasScoreDistribution();
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){

@@ -73,7 +73,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			RVector<?> missing = schema.getVectorElement("missing", false);
 
 			if(missing != null){
-				featureMap.addMissingValue(org.jpmml.model.ValueUtil.toString(missing.asScalar()));
+				featureMap.addMissingValue(ValueUtil.asString(missing.asScalar()));
 			}
 		}
 
@@ -143,9 +143,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			FieldName name = FieldName.create(entry.getName());
 			String value = entry.getValue();
 
-			String type = entry.getType();
+			FeatureMap.Entry.Type type = entry.getType();
 			switch(type){
-				case "i":
+				case BINARY_INDICATOR:
 					{
 						RIntegerVector factorColumn = (RIntegerVector)data.get(name);
 						if(factorColumn == null){
@@ -186,14 +186,14 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 						}
 					}
 					break;
-				case "q":
-				case "int":
+				case FLOAT:
+				case INTEGER:
 					{
 						data.put(name, column);
 					}
 					break;
 				default:
-					throw new IllegalArgumentException(type);
+					throw new IllegalArgumentException(String.valueOf(type));
 			}
 		}
 

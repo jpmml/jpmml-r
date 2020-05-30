@@ -22,12 +22,11 @@ import java.io.InputStream;
 import java.util.function.Predicate;
 
 import com.google.common.base.Equivalence;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMML;
-import org.jpmml.evaluator.ArchiveBatch;
-import org.jpmml.evaluator.IntegrationTest;
-import org.jpmml.evaluator.IntegrationTestBatch;
-import org.jpmml.evaluator.PMMLEquivalence;
+import org.jpmml.evaluator.ResultField;
+import org.jpmml.evaluator.testing.ArchiveBatch;
+import org.jpmml.evaluator.testing.IntegrationTest;
+import org.jpmml.evaluator.testing.PMMLEquivalence;
 
 abstract
 public class ConverterTest extends IntegrationTest {
@@ -36,17 +35,19 @@ public class ConverterTest extends IntegrationTest {
 		super(new PMMLEquivalence(1e-13, 1e-13));
 	}
 
-	public ConverterTest(Equivalence<Object> equivalence){
-		super(equivalence);
+	protected ArchiveBatch createBatch(String name, String dataset, Class<? extends Converter<? extends RExp>> converterClazz){
+		Predicate<ResultField> predicate = (resultField -> true);
+		Equivalence<Object> equivalence = getEquivalence();
+
+		ConverterTestBatch batch = (ConverterTestBatch)createBatch(name, dataset, predicate, equivalence);
+		batch.setConverterClazz(converterClazz);
+
+		return batch;
 	}
 
 	@Override
-	protected ArchiveBatch createBatch(String name, String dataset, Predicate<FieldName> predicate){
-		return createBatch(name, dataset, predicate, null);
-	}
-
-	protected ArchiveBatch createBatch(String name, String dataset, Predicate<FieldName> predicate, final Class<? extends Converter<? extends RExp>> clazz){
-		ArchiveBatch result = new IntegrationTestBatch(name, dataset, predicate){
+	protected ArchiveBatch createBatch(String name, String dataset, Predicate<ResultField> predicate, Equivalence<Object> equivalence){
+		ArchiveBatch result = new ConverterTestBatch(name, dataset, predicate, equivalence){
 
 			@Override
 			public IntegrationTest getIntegrationTest(){
@@ -61,9 +62,11 @@ public class ConverterTest extends IntegrationTest {
 
 					RExp rexp = parser.parse();
 
-					PMML pmml = convert(rexp, clazz);
+					Converter<RExp> converter = createConverter(rexp);
 
-					ensureValidity(pmml);
+					PMML pmml = converter.encodePMML();
+
+					validatePMML(pmml);
 
 					return pmml;
 				}
@@ -71,22 +74,5 @@ public class ConverterTest extends IntegrationTest {
 		};
 
 		return result;
-	}
-
-	static
-	private PMML convert(RExp rexp, Class<? extends Converter<? extends RExp>> clazz) throws Exception {
-		ConverterFactory converterFactory = ConverterFactory.newInstance();
-
-		Converter<RExp> converter;
-
-		if(clazz != null){
-			converter = converterFactory.newConverter(clazz, rexp);
-		} else
-
-		{
-			converter = converterFactory.newConverter(rexp);
-		}
-
-		return converter.encodePMML();
 	}
 }

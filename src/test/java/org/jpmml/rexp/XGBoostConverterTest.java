@@ -18,8 +18,8 @@
  */
 package org.jpmml.rexp;
 
-import org.jpmml.evaluator.FloatEquivalence;
-import org.jpmml.evaluator.PMMLEquivalence;
+import org.jpmml.evaluator.testing.FloatEquivalence;
+import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
 public class XGBoostConverterTest extends ConverterTest {

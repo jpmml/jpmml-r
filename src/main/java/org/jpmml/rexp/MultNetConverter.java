@@ -31,6 +31,7 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class MultNetConverter extends GLMNetConverter {
@@ -77,7 +78,7 @@ public class MultNetConverter extends GLMNetConverter {
 				Object targetCategory = categoricalLabel.getValue(i);
 
 				List<Double> categoryA0 = FortranMatrixUtil.getRow(a0.getValues(), a0Rows, a0Columns, i);
-				S4Object categoryBeta = (S4Object)categoryBetas.getElement(org.jpmml.model.ValueUtil.toString(targetCategory));
+				S4Object categoryBeta = (S4Object)categoryBetas.getElement(ValueUtil.asString(targetCategory));
 
 				Double intercept = categoryA0.get(column);
 				List<Double> coefficients = getCoefficients(categoryBeta, column);
