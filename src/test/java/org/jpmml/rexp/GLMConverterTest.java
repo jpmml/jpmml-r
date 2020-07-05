@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.Batch;
 import org.junit.Test;
 
-public class GLMConverterTest extends ConverterTest {
+public class GLMConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class AdaConverterTest extends ConverterTest {
+public class AdaConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

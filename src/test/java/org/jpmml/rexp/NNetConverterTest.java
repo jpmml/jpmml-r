@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class NNetConverterTest extends ConverterTest {
+public class NNetConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

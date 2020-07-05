@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class CrossValGLMNetConverterTest extends ConverterTest {
+public class CrossValGLMNetConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateVersicolor() throws Exception {

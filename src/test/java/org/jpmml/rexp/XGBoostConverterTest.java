@@ -22,7 +22,7 @@ import org.jpmml.evaluator.testing.FloatEquivalence;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class XGBoostConverterTest extends ConverterTest {
+public class XGBoostConverterTest extends RExpTest {
 
 	public XGBoostConverterTest(){
 		super();

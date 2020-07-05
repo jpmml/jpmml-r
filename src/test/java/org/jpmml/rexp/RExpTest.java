@@ -18,20 +18,18 @@
  */
 package org.jpmml.rexp;
 
-import java.io.InputStream;
 import java.util.function.Predicate;
 
 import com.google.common.base.Equivalence;
-import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.testing.ArchiveBatch;
 import org.jpmml.evaluator.testing.IntegrationTest;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 
 abstract
-public class ConverterTest extends IntegrationTest {
+public class RExpTest extends IntegrationTest {
 
-	public ConverterTest(){
+	public RExpTest(){
 		super(new PMMLEquivalence(1e-13, 1e-13));
 	}
 
@@ -39,7 +37,7 @@ public class ConverterTest extends IntegrationTest {
 		Predicate<ResultField> predicate = (resultField -> true);
 		Equivalence<Object> equivalence = getEquivalence();
 
-		ConverterTestBatch batch = (ConverterTestBatch)createBatch(name, dataset, predicate, equivalence);
+		RExpTestBatch batch = (RExpTestBatch)createBatch(name, dataset, predicate, equivalence);
 		batch.setConverterClazz(converterClazz);
 
 		return batch;
@@ -47,29 +45,11 @@ public class ConverterTest extends IntegrationTest {
 
 	@Override
 	protected ArchiveBatch createBatch(String name, String dataset, Predicate<ResultField> predicate, Equivalence<Object> equivalence){
-		ArchiveBatch result = new ConverterTestBatch(name, dataset, predicate, equivalence){
+		ArchiveBatch result = new RExpTestBatch(name, dataset, predicate, equivalence){
 
 			@Override
-			public IntegrationTest getIntegrationTest(){
-				return ConverterTest.this;
-			}
-
-			@Override
-			public PMML getPMML() throws Exception {
-
-				try(InputStream is = open("/rds/" + getName() + getDataset() + ".rds")){
-					RExpParser parser = new RExpParser(is);
-
-					RExp rexp = parser.parse();
-
-					Converter<RExp> converter = createConverter(rexp);
-
-					PMML pmml = converter.encodePMML();
-
-					validatePMML(pmml);
-
-					return pmml;
-				}
+			public RExpTest getIntegrationTest(){
+				return RExpTest.this;
 			}
 		};
 

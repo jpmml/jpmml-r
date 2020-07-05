@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class GLMNetConverterTest extends ConverterTest {
+public class GLMNetConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {

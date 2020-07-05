@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class MultinomConverterTest extends ConverterTest {
+public class MultinomConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAudit() throws Exception {

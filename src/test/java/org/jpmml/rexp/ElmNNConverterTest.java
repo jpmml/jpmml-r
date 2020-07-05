@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class ElmNNConverterTest extends ConverterTest {
+public class ElmNNConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {

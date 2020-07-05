@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class BaggingConverterTest extends ConverterTest {
+public class BaggingConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAudit() throws Exception {

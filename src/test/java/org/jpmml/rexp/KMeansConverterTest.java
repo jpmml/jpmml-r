@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class KMeansConverterTest extends ConverterTest {
+public class KMeansConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateIris() throws Exception {

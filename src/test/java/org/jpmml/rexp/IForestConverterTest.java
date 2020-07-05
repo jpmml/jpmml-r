@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class IForestConverterTest extends ConverterTest {
+public class IForestConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {

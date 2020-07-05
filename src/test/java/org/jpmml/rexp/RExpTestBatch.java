@@ -18,20 +18,44 @@
  */
 package org.jpmml.rexp;
 
+import java.io.InputStream;
 import java.util.function.Predicate;
 
 import com.google.common.base.Equivalence;
+import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.testing.IntegrationTestBatch;
 
 abstract
-public class ConverterTestBatch extends IntegrationTestBatch {
+public class RExpTestBatch extends IntegrationTestBatch {
 
 	private Class<? extends Converter<? extends RExp>> converterClazz = null;
 
 
-	public ConverterTestBatch(String name, String dataset, Predicate<ResultField> predicate, Equivalence<Object> equivalence){
+	public RExpTestBatch(String name, String dataset, Predicate<ResultField> predicate, Equivalence<Object> equivalence){
 		super(name, dataset, predicate, equivalence);
+	}
+
+	@Override
+	abstract
+	public RExpTest getIntegrationTest();
+
+	@Override
+	public PMML getPMML() throws Exception {
+
+		try(InputStream is = open("/rds/" + getName() + getDataset() + ".rds")){
+			RExpParser parser = new RExpParser(is);
+
+			RExp rexp = parser.parse();
+
+			Converter<RExp> converter = createConverter(rexp);
+
+			PMML pmml = converter.encodePMML();
+
+			validatePMML(pmml);
+
+			return pmml;
+		}
 	}
 
 	public Converter<RExp> createConverter(RExp rexp){

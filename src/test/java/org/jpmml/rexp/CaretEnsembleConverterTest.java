@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class CaretEnsembleConverterTest extends ConverterTest {
+public class CaretEnsembleConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {

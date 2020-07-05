@@ -19,5 +19,5 @@
 package org.jpmml.rexp;
 
 abstract
-public class PartyConverterTest extends ConverterTest {
+public class PartyConverterTest extends RExpTest {
 }

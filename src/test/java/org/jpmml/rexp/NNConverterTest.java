@@ -20,7 +20,7 @@ package org.jpmml.rexp;
 
 import org.junit.Test;
 
-public class NNConverterTest extends ConverterTest {
+public class NNConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateWineQuality() throws Exception {

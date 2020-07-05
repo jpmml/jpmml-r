@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class GBMConverterTest extends ConverterTest {
+public class GBMConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {
