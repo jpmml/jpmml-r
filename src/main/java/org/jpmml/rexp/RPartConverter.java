@@ -395,8 +395,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 			List<?> values = categoricalFeature.getValues();
 
-			leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 1));
-			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
+			leftPredicate = createPredicate(categoricalFeature, selectValues(values, csplitRow, 1));
+			rightPredicate = createPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
 		}
 
 		return Arrays.asList(leftPredicate, rightPredicate);

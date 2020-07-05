@@ -227,8 +227,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 			List<?> values = categoricalFeature.getValues();
 			List<Integer> splitValues = (List<Integer>)splitpoint.getValues();
 
-			leftPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, true));
-			rightPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, splitValues, false));
+			leftPredicate = createPredicate(categoricalFeature, selectValues(values, splitValues, true));
+			rightPredicate = createPredicate(categoricalFeature, selectValues(values, splitValues, false));
 		} else
 
 		{

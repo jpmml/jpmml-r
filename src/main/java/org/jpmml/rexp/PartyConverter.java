@@ -270,7 +270,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				Predicate childPredicate;
 
 				if(right.asScalar()){
-					childPredicate = createSimpleSetPredicate(categoricalFeature, selectValues(values, index, i + 1));
+					childPredicate = createPredicate(categoricalFeature, selectValues(values, index, i + 1));
 				} else
 
 				{
