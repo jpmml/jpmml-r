@@ -135,7 +135,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RVector<?> response = predicted.getVectorElement("(response)");
 		RDoubleVector prob = predicted.getDoubleElement("(prob)", false);
 
-		Node root = encodeNode(True.INSTANCE, partyNode, response, prob, schema);
+		Node root = encodeNode(partyNode, True.INSTANCE, response, prob, schema);
 
 		TreeModel treeModel;
 
@@ -153,7 +153,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private Node encodeNode(Predicate predicate, RGenericVector partyNode, RVector<?> response, RDoubleVector prob, Schema schema){
+	private Node encodeNode(RGenericVector partyNode, Predicate predicate, RVector<?> response, RDoubleVector prob, Schema schema){
 		RIntegerVector id = partyNode.getIntegerElement("id");
 		RGenericVector split = partyNode.getGenericElement("split");
 		RGenericVector kids = partyNode.getGenericElement("kids");
@@ -251,8 +251,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
 
-			Node leftChild = encodeNode(leftPredicate, (RGenericVector)kids.getValue(0), response, prob, schema);
-			Node rightChild = encodeNode(rightPredicate, (RGenericVector)kids.getValue(1), response, prob, schema);
+			Node leftChild = encodeNode((RGenericVector)kids.getValue(0), leftPredicate, response, prob, schema);
+			Node rightChild = encodeNode((RGenericVector)kids.getValue(1), rightPredicate, response, prob, schema);
 
 			result.addNodes(leftChild, rightChild);
 		} else
@@ -277,7 +277,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				Node child = encodeNode(childPredicate, (RGenericVector)kids.getValue(i), response, prob, schema);
+				Node child = encodeNode((RGenericVector)kids.getValue(i), childPredicate, response, prob, schema);
 
 				result.addNodes(child);
 			}

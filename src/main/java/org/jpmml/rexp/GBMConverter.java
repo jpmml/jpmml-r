@@ -198,7 +198,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
-		Node root = encodeNode(True.INSTANCE, 0, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
+		Node root = encodeNode(0, True.INSTANCE, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
@@ -206,15 +206,15 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private Node encodeNode(Predicate predicate, int i, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
+	private Node encodeNode(int i, Predicate predicate, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
+		Integer id = Integer.valueOf(i + 1);
+
 		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
 		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
 		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
 		RIntegerVector rightNode = (RIntegerVector)tree.getValue(3);
 		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
 		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
-
-		Integer id = Integer.valueOf(i + 1);
 
 		Integer var = splitVar.getValue(i);
 		if(var == -1){
@@ -293,21 +293,21 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Integer missing = missingNode.getValue(i);
 		if(missing != -1 && (isMissing == null || isMissing)){
-			Node missingChild = encodeNode(missingPredicate, missing, tree, c_splits, missingFlagManager, categoryManager, schema);
+			Node missingChild = encodeNode(missing, missingPredicate, tree, c_splits, missingFlagManager, categoryManager, schema);
 
 			nodes.add(missingChild);
 		}
 
 		Integer left = leftNode.getValue(i);
 		if(left != -1 && (isMissing == null || !isMissing)){
-			Node leftChild = encodeNode(leftPredicate, left, tree, c_splits, nonMissingFlagManager, leftCategoryManager, schema);
+			Node leftChild = encodeNode(left, leftPredicate, tree, c_splits, nonMissingFlagManager, leftCategoryManager, schema);
 
 			nodes.add(leftChild);
 		}
 
 		Integer right = rightNode.getValue(i);
 		if(right != -1 && (isMissing == null || !isMissing)){
-			Node rightChild = encodeNode(rightPredicate, right, tree, c_splits, nonMissingFlagManager, rightCategoryManager, schema);
+			Node rightChild = encodeNode(right, rightPredicate, tree, c_splits, nonMissingFlagManager, rightCategoryManager, schema);
 
 			nodes.add(rightChild);
 		}

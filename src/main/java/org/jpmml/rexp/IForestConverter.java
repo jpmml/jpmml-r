@@ -109,7 +109,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < ValueUtil.asInt(ntree.asScalar()); i++){
-			TreeModel treeModel = encodeTreeModel(trees, i, segmentSchema);
+			TreeModel treeModel = encodeTreeModel(i, trees, segmentSchema);
 
 			treeModels.add(treeModel);
 		}
@@ -154,7 +154,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
-	private TreeModel encodeTreeModel(RGenericVector trees, int index, Schema schema){
+	private TreeModel encodeTreeModel(int index, RGenericVector trees, Schema schema){
 		RIntegerVector nrnodes = trees.getIntegerElement("nrnodes");
 		RIntegerVector ntree = trees.getIntegerElement("ntree");
 		RIntegerVector nodeStatus = trees.getIntegerElement("nodeStatus");
@@ -168,8 +168,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		int columns = ntree.asScalar();
 
 		Node root = encodeNode(
-			True.INSTANCE,
 			0,
+			True.INSTANCE,
 			0,
 			FortranMatrixUtil.getColumn(nodeStatus.getValues(), rows, columns, index),
 			FortranMatrixUtil.getColumn(nSam.getValues(), rows, columns, index),
@@ -186,11 +186,11 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private Node encodeNode(Predicate predicate, int index, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue, Schema schema){
+	private Node encodeNode(int index, Predicate predicate, int depth, List<Integer> nodeStatus, List<Integer> nodeSize, List<Integer> leftDaughter, List<Integer> rightDaughter, List<Integer> splitAtt, List<Double> splitValue, Schema schema){
+		Integer id = Integer.valueOf(index + 1);
+
 		int status = nodeStatus.get(index);
 		int size = nodeSize.get(index);
-
-		Integer id = Integer.valueOf(index + 1);
 
 		// Interior node
 		if(status == -3){
@@ -203,8 +203,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			Predicate leftPredicate = createSimplePredicate(feature, SimplePredicate.Operator.LESS_THAN, value);
 			Predicate rightPredicate = createSimplePredicate(feature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 
-			Node leftChild = encodeNode(leftPredicate, leftDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
-			Node rightChild = encodeNode(rightPredicate, rightDaughter.get(index) - 1, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
+			Node leftChild = encodeNode(leftDaughter.get(index) - 1, leftPredicate, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
+			Node rightChild = encodeNode(rightDaughter.get(index) - 1, rightPredicate, depth + 1, nodeStatus, nodeSize, leftDaughter, rightDaughter, splitAtt, splitValue, schema);
 
 			Node result = new BranchNode(null, predicate)
 				.setId(id)
