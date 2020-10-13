@@ -56,7 +56,7 @@ public class RExpParser {
 			readInt();
 
 			throw new IllegalStateException();
-		} catch(EOFException ee){
+		} catch(EOFException eofe){
 			// Ignored
 		}
 

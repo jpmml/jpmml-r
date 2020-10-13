@@ -52,24 +52,13 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>jpmml-converter</artifactId>
-			<version>1.4.2</version>
+			<version>1.4.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>jpmml-xgboost</artifactId>
-			<version>1.4.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.30</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.30</version>
+			<version>1.4.3</version>
 		</dependency>
 
 		<dependency>
@@ -82,7 +71,7 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator-testing</artifactId>
-			<version>1.5.1</version>
+			<version>1.5.3</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

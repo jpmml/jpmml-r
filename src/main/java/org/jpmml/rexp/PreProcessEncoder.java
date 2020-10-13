@@ -34,6 +34,7 @@ import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
+import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
@@ -89,7 +90,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 			Expression transformedExpression = encodeExpression(name, expression);
 
 			if(!(expression).equals(transformedExpression)){
-				DerivedField derivedField = createDerivedField(FieldName.create("preProcess(" + name.getValue() + ")"), OpType.CONTINUOUS, DataType.DOUBLE, transformedExpression);
+				DerivedField derivedField = createDerivedField(FieldNameUtil.create("preProcess", feature), OpType.CONTINUOUS, DataType.DOUBLE, transformedExpression);
 
 				feature = new ContinuousFeature(PreProcessEncoder.this, derivedField);
 			}

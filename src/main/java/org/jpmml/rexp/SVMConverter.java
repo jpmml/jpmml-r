@@ -38,7 +38,7 @@ import org.dmg.pmml.support_vector_machine.SupportVectorMachineModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.FeatureUtil;
+import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrix;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.OutlierTransformation;
@@ -271,7 +271,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(scale));
 			}
 
-			DerivedField derivedField = encoder.createDerivedField(FeatureUtil.createName("scale", feature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
+			DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("scale", continuousFeature), OpType.CONTINUOUS, DataType.DOUBLE, expression);
 
 			features.set(i, new ContinuousFeature(encoder, derivedField));
 		}

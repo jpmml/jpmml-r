@@ -143,15 +143,15 @@ public class Main {
 		PMML pmml;
 
 		try {
-			logger.info("Converting..");
+			logger.info("Converting RDS to PMML..");
 
 			long begin = System.currentTimeMillis();
 			pmml = converter.encodePMML();
 			long end = System.currentTimeMillis();
 
-			logger.info("Converted in {} ms.", (end - begin));
+			logger.info("Converted RDS to PMML in {} ms.", (end - begin));
 		} catch(Exception e){
-			logger.error("Failed to convert", e);
+			logger.error("Failed to convert RDS to PMML", e);
 
 			throw e;
 		} // End try

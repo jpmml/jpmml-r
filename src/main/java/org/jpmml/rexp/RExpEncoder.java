@@ -102,7 +102,7 @@ public class RExpEncoder extends ModelEncoder {
 	}
 
 	public Schema createSchema(){
-		return new Schema(getLabel(), getFeatures());
+		return new Schema(this, getLabel(), getFeatures());
 	}
 
 	public void setLabel(DataField dataField){

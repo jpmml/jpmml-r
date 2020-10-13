@@ -91,7 +91,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		return new Schema(label, features);
+		return new Schema(this, label, features);
 	}
 
 	private void renameDataField(FieldName name, FieldName renamedName){
