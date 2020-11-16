@@ -10,7 +10,7 @@
 
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-r</artifactId>
-	<version>1.4-SNAPSHOT</version>
+	<version>1.4.1</version>
 
 	<name>JPMML-R</name>
 	<description>Java library and command-line application for converting R models to PMML</description>
@@ -35,7 +35,7 @@
 		<connection>scm:git:git@github.com:jpmml/jpmml-r.git</connection>
 		<developerConnection>scm:git:git@github.com:jpmml/jpmml-r.git</developerConnection>
 		<url>git://github.com/jpmml/jpmml-r.git</url>
-		<tag>HEAD</tag>
+		<tag>1.4.1</tag>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
