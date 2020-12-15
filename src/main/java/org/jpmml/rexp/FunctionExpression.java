@@ -29,7 +29,7 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMMLObject;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.VisitorAction;
-import org.jpmml.model.visitors.FieldReferenceFinder;
+import org.jpmml.model.visitors.ActiveFieldFinder;
 
 public class FunctionExpression extends Expression {
 
@@ -228,10 +228,10 @@ public class FunctionExpression extends Expression {
 		public Set<FieldName> getFieldNames(){
 			Expression expression = getExpression();
 
-			FieldReferenceFinder fieldReferenceFinder = new FieldReferenceFinder();
-			fieldReferenceFinder.applyTo(expression);
+			ActiveFieldFinder activeFieldFinder = new ActiveFieldFinder();
+			activeFieldFinder.applyTo(expression);
 
-			return fieldReferenceFinder.getFieldNames();
+			return activeFieldFinder.getFieldNames();
 		}
 
 		Token getBegin(){
