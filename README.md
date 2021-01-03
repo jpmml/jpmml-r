@@ -1,4 +1,4 @@
-JPMML-R
+JPMML-R [![Build Status](https://github.com/jpmml/jpmml-r/workflows/maven/badge.svg)](https://github.com/jpmml/jpmml-r/actions?query=workflow%3A%22maven%22)
 =======
 
 Java library and command-line application for converting [R](https://www.r-project.org/) models to PMML.
