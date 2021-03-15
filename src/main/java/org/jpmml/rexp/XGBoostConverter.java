@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -306,7 +307,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		byte[] value = raw.getValue();
 
 		try(InputStream is = new ByteArrayInputStream(value)){
-			return XGBoostUtil.loadLearner(is);
+			return XGBoostUtil.loadLearner(is, ByteOrder.nativeOrder(), null, "$.Model");
 		}
 	}
 }
