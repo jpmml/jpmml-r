@@ -46,7 +46,7 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 		this.schemas.clear();
 
 		for(int i = 0; i < trees.size(); i++){
-			RGenericVector tree = (RGenericVector)trees.getValue(i);
+			RGenericVector tree = trees.getGenericValue(i);
 
 			RExpEncoder treeEncoder = new RExpEncoder();
 
@@ -72,7 +72,7 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 		}
 
 		for(int i = 0; i < trees.size(); i++){
-			RGenericVector tree = (RGenericVector)trees.getValue(i);
+			RGenericVector tree = trees.getGenericValue(i);
 			Schema schema = this.schemas.get(i);
 
 			RPartConverter converter = this.converters.get(tree);

@@ -78,7 +78,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 		};
 
 		for(int i = 0; i < models.size(); i++){
-			RGenericVector model = (RGenericVector)models.getValue(i);
+			RGenericVector model = models.getGenericValue(i);
 
 			Conversion conversion = encodeTrainModel(model, segmentSchemaFunction);
 

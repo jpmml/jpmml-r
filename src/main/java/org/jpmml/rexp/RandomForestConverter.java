@@ -170,7 +170,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 
 			boolean categorical = ((ncat.getValue(i)).doubleValue() > 1d);
 			if(categorical){
-				RStringVector levels = (RStringVector)xlevels.getValue(i);
+				RStringVector levels = xlevels.getStringValue(i);
 
 				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, levels.getValues());
 			} else

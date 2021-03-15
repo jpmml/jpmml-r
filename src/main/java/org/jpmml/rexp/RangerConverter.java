@@ -256,7 +256,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < ValueUtil.asInt(numTrees.asScalar()); i++){
-			TreeModel treeModel = encodeTreeModel(miningFunction, scoreEncoder, (RGenericVector)childNodeIDs.getValue(i), (RNumberVector<?>)splitVarIDs.getValue(i), (RNumberVector<?>)splitValues.getValue(i), (terminalClassCounts != null ? (RGenericVector)terminalClassCounts.getValue(i) : null), segmentSchema);
+			TreeModel treeModel = encodeTreeModel(miningFunction, scoreEncoder, childNodeIDs.getGenericValue(i), splitVarIDs.getNumericValue(i), splitValues.getNumericValue(i), (terminalClassCounts != null ? terminalClassCounts.getGenericValue(i) : null), segmentSchema);
 
 			treeModels.add(treeModel);
 		}
@@ -265,8 +265,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, ScoreEncoder scoreEncoder, RGenericVector childNodeIDs, RNumberVector<?> splitVarIDs, RNumberVector<?> splitValues, RGenericVector terminalClassCounts, Schema schema){
-		RNumberVector<?> leftChildIDs = (RNumberVector<?>)childNodeIDs.getValue(0);
-		RNumberVector<?> rightChildIDs = (RNumberVector<?>)childNodeIDs.getValue(1);
+		RNumberVector<?> leftChildIDs = childNodeIDs.getNumericValue(0);
+		RNumberVector<?> rightChildIDs = childNodeIDs.getNumericValue(1);
 
 		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
 
@@ -281,7 +281,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		int rightIndex = ValueUtil.asInt(rightChildIDs.getValue(index));
 
 		Number splitValue = splitValues.getValue(index);
-		RNumberVector<?> terminalClassCount = (terminalClassCounts != null ? (RNumberVector<?>)terminalClassCounts.getValue(index) : null);
+		RNumberVector<?> terminalClassCount = (terminalClassCounts != null ? terminalClassCounts.getNumericValue(index) : null);
 
 		if(leftIndex == 0 && rightIndex == 0){
 			Node result = new LeafNode(null, predicate);

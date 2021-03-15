@@ -249,8 +249,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				rightPredicate = createSimplePredicate(continuousFeature, SimplePredicate.Operator.GREATER_OR_EQUAL, value);
 			}
 
-			Node leftChild = encodeNode((RGenericVector)kids.getValue(0), leftPredicate, response, prob, schema);
-			Node rightChild = encodeNode((RGenericVector)kids.getValue(1), rightPredicate, response, prob, schema);
+			Node leftChild = encodeNode(kids.getGenericValue(0), leftPredicate, response, prob, schema);
+			Node rightChild = encodeNode(kids.getGenericValue(1), rightPredicate, response, prob, schema);
 
 			result.addNodes(leftChild, rightChild);
 		} else
@@ -275,7 +275,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 					throw new IllegalArgumentException();
 				}
 
-				Node child = encodeNode((RGenericVector)kids.getValue(i), childPredicate, response, prob, schema);
+				Node child = encodeNode(kids.getGenericValue(i), childPredicate, response, prob, schema);
 
 				result.addNodes(child);
 			}

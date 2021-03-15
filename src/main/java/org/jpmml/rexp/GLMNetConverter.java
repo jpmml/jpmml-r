@@ -69,7 +69,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 			encoder.setLabel(dataField);
 		}
 
-		RStringVector rowNames = (RStringVector)dimnames.getValue(0);
+		RStringVector rowNames = dimnames.getStringValue(0);
 		for(int i = 0; i < rowNames.size(); i++){
 			String rowName = rowNames.getValue(i);
 

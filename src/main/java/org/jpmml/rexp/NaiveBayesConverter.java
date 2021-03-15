@@ -66,7 +66,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 		RStringVector tableNames = tables.names();
 
 		for(int i = 0; i < tables.size(); i++){
-			RDoubleVector table = (RDoubleVector)tables.getValue(i);
+			RDoubleVector table = tables.getDoubleValue(i);
 
 			RStringVector tableRows = table.dimnames(0);
 			RStringVector tableColumns = table.dimnames(1);

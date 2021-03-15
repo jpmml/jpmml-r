@@ -80,7 +80,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		RStringVector actFctType = actFct.getStringAttribute("type");
 
 		// Select the first repetition
-		weights = (RGenericVector)weights.getValue(0);
+		weights = weights.getGenericValue(0);
 
 		NeuralNetwork.ActivationFunction activationFunction = NeuralNetwork.ActivationFunction.LOGISTIC;
 
@@ -113,7 +113,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 				neuralLayer.setActivationFunction(activationFunction);
 			}
 
-			RDoubleVector layerWeights = (RDoubleVector)weights.getValue(i);
+			RDoubleVector layerWeights = weights.getDoubleValue(i);
 
 			RIntegerVector layerDim = layerWeights.dim();
 

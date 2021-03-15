@@ -48,6 +48,44 @@ public class RGenericVector extends RVector<RExp> {
 		return this.values.get(index);
 	}
 
+	public RDoubleVector getDoubleValue(int index){
+		return getVectorValue(RDoubleVector.class, index);
+	}
+
+	public RFactorVector getFactorValue(int index){
+		return getVectorValue(RFactorVector.class, index);
+	}
+
+	public RGenericVector getGenericValue(int index){
+		return getVectorValue(RGenericVector.class, index);
+	}
+
+	public RIntegerVector getIntegerValue(int index){
+		return getVectorValue(RIntegerVector.class, index);
+	}
+
+	public RNumberVector<?> getNumericValue(int index){
+		return getVectorValue(RNumberVector.class, index);
+	}
+
+	public RStringVector getStringValue(int index){
+		return getVectorValue(RStringVector.class, index);
+	}
+
+	public RVector<?> getVectorValue(int index){
+		return getVectorValue(RVector.class, index);
+	}
+
+	private <V extends RVector<E>, E> V getVectorValue(Class<V> clazz, int index){
+		RExp rexp = getValue(index);
+
+		try {
+			return clazz.cast(rexp);
+		} catch(ClassCastException cce){
+			throw new IllegalArgumentException("Invalid value on position " + (index + 1) + ". Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+		}
+	}
+
 	public RBooleanVector getBooleanElement(String name){
 		return getBooleanElement(name, true);
 	}
@@ -64,20 +102,20 @@ public class RGenericVector extends RVector<RExp> {
 		return getVectorElement(RDoubleVector.class, name, required);
 	}
 
-	public RGenericVector getGenericElement(String name){
-		return getGenericElement(name, true);
-	}
-
-	public RGenericVector getGenericElement(String name, boolean required){
-		return getVectorElement(RGenericVector.class, name, required);
-	}
-
 	public RFactorVector getFactorElement(String name){
 		return getFactorElement(name, true);
 	}
 
 	public RFactorVector getFactorElement(String name, boolean required){
 		return getVectorElement(RFactorVector.class, name, required);
+	}
+
+	public RGenericVector getGenericElement(String name){
+		return getGenericElement(name, true);
+	}
+
+	public RGenericVector getGenericElement(String name, boolean required){
+		return getVectorElement(RGenericVector.class, name, required);
 	}
 
 	public RIntegerVector getIntegerElement(String name){

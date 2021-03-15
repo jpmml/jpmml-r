@@ -109,7 +109,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			boolean categorical = (ValueUtil.asInt(var_type.getValue(i)) > 0);
 			if(categorical){
-				RStringVector var_level = (RStringVector)var_levels.getValue(i);
+				RStringVector var_level = var_levels.getStringValue(i);
 
 				dataField = encoder.createDataField(varName, OpType.CATEGORICAL, DataType.STRING, var_level.getValues());
 			} else
@@ -138,7 +138,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		List<TreeModel> treeModels = new ArrayList<>();
 
 		for(int i = 0; i < trees.size(); i++){
-			RGenericVector tree = (RGenericVector)trees.getValue(i);
+			RGenericVector tree = trees.getGenericValue(i);
 
 			TreeModel treeModel = encodeTreeModel(MiningFunction.REGRESSION, tree, c_splits, segmentSchema);
 
@@ -210,12 +210,12 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	private Node encodeNode(int i, Predicate predicate, RGenericVector tree, RGenericVector c_splits, FlagManager flagManager, CategoryManager categoryManager, Schema schema){
 		Integer id = Integer.valueOf(i + 1);
 
-		RIntegerVector splitVar = (RIntegerVector)tree.getValue(0);
-		RDoubleVector splitCodePred = (RDoubleVector)tree.getValue(1);
-		RIntegerVector leftNode = (RIntegerVector)tree.getValue(2);
-		RIntegerVector rightNode = (RIntegerVector)tree.getValue(3);
-		RIntegerVector missingNode = (RIntegerVector)tree.getValue(4);
-		RDoubleVector prediction = (RDoubleVector)tree.getValue(7);
+		RIntegerVector splitVar = tree.getIntegerValue(0);
+		RDoubleVector splitCodePred = tree.getDoubleValue(1);
+		RIntegerVector leftNode = tree.getIntegerValue(2);
+		RIntegerVector rightNode = tree.getIntegerValue(3);
+		RIntegerVector missingNode = tree.getIntegerValue(4);
+		RDoubleVector prediction = tree.getDoubleValue(7);
 
 		Integer var = splitVar.getValue(i);
 		if(var == -1){
@@ -264,7 +264,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			int index = ValueUtil.asInt(split);
 
-			RIntegerVector c_split = (RIntegerVector)c_splits.getValue(index);
+			RIntegerVector c_split = c_splits.getIntegerValue(index);
 
 			List<Integer> splitValues = c_split.getValues();
 

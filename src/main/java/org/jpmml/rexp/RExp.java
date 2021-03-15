@@ -39,7 +39,7 @@ public class RExp {
 	public RStringVector dimnames(int index){
 		RGenericVector dimnames = getGenericAttribute("dimnames");
 
-		return (RStringVector)dimnames.getValue(index);
+		return dimnames.getStringValue(index);
 	}
 
 	public RExp getAttribute(String name){

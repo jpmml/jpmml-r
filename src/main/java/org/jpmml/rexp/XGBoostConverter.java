@@ -139,7 +139,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		for(int i = 0; i < dataFrame.size(); i++){
 			FeatureMap.Entry entry = entries.get(i);
-			RVector<?> column = (RVector<?>)dataFrame.getValue(i);
+			RVector<?> column = dataFrame.getVectorValue(i);
 
 			FieldName name = FieldName.create(entry.getName());
 			String value = entry.getValue();
@@ -275,9 +275,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	static
 	private FeatureMap loadFeatureMap(RGenericVector fmap){
-		RIntegerVector id = (RIntegerVector)fmap.getValue(0);
-		RFactorVector name = (RFactorVector)fmap.getValue(1);
-		RFactorVector type = (RFactorVector)fmap.getValue(2);
+		RIntegerVector id = fmap.getIntegerValue(0);
+		RFactorVector name = fmap.getFactorValue(1);
+		RFactorVector type = fmap.getFactorValue(2);
 
 		FeatureMap featureMap = new FeatureMap();
 
