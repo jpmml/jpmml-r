@@ -274,7 +274,12 @@ public class RExpParser {
 			values[i] = value;
 		}
 
-		return new RIntegerVector(values, readAttributes(flags));
+		RIntegerVector result = new RIntegerVector(values, readAttributes(flags));
+		if(result.hasAttribute("levels")){
+			result = new RFactorVector(values, result.getAttributes());
+		}
+
+		return result;
 	}
 
 	private RDoubleVector readRealVector(int flags) throws IOException {

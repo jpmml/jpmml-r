@@ -175,8 +175,8 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 				values = Lists.transform((List)column.getValues(), function);
 			} else
 
-			if(column instanceof RIntegerVector && RExpUtil.isFactor(column)){
-				RIntegerVector factor = (RIntegerVector)column;
+			if(column instanceof RFactorVector){
+				RFactorVector factor = (RFactorVector)column;
 
 				values = factor.getFactorValues();
 			} else

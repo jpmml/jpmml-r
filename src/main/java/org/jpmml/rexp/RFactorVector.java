@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2021 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -22,56 +22,57 @@ import java.util.List;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
 import org.dmg.pmml.DataType;
 
-public class RIntegerVector extends RNumberVector<Integer> {
+public class RFactorVector extends RIntegerVector {
 
-	private int[] values = null;
-
-
-	public RIntegerVector(int[] values, RPair attributes){
-		super(attributes);
-
-		this.values = values;
+	public RFactorVector(int[] values, RPair attributes){
+		super(values, attributes);
 	}
 
 	@Override
 	public DataType getDataType(){
-		return DataType.INTEGER;
+		return DataType.STRING;
 	}
 
-	@Override
-	public int size(){
-		return this.values.length;
+	public RStringVector getLevels(){
+		return getStringAttribute("levels");
 	}
 
-	@Override
-	public Integer getValue(int index){
-		int value = this.values[index];
+	public List<String> getLevelValues(){
+		RStringVector levels = getLevels();
 
-		if(value == Integer.MIN_VALUE){
+		return levels.getValues();
+	}
+
+	public String getFactorValue(int index){
+		RStringVector levels = getLevels();
+
+		Integer value = getValue(index);
+		if(value == null){
 			return null;
 		}
 
-		return value;
+		return levels.getValue(value - 1);
 	}
 
-	@Override
-	public List<Integer> getValues(){
-		Function<Integer, Integer> function = new Function<Integer, Integer>(){
+	public List<String> getFactorValues(){
+		List<Integer> values = getValues();
+		List<String> levelValues = getLevelValues();
+
+		Function<Integer, String> function = new Function<Integer, String>(){
 
 			@Override
-			public Integer apply(Integer value){
+			public String apply(Integer value){
 
-				if(value == Integer.MIN_VALUE){
+				if(value == null){
 					return null;
 				}
 
-				return value;
+				return levelValues.get(value - 1);
 			}
 		};
 
-		return Lists.transform(Ints.asList(this.values), function);
+		return Lists.transform(values, function);
 	}
 }

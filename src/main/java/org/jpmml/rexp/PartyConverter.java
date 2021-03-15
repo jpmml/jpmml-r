@@ -79,8 +79,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			public List<String> getCategories(String variable){
 				RVector<?> data = getData(variable);
 
-				if(data != null && RExpUtil.isFactor(data)){
-					RIntegerVector factor = (RIntegerVector)data;
+				if(data instanceof RFactorVector){
+					RFactorVector factor = (RFactorVector)data;
 
 					return factor.getLevelValues();
 				}
@@ -105,13 +105,13 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
-		RIntegerVector levels = null;
+		RFactorVector levels = null;
 
 		if(responseIndex != 0){
 			RVector<?> responseData = context.getData(responseVariable);
 
-			if(responseData != null && RExpUtil.isFactor(responseData)){
-				levels = (RIntegerVector)responseData;
+			if(responseData instanceof RFactorVector){
+				levels = (RFactorVector)responseData;
 			}
 		} else
 
@@ -139,7 +139,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		TreeModel treeModel;
 
-		if(RExpUtil.isFactor(response)){
+		if(response instanceof RFactorVector){
 			CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 
 			treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel), root)
@@ -167,11 +167,9 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
-		boolean factorResponse = RExpUtil.isFactor(response);
-
 		Node result;
 
-		if(factorResponse){
+		if(response instanceof RFactorVector){
 			result = new ClassifierNode(null, predicate);
 		} else
 
@@ -187,8 +185,8 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 		result.setId(Integer.valueOf(id.asScalar()));
 
-		if(factorResponse){
-			RIntegerVector factor = (RIntegerVector)response;
+		if(response instanceof RFactorVector){
+			RFactorVector factor = (RFactorVector)response;
 
 			int index = id.asScalar() - 1;
 

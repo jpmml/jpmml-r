@@ -19,7 +19,6 @@
 package org.jpmml.rexp;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.dmg.pmml.DataType;
@@ -74,28 +73,6 @@ public class RExpUtil {
 	}
 
 	static
-	public boolean isFactor(RExp rexp){
-
-		if(rexp instanceof RIntegerVector){
-			RIntegerVector factor = (RIntegerVector)rexp;
-
-			return factor.isFactor();
-		}
-
-		return false;
-	}
-
-	static
-	public List<String> getFactorLevels(RIntegerVector factor){
-
-		if(!factor.isFactor()){
-			throw new IllegalArgumentException();
-		}
-
-		return factor.getLevelValues();
-	}
-
-	static
 	public FieldName makeName(FieldName name){
 		return FieldName.create(makeName(name.getValue()));
 	}
@@ -136,6 +113,7 @@ public class RExpUtil {
 	static {
 		vectorTypes.put(RBooleanVector.class, "logical");
 		vectorTypes.put(RDoubleVector.class, "numeric");
+		vectorTypes.put(RFactorVector.class, "factor");
 		vectorTypes.put(RIntegerVector.class, "integer");
 		vectorTypes.put(RNumberVector.class, "numeric");
 		vectorTypes.put(RStringVector.class, "character");

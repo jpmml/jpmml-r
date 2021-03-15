@@ -33,8 +33,8 @@ public class ModelFrameFormulaContext implements FormulaContext {
 	public List<String> getCategories(String variable){
 		RVector<?> data = getData(variable);
 
-		if(data != null && RExpUtil.isFactor(data)){
-			RIntegerVector factor = (RIntegerVector)data;
+		if(data instanceof RFactorVector){
+			RFactorVector factor = (RFactorVector)data;
 
 			return factor.getLevelValues();
 		}

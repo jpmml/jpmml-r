@@ -56,9 +56,9 @@ public class GLMConverter extends LMConverter {
 				Label label = encoder.getLabel();
 
 				if(model != null){
-					RIntegerVector variable = model.getFactorElement((label.getName()).getValue());
+					RFactorVector variable = model.getFactorElement((label.getName()).getValue());
 
-					DataField dataField = (DataField)encoder.toCategorical(label.getName(), RExpUtil.getFactorLevels(variable));
+					DataField dataField = (DataField)encoder.toCategorical(label.getName(), variable.getLevelValues());
 
 					encoder.setLabel(dataField);
 				}

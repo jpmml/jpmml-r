@@ -72,18 +72,12 @@ public class RGenericVector extends RVector<RExp> {
 		return getVectorElement(RGenericVector.class, name, required);
 	}
 
-	public RIntegerVector getFactorElement(String name){
+	public RFactorVector getFactorElement(String name){
 		return getFactorElement(name, true);
 	}
 
-	public RIntegerVector getFactorElement(String name, boolean required){
-		RIntegerVector factor = getIntegerElement(name, required);
-
-		if(!RExpUtil.isFactor(factor)){
-			throw new IllegalArgumentException("Invalid \'" + name + "\' element. Expected factor, got integer");
-		}
-
-		return factor;
+	public RFactorVector getFactorElement(String name, boolean required){
+		return getVectorElement(RFactorVector.class, name, required);
 	}
 
 	public RIntegerVector getIntegerElement(String name){

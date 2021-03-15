@@ -83,7 +83,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector xlevels = rpart.getGenericAttribute("xlevels", false);
 		RStringVector ylevels = rpart.getStringAttribute("ylevels", false);
 
-		RIntegerVector var = frame.getFactorElement("var");
+		RFactorVector var = frame.getFactorElement("var");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
@@ -91,7 +91,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		FormulaUtil.setLabel(formula, terms, ylevels, encoder);
 
-		List<String> names = FormulaUtil.removeSpecialSymbol(RExpUtil.getFactorLevels(var), "<leaf>", 0);
+		List<String> names = FormulaUtil.removeSpecialSymbol(var.getLevelValues(), "<leaf>", 0);
 
 		FormulaUtil.addFeatures(formula, names, false, encoder);
 

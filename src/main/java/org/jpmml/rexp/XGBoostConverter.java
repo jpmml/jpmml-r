@@ -148,9 +148,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			switch(type){
 				case BINARY_INDICATOR:
 					{
-						RIntegerVector factorColumn = (RIntegerVector)data.get(name);
+						RFactorVector factorColumn = (RFactorVector)data.get(name);
 						if(factorColumn == null){
-							factorColumn = new RIntegerVector(null, null){
+							factorColumn = new RFactorVector(null, null){
 
 								private List<String> factorValues = new ArrayList<>();
 
@@ -158,11 +158,6 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 									for(int i = 0; i < column.size(); i++){
 										this.factorValues.add(null);
 									}
-								}
-
-								@Override
-								public boolean isFactor(){
-									return true;
 								}
 
 								@Override
@@ -281,12 +276,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	static
 	private FeatureMap loadFeatureMap(RGenericVector fmap){
 		RIntegerVector id = (RIntegerVector)fmap.getValue(0);
-		RIntegerVector name = (RIntegerVector)fmap.getValue(1);
-		RIntegerVector type = (RIntegerVector)fmap.getValue(2);
-
-		if(!name.isFactor() || !type.isFactor()){
-			throw new IllegalArgumentException();
-		}
+		RFactorVector name = (RFactorVector)fmap.getValue(1);
+		RFactorVector type = (RFactorVector)fmap.getValue(2);
 
 		FeatureMap featureMap = new FeatureMap();
 

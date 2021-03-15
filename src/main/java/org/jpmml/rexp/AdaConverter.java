@@ -114,11 +114,11 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 		RGenericVector ada = getObject();
 
 		RGenericVector model = ada.getGenericElement("model");
-		RIntegerVector fit = ada.getFactorElement("fit");
+		RFactorVector fit = ada.getFactorElement("fit");
 
 		RGenericVector trees = model.getGenericElement("trees");
 
-		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, RExpUtil.getFactorLevels(fit));
+		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, fit.getLevelValues());
 
 		encoder.setLabel(dataField);
 

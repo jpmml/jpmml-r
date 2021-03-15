@@ -248,12 +248,8 @@ public class FormulaUtil {
 				dataField = (DataField)encoder.toCategorical(name, stringLevels.getValues());
 			} else
 
-			if(levels instanceof RIntegerVector){
-				RIntegerVector factorLevels = (RIntegerVector)levels;
-
-				if(!factorLevels.isFactor()){
-					throw new IllegalArgumentException();
-				}
+			if(levels instanceof RFactorVector){
+				RFactorVector factorLevels = (RFactorVector)levels;
 
 				dataField = (DataField)encoder.toCategorical(name, factorLevels.getLevelValues());
 			} else
