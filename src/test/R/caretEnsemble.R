@@ -27,6 +27,8 @@ generateCaretEnsembleAuto()
 
 versicolor = loadVersicolorCsv("Versicolor")
 
+setBinaryTargetLevel(2)
+
 generateCaretEnsembleVersicolor = function(){
 	models = caretList(Species ~ Petal.Length + Petal.Width, data = versicolor, trControl = classControl, methodList = c("rpart", "glm"))
 
