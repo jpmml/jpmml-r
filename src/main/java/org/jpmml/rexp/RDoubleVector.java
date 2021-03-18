@@ -53,4 +53,6 @@ public class RDoubleVector extends RNumberVector<Double> {
 	public List<Double> getValues(){
 		return Doubles.asList(this.values);
 	}
+
+	public static final RDoubleVector EMPTY = new RDoubleVector(new double[0], null);
 }

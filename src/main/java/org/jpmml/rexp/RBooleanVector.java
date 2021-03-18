@@ -74,4 +74,6 @@ public class RBooleanVector extends RVector<Boolean> {
 
 		return Lists.transform(Ints.asList(this.values), function);
 	}
+
+	public static final RBooleanVector EMPTY = new RBooleanVector(new int[0], null);
 }

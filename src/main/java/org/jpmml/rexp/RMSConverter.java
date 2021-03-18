@@ -39,6 +39,8 @@ public class RMSConverter extends LMConverter {
 
 		RGenericVector parms = design.getGenericElement("parms", false);
 
+		List<String> coefficientNames = getCoefficientNames();
+
 		FormulaContext context = new FormulaContext(){
 
 			@Override
@@ -55,7 +57,16 @@ public class RMSConverter extends LMConverter {
 
 			@Override
 			public RVector<?> getData(String variable){
-				return null;
+
+				if(parms != null && parms.hasElement(variable)){
+					return RStringVector.EMPTY;
+				} // End if
+
+				if(!coefficientNames.contains(variable) && coefficientNames.contains(variable + "TRUE")){
+					return RBooleanVector.EMPTY;
+				}
+
+				return RDoubleVector.EMPTY;
 			}
 		};
 

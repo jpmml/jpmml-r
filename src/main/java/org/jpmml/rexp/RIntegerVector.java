@@ -74,4 +74,6 @@ public class RIntegerVector extends RNumberVector<Integer> {
 
 		return Lists.transform(Ints.asList(this.values), function);
 	}
+
+	public static final RIntegerVector EMPTY = new RIntegerVector(new int[0], null);
 }

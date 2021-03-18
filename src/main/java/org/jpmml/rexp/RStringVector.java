@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -66,6 +67,8 @@ public class RStringVector extends RVector<String> {
 	private void setValues(List<String> values){
 		this.values = values;
 	}
+
+	public static final RStringVector EMPTY = new RStringVector(Collections.emptyList(), null);
 
 	private static final Function<String, String> FUNCTION_DEQUOTE = new Function<String, String>(){
 
