@@ -5,7 +5,7 @@ source("util.R")
 audit = loadAuditCsv("Audit")
 
 generateBaggingAudit = function(){
-	audit.bagging = bagging(Adjusted ~ ., data = audit, mfinal = 100, control = list(cp = 0.01, maxsurrogate = 0, usesurrogate = 0))
+	audit.bagging = bagging(Adjusted ~ ., data = audit, mfinal = 101, control = list(cp = 0.01, maxsurrogate = 0, usesurrogate = 0))
 	print(audit.bagging)
 
 	prediction = predict(audit.bagging, newdata = audit)
