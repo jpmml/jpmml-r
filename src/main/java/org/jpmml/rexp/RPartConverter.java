@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.dmg.pmml.CompoundPredicate;
 import org.dmg.pmml.DataType;
@@ -83,7 +84,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector xlevels = rpart.getGenericAttribute("xlevels", false);
 		RStringVector ylevels = rpart.getStringAttribute("ylevels", false);
 
-		RFactorVector var = frame.getFactorElement("var");
+		RVector<?> var = frame.getVectorElement("var");
 
 		FormulaContext context = new XLevelsFormulaContext(xlevels);
 
@@ -91,7 +92,23 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		FormulaUtil.setLabel(formula, terms, ylevels, encoder);
 
-		List<String> names = FormulaUtil.removeSpecialSymbol(var.getLevelValues(), "<leaf>", 0);
+		List<String> names;
+
+		if(var instanceof RStringVector){
+			RStringVector stringVar = (RStringVector)var;
+
+			names = getFeatureNames(stringVar.getValues());
+		} else
+
+		if(var instanceof RFactorVector){
+			RFactorVector factorVar = (RFactorVector)var;
+
+			names = getFeatureNames(factorVar.getFactorValues());
+		} else
+
+		{
+			throw new IllegalArgumentException();
+		}
 
 		FormulaUtil.addFeatures(formula, names, false, encoder);
 
@@ -107,7 +124,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RNumberVector<?> splits = rpart.getNumericElement("splits");
 		RIntegerVector csplit = rpart.getIntegerElement("csplit", false);
 
-		RIntegerVector var = frame.getIntegerElement("var");
+		RVector<?> var = frame.getVectorElement("var");
 		RIntegerVector n = frame.getIntegerElement("n");
 		RIntegerVector ncompete = frame.getIntegerElement("ncompete");
 		RIntegerVector nsurrogate = frame.getIntegerElement("nsurrogate");
@@ -118,13 +135,17 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		List<? extends Feature> features = schema.getFeatures();
+
 		int[][] splitInfo = new int[1 + rowNames.size()][3];
 
 		for(int offset = 0; offset < rowNames.size(); offset++){
+			int splitVar = getFeatureIndex(var, offset, features);
+
 			splitInfo[offset][1] = ncompete.getValue(offset);
 			splitInfo[offset][2] = nsurrogate.getValue(offset);
 
-			splitInfo[offset + 1][0] = splitInfo[offset][0] + splitInfo[offset][1] + splitInfo[offset][2] + (var.getValue(offset) != 1 ? 1 : 0);
+			splitInfo[offset + 1][0] = splitInfo[offset][0] + splitInfo[offset][1] + splitInfo[offset][2] + (splitVar != RPartConverter.INDEX_LEAF ? 1 : 0);
 		}
 
 		switch(method.asScalar()){
@@ -137,7 +158,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		}
 	}
 
-	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RNumberVector<?> yval = frame.getNumericElement("yval");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
@@ -162,7 +183,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		return configureTreeModel(treeModel);
 	}
 
-	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
+	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RDoubleVector yval2 = frame.getDoubleElement("yval2");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
@@ -262,13 +283,15 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		return treeModel;
 	}
 
-	private Node encodeNode(Predicate predicate, int rowName, RIntegerVector rowNames, RIntegerVector var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
+	private Node encodeNode(Predicate predicate, int rowName, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, ScoreEncoder scoreEncoder, Schema schema){
 		int offset = getIndex(rowNames, rowName);
 
 		Integer id = Integer.valueOf(rowName);
 
-		int splitVar = var.getValue(offset) - 1;
-		if(splitVar == 0){
+		List<? extends Feature> features = schema.getFeatures();
+
+		int splitVar = getFeatureIndex(var, offset, features);
+		if(splitVar == RPartConverter.INDEX_LEAF){
 			Node result = new CountingLeafNode(null, predicate)
 				.setId(id);
 
@@ -287,7 +310,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			majorityDir = Double.compare(n.getValue(leftOffset), n.getValue(rightOffset));
 		}
 
-		Feature feature = schema.getFeature(splitVar - 1);
+		Feature feature = features.get(splitVar - 1);
 
 		int splitOffset = splitInfo[offset][0];
 
@@ -426,6 +449,49 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	static
+	private List<String> getFeatureNames(List<String> names){
+		return names.stream()
+			.filter(name -> !("<leaf>").equals(name))
+			.distinct()
+			.collect(Collectors.toList());
+	}
+
+	static
+	private int getFeatureIndex(RVector<?> var, int offset, List<? extends Feature> features){
+
+		if(var instanceof RStringVector){
+			RStringVector stringVar = (RStringVector)var;
+
+			String stringName = stringVar.getValue(offset);
+			if(("<leaf>").equals(stringName)){
+				return RPartConverter.INDEX_LEAF;
+			}
+
+			for(int i = 0; i < features.size(); i++){
+				Feature feature = features.get(i);
+
+				FieldName name = feature.getName();
+
+				if((name.getValue()).equals(stringName)){
+					return (i + 1);
+				}
+			}
+
+			throw new IllegalArgumentException();
+		} else
+
+		if(var instanceof RFactorVector){
+			RFactorVector factorVar = (RFactorVector)var;
+
+			return factorVar.getValue(offset) - 1;
+		} else
+
+		{
+			throw new IllegalArgumentException();
+		}
+	}
+
+	static
 	private int getIndex(RIntegerVector rowNames, int rowName){
 		int index = rowNames.indexOf(rowName);
 		if(index < 0){
@@ -456,4 +522,6 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 
 		Node encode(Node node, int offset);
 	}
+
+	private static final int INDEX_LEAF = 0;
 }

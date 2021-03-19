@@ -61,6 +61,7 @@ wine_quality = loadWineQualityCsv("WineQuality")
 generateEvTreeWineQuality = function(){
 	wine_quality.evtree = evtree(quality ~ ., data = wine_quality, control = evtree.control(seed = 13))
 	wine_quality.evtree = decorate(wine_quality.evtree)
+	print(wine_quality.evtree)
 
 	quality = predict(wine_quality.evtree, newdata = wine_quality)
 

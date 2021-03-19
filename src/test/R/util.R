@@ -1,9 +1,9 @@
 storeRds = function(x, name){
-	saveRDS(x, paste("../resources/rds/", name, ".rds", sep = ""))
+	saveRDS(x, paste("../resources/rds/", name, ".rds", sep = ""), version = 2)
 }
 
 loadCsv = function(name){
-	return (read.csv(file = paste("../resources/csv/", name, ".csv", sep = ""), header = TRUE))
+	return (read.csv(file = paste("../resources/csv/", name, ".csv", sep = ""), header = TRUE, stringsAsFactors = TRUE))
 }
 
 storeCsv = function(data, name){
