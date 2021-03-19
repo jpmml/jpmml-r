@@ -18,9 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConverterFactory {
 
@@ -57,41 +66,77 @@ public class ConverterFactory {
 		return new ConverterFactory();
 	}
 
+	static
+	private void init(){
+		Thread thread = Thread.currentThread();
+
+		ClassLoader classLoader = thread.getContextClassLoader();
+		if(classLoader == null){
+			classLoader = ClassLoader.getSystemClassLoader();
+		}
+
+		Enumeration<URL> urls;
+
+		try {
+			urls = classLoader.getResources("META-INF/r2pmml.properties");
+		} catch(IOException ioe){
+			logger.warn("Failed to find resources", ioe);
+
+			return;
+		}
+
+		while(urls.hasMoreElements()){
+			URL url = urls.nextElement();
+
+			logger.trace("Loading resource " + url);
+
+			try(InputStream is = url.openStream()){
+				Properties properties = new Properties();
+				properties.load(is);
+
+				init(classLoader, properties);
+			} catch(IOException ioe){
+				logger.warn("Failed to load resource", ioe);
+			}
+		}
+	}
+
+	static
+	private void init(ClassLoader classLoader, Properties properties){
+
+		if(properties.isEmpty()){
+			return;
+		}
+
+		Set<String> keys = properties.stringPropertyNames();
+		for(String key : keys){
+			String value = properties.getProperty(key);
+
+			logger.trace("Mapping R class " + key + " to converter class " + value);
+
+			Class<? extends Converter<?>> converterClazz;
+
+			try {
+				converterClazz = (Class)classLoader.loadClass(value);
+			} catch(ClassNotFoundException cnfe){
+				logger.warn("Failed to load converter class", cnfe);
+
+				continue;
+			}
+
+			if(!(Converter.class).isAssignableFrom(converterClazz)){
+				throw new IllegalArgumentException("Converter class " + converterClazz.getName() + " is not a subclass of " + Converter.class.getName());
+			}
+
+			ConverterFactory.converters.put(key, converterClazz);
+		}
+	}
+
 	private static Map<String, Class<? extends Converter<?>>> converters = new LinkedHashMap<>();
 
+	private static final Logger logger = LoggerFactory.getLogger(ConverterFactory.class);
+
 	static {
-		converters.put("ada", AdaConverter.class);
-		converters.put("bagging", BaggingConverter.class);
-		converters.put("BinaryTree", BinaryTreeConverter.class);
-		converters.put("boosting", BoostingConverter.class);
-		converters.put("caretEnsemble", CaretEnsembleConverter.class);
-		converters.put("cv.glmnet", CrossValGLMNetConverter.class);
-		converters.put("earth", EarthConverter.class);
-		converters.put("elmNN", ElmNNConverter.class);
-		converters.put("elnet", ElNetConverter.class);
-		converters.put("fishnet", FishNetConverter.class);
-		converters.put("gbm", GBMConverter.class);
-		converters.put("iForest", IForestConverter.class);
-		converters.put("glm", GLMConverter.class);
-		converters.put("kmeans", KMeansConverter.class);
-		converters.put("lm", LMConverter.class);
-		converters.put("lognet", LogNetConverter.class);
-		converters.put("lrm", LRMConverter.class);
-		converters.put("multinom", MultinomConverter.class);
-		converters.put("multnet", MultNetConverter.class);
-		converters.put("mvr", MVRConverter.class);
-		converters.put("naiveBayes", NaiveBayesConverter.class);
-		converters.put("nn", NNConverter.class);
-		converters.put("nnet.formula", NNetConverter.class);
-		converters.put("ols", OLSConverter.class);
-		converters.put("party", PartyConverter.class);
-		converters.put("rpart", RPartConverter.class);
-		converters.put("randomForest", RandomForestConverter.class);
-		converters.put("ranger", RangerConverter.class);
-		converters.put("scorecard", ScorecardConverter.class);
-		converters.put("svm", SVMConverter.class);
-		converters.put("train", TrainConverter.class);
-		converters.put("WrappedModel", WrappedModelConverter.class);
-		converters.put("xgb.Booster", XGBoostConverter.class);
+		ConverterFactory.init();
 	}
 }
