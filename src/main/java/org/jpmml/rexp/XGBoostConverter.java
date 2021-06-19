@@ -118,9 +118,10 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Map<String, Object> options = new LinkedHashMap<>();
 		options.put(HasXGBoostOptions.OPTION_COMPACT, this.compact);
+		options.put(HasXGBoostOptions.OPTION_NUMERIC, true);
 		options.put(HasXGBoostOptions.OPTION_NTREE_LIMIT, ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null);
 
-		Schema xgbSchema = learner.toXGBoostSchema(schema);
+		Schema xgbSchema = learner.toXGBoostSchema(true, schema);
 
 		MiningModel miningModel = learner.encodeMiningModel(options, xgbSchema);
 
