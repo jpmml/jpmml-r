@@ -354,9 +354,11 @@ public class FormulaUtil {
 		expressionFields.putAll(noArgument);
 
 		// XXX: "Missing values in test give missing values in the result"
-		Apply apply = PMMLUtil.createApply(PMMLFunctions.IF)
-			.addExpressions(prepareExpression(testArgument, expressionFields, encoder))
-			.addExpressions(prepareExpression(yesArgument, expressionFields, encoder), prepareExpression(noArgument, expressionFields, encoder));
+		Apply apply = PMMLUtil.createApply(PMMLFunctions.IF,
+			prepareExpression(testArgument, expressionFields, encoder),
+			prepareExpression(yesArgument, expressionFields, encoder),
+			prepareExpression(noArgument, expressionFields, encoder)
+		);
 
 		return apply;
 	}
