@@ -36,7 +36,6 @@ import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Discretize;
 import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.Extension;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
@@ -172,7 +171,7 @@ public class FormulaUtil {
 
 			if(expression != null){
 				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, expression)
-					.addExtensions(createExtension(variable));
+					.addExtensions(PMMLUtil.createExtension("variable", (Object)variable));
 
 				if(categoryNames != null && categoryNames.size() > 0){
 					formula.addField(derivedField, categoryNames, categoryValues);
@@ -436,14 +435,6 @@ public class FormulaUtil {
 		}
 
 		return expression;
-	}
-
-	static
-	private Extension createExtension(String content){
-		Extension extension = new Extension()
-			.addContent(content);
-
-		return extension;
 	}
 
 	static

@@ -39,7 +39,6 @@ import org.dmg.pmml.tree.BranchNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.AbstractTransformation;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
@@ -115,7 +114,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		// "rawPathLength / avgPathLength(xrow)"
-		Transformation normalizedPathLength = new AbstractTransformation(){
+		Transformation normalizedPathLength = new Transformation(){
 
 			@Override
 			public FieldName getName(FieldName name){
@@ -129,7 +128,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		};
 
 		// "2 ^ (-1 * normalizedPathLength)"
-		Transformation anomalyScore = new AbstractTransformation(){
+		Transformation anomalyScore = new Transformation(){
 
 			@Override
 			public FieldName getName(FieldName name){
