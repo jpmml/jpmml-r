@@ -105,7 +105,6 @@
 				<version>3.2.0</version>
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
-					<sourcepath>${basedir}/src/main/java</sourcepath>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -166,6 +165,7 @@
 				<version>2.6</version>
 				<executions>
 					<execution>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>javacc</goal>
 						</goals>
@@ -179,6 +179,27 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<replace
+									file="${basedir}/target/generated-sources/javacc/org/jpmml/rexp/Provider.java"
+									token="@param length" 
+									value="@param len"
+									/>
+								</target>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
