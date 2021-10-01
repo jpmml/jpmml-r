@@ -47,6 +47,7 @@ import org.jpmml.converter.Schema;
 import org.jpmml.converter.Transformation;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
+import org.jpmml.converter.transformations.AbstractTransformation;
 
 public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
@@ -114,7 +115,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		// "rawPathLength / avgPathLength(xrow)"
-		Transformation normalizedPathLength = new Transformation(){
+		Transformation normalizedPathLength = new AbstractTransformation(){
 
 			@Override
 			public FieldName getName(FieldName name){
@@ -128,7 +129,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		};
 
 		// "2 ^ (-1 * normalizedPathLength)"
-		Transformation anomalyScore = new Transformation(){
+		Transformation anomalyScore = new AbstractTransformation(){
 
 			@Override
 			public FieldName getName(FieldName name){

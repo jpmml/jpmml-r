@@ -89,7 +89,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				throw new IllegalArgumentException();
 		}
 
-		output.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId")));
+		output.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId"), DataType.STRING));
 
 		TreeModel treeModel = encodeTreeModel(tree, schema)
 			.setOutput(output);
