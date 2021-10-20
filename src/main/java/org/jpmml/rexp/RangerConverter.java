@@ -43,6 +43,7 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -130,23 +131,40 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	public MiningModel encodeModel(Schema schema){
 		RGenericVector ranger = getObject();
 
-		RStringVector treetype = ranger.getStringElement("treetype");
+		RStringVector treeType = ranger.getStringElement("treetype");
+		RGenericVector forest = ranger.getGenericElement("forest");
 
-		switch(treetype.asScalar()){
+		MiningModel miningModel;
+
+		switch(treeType.asScalar()){
 			case "Regression":
-				return encodeRegression(ranger, schema);
+				miningModel = encodeRegression(forest, schema);
+				break;
 			case "Classification":
-				return encodeClassification(ranger, schema);
+				miningModel = encodeClassification(forest, schema);
+				break;
 			case "Probability estimation":
-				return encodeProbabilityForest(ranger, schema);
+				miningModel = encodeProbabilityForest(forest, schema);
+				break;
 			default:
 				throw new IllegalArgumentException();
 		}
+
+		RStringVector importanceMode = ranger.getStringElement("importance.mode", false);
+		RDoubleVector variableImportance = ranger.getDoubleElement("variable.importance", false);
+
+		if(variableImportance != null){
+			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+
+			for(int i = 0; i < variableImportance.size(); i++){
+				encoder.addFeatureImportance(miningModel, schema.getFeature(i), variableImportance.getValue(i));
+			}
+		}
+
+		return miningModel;
 	}
 
-	private MiningModel encodeRegression(RGenericVector ranger, Schema schema){
-		RGenericVector forest = ranger.getGenericElement("forest");
-
+	private MiningModel encodeRegression(RGenericVector forest, Schema schema){
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
 			@Override
@@ -165,9 +183,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
-	private MiningModel encodeClassification(RGenericVector ranger, Schema schema){
-		RGenericVector forest = ranger.getGenericElement("forest");
-
+	private MiningModel encodeClassification(RGenericVector forest, Schema schema){
 		RStringVector levels = forest.getStringElement("levels");
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
@@ -194,9 +210,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		return miningModel;
 	}
 
-	private MiningModel encodeProbabilityForest(RGenericVector ranger, Schema schema){
-		RGenericVector forest = ranger.getGenericElement("forest");
-
+	private MiningModel encodeProbabilityForest(RGenericVector forest, Schema schema){
 		RStringVector levels = forest.getStringElement("levels");
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();

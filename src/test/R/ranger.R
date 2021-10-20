@@ -11,7 +11,7 @@ getVariableLevels = function(data){
 audit = loadAuditCsv("Audit")
 
 generateRangerAudit = function(){
-	audit.ranger = ranger(Adjusted ~ ., data = audit, num.trees = 7)
+	audit.ranger = ranger(Adjusted ~ ., data = audit, num.trees = 7, importance = "impurity")
 	audit.ranger = decorate(audit.ranger, data = audit)
 	print(audit.ranger)
 
@@ -45,7 +45,7 @@ auto.preProc = preProcess(auto.raw, method = c("medianImpute"))
 auto = predict(auto.preProc, auto.raw)
 
 generateRangerAutoNA = function(){
-	auto.ranger = ranger(mpg ~ . - origin, data = auto, num.trees = 7)
+	auto.ranger = ranger(mpg ~ . - origin, data = auto, num.trees = 7, importance = "impurity")
 	auto.ranger = decorate(auto.ranger, data = auto, preProcess = auto.preProc)
 	print(auto.ranger)
 
@@ -62,7 +62,7 @@ generateRangerAutoNA()
 iris = loadIrisCsv("Iris")
 
 generateRangerIris = function(){
-	iris.ranger = ranger(Species ~ ., data = iris, num.trees = 7)
+	iris.ranger = ranger(Species ~ ., data = iris, num.trees = 7, importance = "permutation")
 	iris.ranger = decorate(iris.ranger, data = iris)
 	print(iris.ranger)
 
