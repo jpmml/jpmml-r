@@ -40,6 +40,7 @@ import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -123,6 +124,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector method = rpart.getStringElement("method");
 		RNumberVector<?> splits = rpart.getNumericElement("splits");
 		RIntegerVector csplit = rpart.getIntegerElement("csplit", false);
+		RDoubleVector variableImportance = rpart.getDoubleElement("variable.importance", false);
 
 		RVector<?> var = frame.getVectorElement("var");
 		RIntegerVector n = frame.getIntegerElement("n");
@@ -148,14 +150,31 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			splitInfo[offset + 1][0] = splitInfo[offset][0] + splitInfo[offset][1] + splitInfo[offset][2] + (splitVar != RPartConverter.INDEX_LEAF ? 1 : 0);
 		}
 
+		TreeModel treeModel;
+
 		switch(method.asScalar()){
 			case "anova":
-				return encodeRegression(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
+				treeModel = encodeRegression(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
+				break;
 			case "class":
-				return encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
+				treeModel = encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
+				break;
 			default:
 				throw new IllegalArgumentException();
 		}
+
+		if(variableImportance != null){
+			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+
+			for(int i = 0; i < features.size(); i++){
+				Feature feature = features.get(i);
+				Double importance = variableImportance.getElement((feature.getName()).getValue());
+
+				encoder.addFeatureImportance(treeModel, feature, importance);
+			}
+		}
+
+		return treeModel;
 	}
 
 	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){

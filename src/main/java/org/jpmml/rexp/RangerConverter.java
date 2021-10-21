@@ -156,8 +156,13 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		if(variableImportance != null){
 			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
 
-			for(int i = 0; i < variableImportance.size(); i++){
-				encoder.addFeatureImportance(miningModel, schema.getFeature(i), variableImportance.getValue(i));
+			List<? extends Feature> features = schema.getFeatures();
+
+			for(int i = 0; i < features.size(); i++){
+				Feature feature = schema.getFeature(i);
+				Double importance = variableImportance.getValue(i);
+
+				encoder.addFeatureImportance(miningModel, feature, importance);
 			}
 		}
 
