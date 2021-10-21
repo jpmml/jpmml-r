@@ -26,7 +26,7 @@ predictRandomForestAudit = function(audit.randomForest, data, targetName){
 }
 
 generateRandomForestFormulaAudit = function(){
-	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 71)
+	audit.randomForest = randomForest(Adjusted ~ ., data = audit, ntree = 71, importance = FALSE)
 	audit.randomForest = decorate(audit.randomForest, compact = TRUE)
 	print(audit.randomForest)
 
@@ -35,7 +35,7 @@ generateRandomForestFormulaAudit = function(){
 }
 
 generateRandomForestCustFormulaAudit = function(){
-	audit.randomForest = randomForest(Adjusted ~ . - Education + plyr::revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + base::cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)), data = audit, ntree = 71)
+	audit.randomForest = randomForest(Adjusted ~ . - Education + plyr::revalue(Education, c(Yr1t4 = "Yr1t6", Yr5t6 = "Yr1t6", Yr7t8 = "Yr7t9", Yr9 = "Yr7t9", Yr10 = "Yr10t12", Yr11 = "Yr10t12", Yr12 = "Yr10t12")) - Income + base::cut(Income, breaks = c(100, 1000, 10000, 100000, 1000000)), data = audit, ntree = 71, importance = TRUE)
 	print(audit.randomForest)
 
 	storeRds(audit.randomForest, "RandomForestCustFormulaAudit")
@@ -43,7 +43,7 @@ generateRandomForestCustFormulaAudit = function(){
 }
 
 generateRandomForestAudit = function(){
-	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 71)
+	audit.randomForest = randomForest(x = audit_x, y = audit_y, ntree = 71, importance = TRUE)
 	audit.randomForest = decorate(audit.randomForest, compact = TRUE)
 	print(audit.randomForest)
 
@@ -92,7 +92,7 @@ auto_x = auto[, -ncol(auto)]
 auto_y = auto[, ncol(auto)]
 
 generateRandomForestFormulaAuto = function(){
-	auto.randomForest = randomForest(mpg ~ ., data = auto, ntree = 31)
+	auto.randomForest = randomForest(mpg ~ ., data = auto, ntree = 31, importance = FALSE)
 	auto.randomForest = decorate(auto.randomForest, compact = TRUE)
 	print(auto.randomForest)
 
@@ -103,7 +103,7 @@ generateRandomForestFormulaAuto = function(){
 }
 
 generateRandomForestCustFormulaAuto = function(){
-	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - weight + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 31)
+	auto.randomForest = randomForest(mpg ~ I(displacement / cylinders) + . - weight + I(log(weight)) + I(weight ^ 2) + I(weight ^ 3) - horsepower + base::cut(horsepower, breaks = c(20, 40, 60, 80, 100, 150, 200, 400)) - origin + plyr::mapvalues(origin, from = c(1, 2, 3), to = c("US", "Non-US", "Non-US")), data = auto, ntree = 31, importance = TRUE)
 	print(auto.randomForest)
 
 	mpg = predict(auto.randomForest, newdata = auto)
@@ -113,7 +113,7 @@ generateRandomForestCustFormulaAuto = function(){
 }
 
 generateRandomForestAuto = function(){
-	auto.randomForest = randomForest(x = auto_x, y = auto_y, ntree = 31)
+	auto.randomForest = randomForest(x = auto_x, y = auto_y, ntree = 31, importance = TRUE)
 	auto.randomForest = decorate(auto.randomForest, compact = TRUE)
 	print(auto.randomForest)
 

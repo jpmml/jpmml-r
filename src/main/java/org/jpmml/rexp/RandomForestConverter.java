@@ -39,12 +39,14 @@ import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.BooleanFeature;
+import org.jpmml.converter.CMatrixUtil;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -82,14 +84,44 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector type = randomForest.getStringElement("type");
 		RGenericVector forest = randomForest.getGenericElement("forest");
 
+		MiningModel miningModel;
+
 		switch(type.asScalar()){
 			case "regression":
-				return encodeRegression(forest, schema);
+				miningModel = encodeRegression(forest, schema);
+				break;
 			case "classification":
-				return encodeClassification(forest, schema);
+				miningModel = encodeClassification(forest, schema);
+				break;
 			default:
 				throw new IllegalArgumentException();
 		}
+
+		RDoubleVector importance = randomForest.getDoubleElement("importance", false);
+		if(importance != null){
+			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+
+			List<? extends Feature> features = schema.getFeatures();
+
+			RStringVector importanceRows = importance.dimnames(0);
+			RStringVector importanceColumns = importance.dimnames(1);
+
+			RIntegerVector importanceDim = importance.dim();
+
+			int rows = importanceDim.getValue(0);
+			int columns = importanceDim.getValue(1);
+
+			List<Double> defaultImportances = CMatrixUtil.getColumn(importance.getValues(), rows, columns, columns - 1);
+
+			for(int i = 0; i < rows; i++){
+				Feature feature = features.get(i);
+				Double defaultImportance = defaultImportances.get(i);
+
+				encoder.addFeatureImportance(miningModel, feature, defaultImportance);
+			}
+		}
+
+		return miningModel;
 	}
 
 	private void encodeFormula(RExpEncoder encoder){
