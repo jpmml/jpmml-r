@@ -40,12 +40,11 @@ import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
-import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
-public class RPartConverter extends TreeModelConverter<RGenericVector> {
+public class RPartConverter extends TreeModelConverter<RGenericVector> implements HasFeatureImportances {
 
 	private int useSurrogate = 0;
 
@@ -160,27 +159,27 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public TreeModel encode(Schema schema){
+	public FeatureImportanceMap getFeatureImportances(Schema schema){
 		RGenericVector rpart = getObject();
 
 		RDoubleVector variableImportance = rpart.getDoubleElement("variable.importance", false);
 
-		TreeModel treeModel = (TreeModel)super.encode(schema);
-
-		if(variableImportance != null){
-			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
-
-			List<? extends Feature> features = schema.getFeatures();
-
-			for(int i = 0; i < features.size(); i++){
-				Feature feature = features.get(i);
-				Double importance = variableImportance.getElement((feature.getName()).getValue());
-
-				encoder.addFeatureImportance(treeModel, feature, importance);
-			}
+		if(variableImportance == null){
+			return null;
 		}
 
-		return treeModel;
+		List<? extends Feature> features = schema.getFeatures();
+
+		FeatureImportanceMap result = new FeatureImportanceMap(null);
+
+		for(int i = 0; i < features.size(); i++){
+			Feature feature = features.get(i);
+			Double importance = variableImportance.getElement((feature.getName()).getValue());
+
+			result.put(feature, importance);
+		}
+
+		return result;
 	}
 
 	private TreeModel encodeRegression(RGenericVector frame, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){

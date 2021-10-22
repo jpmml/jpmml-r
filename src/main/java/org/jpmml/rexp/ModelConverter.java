@@ -32,7 +32,9 @@ import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.VerificationField;
+import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
+import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 
@@ -50,7 +52,23 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	public Model encodeModel(Schema schema);
 
 	public Model encode(Schema schema){
-		return encodeModel(schema);
+		Model model = encodeModel(schema);
+
+		if(this instanceof HasFeatureImportances){
+			HasFeatureImportances hasFeatureImportances = (HasFeatureImportances)this;
+
+			FeatureImportanceMap featureImportances = hasFeatureImportances.getFeatureImportances(schema);
+			if(featureImportances != null && !featureImportances.isEmpty()){
+				ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+
+				Collection<Map.Entry<Feature, Number>> entries = featureImportances.entrySet();
+				for(Map.Entry<Feature, Number> entry : entries){
+					encoder.addFeatureImportance(model, entry.getKey(), entry.getValue());
+				}
+			}
+		}
+
+		return model;
 	}
 
 	@Override

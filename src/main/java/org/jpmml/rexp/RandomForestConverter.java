@@ -27,7 +27,6 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
-import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
@@ -47,14 +46,13 @@ import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
-import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 import org.jpmml.rexp.visitors.RandomForestCompactor;
 
-public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
+public class RandomForestConverter extends TreeModelConverter<RGenericVector> implements HasFeatureImportances {
 
 	private boolean compact = true;
 
@@ -96,37 +94,34 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Model encode(Schema schema){
+	public FeatureImportanceMap getFeatureImportances(Schema schema){
 		RGenericVector randomForest = getObject();
 
 		RDoubleVector importance = randomForest.getDoubleElement("importance", false);
 
-		Model model = super.encode(schema);
-
-		if(importance != null){
-			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
-
-			List<? extends Feature> features = schema.getFeatures();
-
-			RStringVector importanceRows = importance.dimnames(0);
-			RStringVector importanceColumns = importance.dimnames(1);
-
-			RIntegerVector importanceDim = importance.dim();
-
-			int rows = importanceDim.getValue(0);
-			int columns = importanceDim.getValue(1);
-
-			List<Double> defaultImportances = CMatrixUtil.getColumn(importance.getValues(), rows, columns, columns - 1);
-
-			for(int i = 0; i < rows; i++){
-				Feature feature = features.get(i);
-				Double defaultImportance = defaultImportances.get(i);
-
-				encoder.addFeatureImportance(model, feature, defaultImportance);
-			}
+		if(importance == null){
+			return null;
 		}
 
-		return model;
+		RStringVector importanceRows = importance.dimnames(0);
+		RStringVector importanceColumns = importance.dimnames(1);
+
+		RIntegerVector importanceDim = importance.dim();
+
+		int rows = importanceDim.getValue(0);
+		int columns = importanceDim.getValue(1);
+
+		List<? extends Feature> features = schema.getFeatures();
+
+		FeatureImportanceMap result = new FeatureImportanceMap(importanceColumns.getDequotedValue(columns - 1));
+
+		List<Double> defaultImportances = CMatrixUtil.getColumn(importance.getValues(), rows, columns, columns - 1);
+
+		for(int i = 0; i < features.size(); i++){
+			result.put(features.get(i), defaultImportances.get(i));
+		}
+
+		return result;
 	}
 
 	private void encodeFormula(RExpEncoder encoder){

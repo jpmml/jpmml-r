@@ -26,7 +26,6 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
-import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
@@ -44,13 +43,12 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 
-public class RangerConverter extends TreeModelConverter<RGenericVector> {
+public class RangerConverter extends TreeModelConverter<RGenericVector> implements HasFeatureImportances {
 
 	boolean hasDependentVar = false;
 
@@ -148,28 +146,25 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public Model encode(Schema schema){
+	public FeatureImportanceMap getFeatureImportances(Schema schema){
 		RGenericVector ranger = getObject();
 
 		RStringVector importanceMode = ranger.getStringElement("importance.mode", false);
 		RDoubleVector variableImportance = ranger.getDoubleElement("variable.importance", false);
 
-		Model model = super.encode(schema);
-
-		if(variableImportance != null){
-			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
-
-			List<? extends Feature> features = schema.getFeatures();
-
-			for(int i = 0; i < features.size(); i++){
-				Feature feature = schema.getFeature(i);
-				Double importance = variableImportance.getValue(i);
-
-				encoder.addFeatureImportance(model, feature, importance);
-			}
+		if(variableImportance == null){
+			return null;
 		}
 
-		return model;
+		List<? extends Feature> features = schema.getFeatures();
+
+		FeatureImportanceMap result = new FeatureImportanceMap(importanceMode != null ? importanceMode.asScalar() : null);
+
+		for(int i = 0; i < features.size(); i++){
+			result.put(features.get(i), variableImportance.getValue(i));
+		}
+
+		return result;
 	}
 
 	private MiningModel encodeRegression(RGenericVector forest, Schema schema){
