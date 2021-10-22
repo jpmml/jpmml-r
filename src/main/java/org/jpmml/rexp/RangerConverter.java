@@ -26,6 +26,7 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
@@ -134,24 +135,26 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector treeType = ranger.getStringElement("treetype");
 		RGenericVector forest = ranger.getGenericElement("forest");
 
-		MiningModel miningModel;
-
 		switch(treeType.asScalar()){
 			case "Regression":
-				miningModel = encodeRegression(forest, schema);
-				break;
+				return encodeRegression(forest, schema);
 			case "Classification":
-				miningModel = encodeClassification(forest, schema);
-				break;
+				return encodeClassification(forest, schema);
 			case "Probability estimation":
-				miningModel = encodeProbabilityForest(forest, schema);
-				break;
+				return encodeProbabilityForest(forest, schema);
 			default:
 				throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public Model encode(Schema schema){
+		RGenericVector ranger = getObject();
 
 		RStringVector importanceMode = ranger.getStringElement("importance.mode", false);
 		RDoubleVector variableImportance = ranger.getDoubleElement("variable.importance", false);
+
+		Model model = super.encode(schema);
 
 		if(variableImportance != null){
 			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
@@ -162,11 +165,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> {
 				Feature feature = schema.getFeature(i);
 				Double importance = variableImportance.getValue(i);
 
-				encoder.addFeatureImportance(miningModel, feature, importance);
+				encoder.addFeatureImportance(model, feature, importance);
 			}
 		}
 
-		return miningModel;
+		return model;
 	}
 
 	private MiningModel encodeRegression(RGenericVector forest, Schema schema){

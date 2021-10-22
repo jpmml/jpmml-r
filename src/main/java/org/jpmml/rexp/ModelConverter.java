@@ -49,6 +49,10 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 	abstract
 	public Model encodeModel(Schema schema);
 
+	public Model encode(Schema schema){
+		return encodeModel(schema);
+	}
+
 	@Override
 	public PMML encodePMML(RExpEncoder encoder){
 		RExp object = getObject();
@@ -71,7 +75,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 		Schema schema = encoder.createSchema();
 
-		Model model = encodeModel(schema);
+		Model model = encode(schema);
 
 		verification:
 		if(verification != null){

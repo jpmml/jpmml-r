@@ -27,6 +27,7 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
@@ -84,20 +85,24 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector type = randomForest.getStringElement("type");
 		RGenericVector forest = randomForest.getGenericElement("forest");
 
-		MiningModel miningModel;
-
 		switch(type.asScalar()){
 			case "regression":
-				miningModel = encodeRegression(forest, schema);
-				break;
+				return encodeRegression(forest, schema);
 			case "classification":
-				miningModel = encodeClassification(forest, schema);
-				break;
+				return encodeClassification(forest, schema);
 			default:
 				throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public Model encode(Schema schema){
+		RGenericVector randomForest = getObject();
 
 		RDoubleVector importance = randomForest.getDoubleElement("importance", false);
+
+		Model model = super.encode(schema);
+
 		if(importance != null){
 			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
 
@@ -117,11 +122,11 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> {
 				Feature feature = features.get(i);
 				Double defaultImportance = defaultImportances.get(i);
 
-				encoder.addFeatureImportance(miningModel, feature, defaultImportance);
+				encoder.addFeatureImportance(model, feature, defaultImportance);
 			}
 		}
 
-		return miningModel;
+		return model;
 	}
 
 	private void encodeFormula(RExpEncoder encoder){

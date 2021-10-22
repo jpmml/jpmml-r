@@ -82,7 +82,7 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 
 			Schema segmentSchema = schema.toAnonymousSchema();
 
-			TreeModel treeModel = converter.encodeModel(segmentSchema);
+			TreeModel treeModel = converter.encode(segmentSchema);
 
 			result.add(treeModel);
 		}

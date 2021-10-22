@@ -151,7 +151,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 			schema = schemaFunction.apply(schema);
 		}
 
-		Model model = converter.encodeModel(schema);
+		Model model = converter.encode(schema);
 
 		return new Conversion(encoder, schema, model);
 	}

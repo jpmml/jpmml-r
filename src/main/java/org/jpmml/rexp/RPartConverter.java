@@ -124,7 +124,6 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector method = rpart.getStringElement("method");
 		RNumberVector<?> splits = rpart.getNumericElement("splits");
 		RIntegerVector csplit = rpart.getIntegerElement("csplit", false);
-		RDoubleVector variableImportance = rpart.getDoubleElement("variable.importance", false);
 
 		RVector<?> var = frame.getVectorElement("var");
 		RIntegerVector n = frame.getIntegerElement("n");
@@ -150,21 +149,28 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> {
 			splitInfo[offset + 1][0] = splitInfo[offset][0] + splitInfo[offset][1] + splitInfo[offset][2] + (splitVar != RPartConverter.INDEX_LEAF ? 1 : 0);
 		}
 
-		TreeModel treeModel;
-
 		switch(method.asScalar()){
 			case "anova":
-				treeModel = encodeRegression(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
-				break;
+				return encodeRegression(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			case "class":
-				treeModel = encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
-				break;
+				return encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			default:
 				throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public TreeModel encode(Schema schema){
+		RGenericVector rpart = getObject();
+
+		RDoubleVector variableImportance = rpart.getDoubleElement("variable.importance", false);
+
+		TreeModel treeModel = (TreeModel)super.encode(schema);
 
 		if(variableImportance != null){
 			ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+
+			List<? extends Feature> features = schema.getFeatures();
 
 			for(int i = 0; i < features.size(); i++){
 				Feature feature = features.get(i);
