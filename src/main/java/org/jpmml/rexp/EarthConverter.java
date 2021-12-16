@@ -26,13 +26,13 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
@@ -81,9 +81,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 		{
 			RStringVector yNames = coefficients.dimnames(1);
 
-			FieldName name = FieldName.create(yNames.asScalar());
-
-			DataField dataField = (DataField)encoder.getField(name);
+			DataField dataField = (DataField)encoder.getField(yNames.asScalar());
 
 			encoder.setLabel(dataField);
 		}
@@ -107,7 +105,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 					continue predictors;
 				}
 
-				Feature feature = formula.resolveFeature(predictorName);
+				Feature feature = formula.resolveComplexFeature(predictorName);
 
 				switch(dir){
 					case -1:
@@ -115,7 +113,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 						{
 							ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-							DerivedField derivedField = encoder.ensureDerivedField(FieldName.create(formatHingeFunction(dir, continuousFeature, cut)), OpType.CONTINUOUS, DataType.DOUBLE, () -> createHingeFunction(dir, continuousFeature, cut));
+							DerivedField derivedField = encoder.ensureDerivedField(formatHingeFunction(dir, continuousFeature, cut), OpType.CONTINUOUS, DataType.DOUBLE, () -> createHingeFunction(dir, continuousFeature, cut));
 
 							feature = new ContinuousFeature(encoder, derivedField);
 						}
@@ -136,7 +134,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			if(features.size() > 1){
-				feature = new InteractionFeature(encoder, FieldName.create(dirsRows.getValue(i)), DataType.DOUBLE, features);
+				feature = new InteractionFeature(encoder, dirsRows.getValue(i), DataType.DOUBLE, features);
 			} else
 
 			{
@@ -174,9 +172,9 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		switch(dir){
 			case -1:
-				return ("h(" + cut + " - " + (feature.getName()).getValue() + ")");
+				return FieldNameUtil.create("h", cut + " - " + feature.getName());
 			case 1:
-				return ("h(" + (feature.getName()).getValue() + " - " + cut + ")");
+				return FieldNameUtil.create("h", feature.getName() + " - " + cut);
 			default:
 				throw new IllegalArgumentException();
 		}

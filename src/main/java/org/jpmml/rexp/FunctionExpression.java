@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMMLObject;
 import org.dmg.pmml.Visitor;
 import org.dmg.pmml.VisitorAction;
@@ -225,7 +224,7 @@ public class FunctionExpression extends Expression {
 			return format(begin, end);
 		}
 
-		public Set<FieldName> getFieldNames(){
+		public Set<String> getFieldNames(){
 			Expression expression = getExpression();
 
 			ActiveFieldFinder activeFieldFinder = new ActiveFieldFinder();

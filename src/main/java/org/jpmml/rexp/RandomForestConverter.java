@@ -25,7 +25,6 @@ import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
@@ -178,7 +177,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 		}
 
 		{
-			FieldName name = FieldName.create("_target");
+			String name = "_target";
 
 			DataField dataField;
 
@@ -196,7 +195,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 		}
 
 		for(int i = 0; i < ncat.size(); i++){
-			FieldName name = FieldName.create(xNames.getValue(i));
+			String name = xNames.getValue(i);
 
 			DataField dataField;
 
@@ -364,7 +363,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			FieldName name = categoricalFeature.getName();
+			String name = categoricalFeature.getName();
 			List<?> values = categoricalFeature.getValues();
 
 			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);

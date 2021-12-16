@@ -26,24 +26,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.dmg.pmml.DataField;
-import org.dmg.pmml.FieldName;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
 
 public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
-	private Map<FieldName, Role> varRoles = Collections.emptyMap();
+	private Map<String, Role> varRoles = Collections.emptyMap();
 
-	private Map<FieldName, Source> varSources = Collections.emptyMap();
+	private Map<String, Source> varSources = Collections.emptyMap();
 
-	private Map<FieldName, Type> varTypes = Collections.emptyMap();
+	private Map<String, Type> varTypes = Collections.emptyMap();
 
-	private Map<FieldName, Role> termRoles = Collections.emptyMap();
+	private Map<String, Role> termRoles = Collections.emptyMap();
 
-	private Map<FieldName, Source> termSources = Collections.emptyMap();
+	private Map<String, Source> termSources = Collections.emptyMap();
 
-	private Map<FieldName, Type> termTypes = Collections.emptyMap();
+	private Map<String, Type> termTypes = Collections.emptyMap();
 
 
 	public RecipeEncoder(RGenericVector recipe){
@@ -70,13 +69,13 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
 		RGenericVector steps = recipe.getGenericElement("steps");
 
-		List<FieldName> outcomeNames = this.termRoles.entrySet().stream()
+		List<String> outcomeNames = this.termRoles.entrySet().stream()
 			.filter(entry -> (Role.OUTCOME).equals(entry.getValue()))
 			.map(entry -> entry.getKey())
 			.collect(Collectors.toList());
 
 		if(outcomeNames.size() == 1){
-			FieldName outcomeName = outcomeNames.get(0);
+			String outcomeName = outcomeNames.get(0);
 
 			renameDataField(label.getName(), outcomeName);
 
@@ -94,7 +93,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		return new Schema(this, label, features);
 	}
 
-	private void renameDataField(FieldName name, FieldName renamedName){
+	private void renameDataField(String name, String renamedName){
 		DataField dataField = removeDataField(name);
 
 		dataField.setName(renamedName);
@@ -103,7 +102,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 	}
 
 	static
-	private <E extends Enum<E>> Map<FieldName, E> parseInfo(RGenericVector info, String name, Function<String, E> function){
+	private <E extends Enum<E>> Map<String, E> parseInfo(RGenericVector info, String name, Function<String, E> function){
 		RStringVector variable = info.getStringElement("variable");
 		RStringVector value = info.getStringElement(name);
 
@@ -111,10 +110,10 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		Map<FieldName, E> result = new LinkedHashMap<>();
+		Map<String, E> result = new LinkedHashMap<>();
 
 		for(int i = 0; i < variable.size(); i++){
-			result.put(FieldName.create(variable.getValue(i)), function.apply(value.getValue(i)));
+			result.put(variable.getValue(i), function.apply(value.getValue(i)));
 		}
 
 		return result;

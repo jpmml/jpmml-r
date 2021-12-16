@@ -27,7 +27,6 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
@@ -41,13 +40,13 @@ import org.jpmml.converter.ValueUtil;
 
 public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 
-	private Map<FieldName, List<Double>> ranges = Collections.emptyMap();
+	private Map<String, List<Double>> ranges = Collections.emptyMap();
 
-	private Map<FieldName, Double> mean = Collections.emptyMap();
+	private Map<String, Double> mean = Collections.emptyMap();
 
-	private Map<FieldName, Double> std = Collections.emptyMap();
+	private Map<String, Double> std = Collections.emptyMap();
 
-	private Map<FieldName, Double> median = Collections.emptyMap();
+	private Map<String, Double> median = Collections.emptyMap();
 
 
 	public PreProcessEncoder(RGenericVector preProcess){
@@ -82,7 +81,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 
 	@Override
 	public void addFeature(Feature feature){
-		FieldName name = FeatureUtil.getName(feature);
+		String name = FeatureUtil.getName(feature);
 
 		DataField dataField = getDataField(name);
 		if(dataField != null){
@@ -99,7 +98,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 		super.addFeature(feature);
 	}
 
-	private Expression encodeExpression(FieldName name, Expression expression){
+	private Expression encodeExpression(String name, Expression expression){
 		List<Double> ranges = this.ranges.get(name);
 		if(ranges != null){
 			Double min = ranges.get(0);
@@ -137,22 +136,22 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 	}
 
 	static
-	private Map<FieldName, Double> createArguments(RDoubleVector values){
-		Map<FieldName, Double> result = new LinkedHashMap<>();
+	private Map<String, Double> createArguments(RDoubleVector values){
+		Map<String, Double> result = new LinkedHashMap<>();
 
 		RStringVector names = values.names();
 		for(int i = 0; i < names.size(); i++){
 			String name = names.getValue(i);
 
-			result.put(FieldName.create(name), values.getValue(i));
+			result.put(name, values.getValue(i));
 		}
 
 		return result;
 	}
 
 	static
-	private Map<FieldName, List<Double>> createArguments(RDoubleVector values, int rows){
-		Map<FieldName, List<Double>> result = new LinkedHashMap<>();
+	private Map<String, List<Double>> createArguments(RDoubleVector values, int rows){
+		Map<String, List<Double>> result = new LinkedHashMap<>();
 
 		RStringVector rowNames = values.dimnames(0);
 		RStringVector columnNames = values.dimnames(1);
@@ -160,7 +159,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 		for(int i = 0; i < columnNames.size(); i++){
 			String name = columnNames.getValue(i);
 
-			result.put(FieldName.create(name), FortranMatrixUtil.getColumn(values.getValues(), rows, columnNames.size(), i));
+			result.put(name, FortranMatrixUtil.getColumn(values.getValues(), rows, columnNames.size(), i));
 		}
 
 		return result;

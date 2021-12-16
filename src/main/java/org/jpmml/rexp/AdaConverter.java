@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -85,7 +84,7 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(null))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_SUM, treeModels, alpha.getValues()))
-			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("adaValue"), OpType.CONTINUOUS, DataType.DOUBLE));
+			.setOutput(ModelUtil.createPredictedOutput("adaValue", OpType.CONTINUOUS, DataType.DOUBLE));
 
 		return MiningModelUtil.createBinaryLogisticClassification(miningModel, 2d, 0d, RegressionModel.NormalizationMethod.LOGIT, true, schema);
 	}
@@ -118,7 +117,7 @@ public class AdaConverter extends RPartEnsembleConverter<RGenericVector> {
 
 		RGenericVector trees = model.getGenericElement("trees");
 
-		DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, fit.getLevelValues());
+		DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, fit.getLevelValues());
 
 		encoder.setLabel(dataField);
 

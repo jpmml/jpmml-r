@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.GaussianDistribution;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
@@ -58,7 +57,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 		RStringVector levels = naiveBayes.getStringElement("levels");
 
 		{
-			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, levels.getValues());
+			DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, levels.getValues());
 
 			encoder.setLabel(dataField);
 		}
@@ -71,7 +70,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 			RStringVector tableRows = table.dimnames(0);
 			RStringVector tableColumns = table.dimnames(1);
 
-			FieldName name = FieldName.create(tableNames.getValue(i));
+			String name = tableNames.getValue(i);
 
 			DataField dataField;
 
@@ -102,9 +101,9 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < features.size(); i++){
 			Feature feature = features.get(i);
 
-			FieldName name = feature.getName();
+			String name = feature.getName();
 
-			RDoubleVector table = tables.getDoubleElement(name.getValue());
+			RDoubleVector table = tables.getDoubleElement(name);
 
 			RStringVector tableRows = table.dimnames(0);
 			RStringVector tableColumns = table.dimnames(1);

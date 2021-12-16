@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -72,14 +71,14 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector distributionName = distribution.getStringElement("name");
 
 		{
-			FieldName responseName;
+			String responseName;
 
 			if(response_name != null){
-				responseName = FieldName.create(response_name.asScalar());
+				responseName = response_name.asScalar();
 			} else
 
 			{
-				responseName = FieldName.create("y");
+				responseName = "y";
 			}
 
 			DataField dataField;
@@ -103,7 +102,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		for(int i = 0; i < var_names.size(); i++){
-			FieldName varName = FieldName.create(var_names.getValue(i));
+			String varName = var_names.getValue(i);
 
 			DataField dataField;
 
@@ -176,7 +175,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
 		MiningModel miningModel = createMiningModel(treeModels, initF, segmentSchema)
-			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("gbmValue"), OpType.CONTINUOUS, DataType.DOUBLE));
+			.setOutput(ModelUtil.createPredictedOutput("gbmValue", OpType.CONTINUOUS, DataType.DOUBLE));
 
 		return MiningModelUtil.createBinaryLogisticClassification(miningModel, -coefficient, 0d, RegressionModel.NormalizationMethod.LOGIT, true, schema);
 	}
@@ -237,7 +236,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		Feature feature = schema.getFeature(var);
 
 		{
-			FieldName name = feature.getName();
+			String name = feature.getName();
 
 			isMissing = flagManager.getValue(name);
 			if(isMissing == null){
@@ -259,7 +258,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			FieldName name = categoricalFeature.getName();
+			String name = categoricalFeature.getName();
 			List<?> values = categoricalFeature.getValues();
 
 			int index = ValueUtil.asInt(split);

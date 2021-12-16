@@ -25,7 +25,6 @@ import org.dmg.pmml.CompareFunction;
 import org.dmg.pmml.ComparisonMeasure;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -54,7 +53,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
-			DataField dataField = encoder.createDataField(FieldName.create(columnName), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(columnName, OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.addFeature(dataField);
 		}
@@ -88,7 +87,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 			.setCompareFunction(CompareFunction.ABS_DIFF);
 
 		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema.getLabel()), comparisonMeasure, ClusteringModelUtil.createClusteringFields(schema.getFeatures()), clusters)
-			.setOutput(ClusteringModelUtil.createOutput(FieldName.create("cluster"), DataType.DOUBLE, clusters));
+			.setOutput(ClusteringModelUtil.createOutput("cluster", DataType.DOUBLE, clusters));
 
 		return clusteringModel;
 	}

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
@@ -70,7 +69,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 		RGenericVector variableLevels = DecorationUtil.getGenericElement(ranger, "variable.levels");
 
 		{
-			FieldName name = FieldName.create("_target");
+			String name = "_target";
 
 			DataField dataField;
 
@@ -108,7 +107,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 			String independentVariableName = independentVariableNames.getValue(i);
 
-			FieldName name = FieldName.create(independentVariableName);
+			String name = independentVariableName;
 
 			DataField dataField;
 
@@ -321,7 +320,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 			int splitLevelIndex = ValueUtil.asInt(Math.floor(splitValue.doubleValue()));
 
-			FieldName name = categoricalFeature.getName();
+			String name = categoricalFeature.getName();
 			List<?> values = categoricalFeature.getValues();
 
 			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);

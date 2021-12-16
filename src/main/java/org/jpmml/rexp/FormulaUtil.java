@@ -36,7 +36,6 @@ import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Discretize;
 import org.dmg.pmml.DiscretizeBin;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
@@ -66,7 +65,7 @@ public class FormulaUtil {
 		for(int i = 0; i < variableRows.size(); i++){
 			String variable = variableRows.getDequotedValue(i);
 
-			FieldName name = FieldName.create(variable);
+			String name = variable;
 			OpType opType = OpType.CONTINUOUS;
 			DataType dataType;
 
@@ -75,7 +74,7 @@ public class FormulaUtil {
 			} else
 
 			{
-				RVector<?> data = context.getData(name.getValue());
+				RVector<?> data = context.getData(name);
 				if(data != null){
 					dataType = data.getDataType();
 				} else
@@ -92,7 +91,7 @@ public class FormulaUtil {
 
 			Expression expression = null;
 
-			FieldName shortName = name;
+			String shortName = name;
 
 			expression:
 			if((variable.indexOf('(') > -1 && variable.indexOf(')') > -1) || (variable.indexOf(' ') > -1)){
@@ -151,7 +150,7 @@ public class FormulaUtil {
 
 				String value = (xArgument.formatExpression()).trim();
 
-				shortName = FieldName.create(functionExpression.hasId("base", "I") ? value : (functionExpression.getFunction() + "(" + value + ")"));
+				shortName = (functionExpression.hasId("base", "I") ? value : (functionExpression.getFunction() + "(" + value + ")"));
 			}
 
 			List<String> categoryNames;
@@ -201,9 +200,9 @@ public class FormulaUtil {
 			}
 		}
 
-		Collection<Map.Entry<FieldName, List<String>>> entries = expressionFields.entrySet();
-		for(Map.Entry<FieldName, List<String>> entry : entries){
-			FieldName name = entry.getKey();
+		Collection<Map.Entry<String, List<String>>> entries = expressionFields.entrySet();
+		for(Map.Entry<String, List<String>> entry : entries){
+			String name = entry.getKey();
 			List<String> categories = entry.getValue();
 
 			DataField dataField = encoder.getDataField(name);
@@ -215,7 +214,7 @@ public class FormulaUtil {
 					opType = OpType.CATEGORICAL;
 				}
 
-				RVector<?> data = context.getData(name.getValue());
+				RVector<?> data = context.getData(name);
 				if(data != null){
 					dataType = data.getDataType();
 				}
@@ -235,7 +234,7 @@ public class FormulaUtil {
 		if(responseIndex != 0){
 			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
-			FieldName name = dataField.getName();
+			String name = dataField.getName();
 
 			if(encoder.getDataField(name) == null){
 				encoder.addDataField(dataField);
@@ -279,11 +278,11 @@ public class FormulaUtil {
 			Feature feature;
 
 			if(allowInteractions){
-				feature = formula.resolveFeature(name);
+				feature = formula.resolveComplexFeature(name);
 			} else
 
 			{
-				feature = formula.resolveFeature(FieldName.create(name));
+				feature = formula.resolveFeature(name);
 			}
 
 			encoder.addFeature(feature);
@@ -326,7 +325,7 @@ public class FormulaUtil {
 
 		expressionFields.putAll(xArgument);
 
-		FieldName fieldName = prepareInputField(xArgument, OpType.CONTINUOUS, DataType.DOUBLE, encoder);
+		String fieldName = prepareInputField(xArgument, OpType.CONTINUOUS, DataType.DOUBLE, encoder);
 
 		return createDiscretize(fieldName, categories);
 	}
@@ -368,7 +367,7 @@ public class FormulaUtil {
 
 		expressionFields.putAll(xArgument);
 
-		FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
+		String fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
 
 		FunctionExpression.Argument fromArgument = functionExpression.getArgument("from", 1);
 		FunctionExpression.Argument toArgument = functionExpression.getArgument("to", 2);
@@ -386,7 +385,7 @@ public class FormulaUtil {
 
 		expressionFields.putAll(xArgument);
 
-		FieldName fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
+		String fieldName = prepareInputField(xArgument, OpType.CATEGORICAL, DataType.STRING, encoder);
 
 		FunctionExpression.Argument replaceArgument = functionExpression.getArgument("replace", 1);
 
@@ -398,7 +397,7 @@ public class FormulaUtil {
 	}
 
 	static
-	private FieldName prepareInputField(FunctionExpression.Argument argument, OpType opType, DataType dataType, RExpEncoder encoder){
+	private String prepareInputField(FunctionExpression.Argument argument, OpType opType, DataType dataType, RExpEncoder encoder){
 		Expression expression = argument.getExpression();
 
 		if(expression instanceof FieldRef){
@@ -410,7 +409,7 @@ public class FormulaUtil {
 		if(expression instanceof Apply){
 			Apply apply = (Apply)expression;
 
-			DerivedField derivedField = encoder.createDerivedField(FieldName.create((argument.formatExpression()).trim()), opType, dataType, apply);
+			DerivedField derivedField = encoder.createDerivedField((argument.formatExpression()).trim(), opType, dataType, apply);
 
 			return derivedField.getName();
 		} else
@@ -438,7 +437,7 @@ public class FormulaUtil {
 	}
 
 	static
-	private Discretize createDiscretize(FieldName name, List<String> categories){
+	private Discretize createDiscretize(String name, List<String> categories){
 		Discretize discretize = new Discretize(name);
 
 		for(String category : categories){
@@ -453,7 +452,7 @@ public class FormulaUtil {
 	}
 
 	static
-	private MapValues createMapValues(FieldName name, Map<String, String> mapping, List<String> categories){
+	private MapValues createMapValues(String name, Map<String, String> mapping, List<String> categories){
 		Set<String> inputs = new LinkedHashSet<>(mapping.keySet());
 		Set<String> outputs = new LinkedHashSet<>(mapping.values());
 
@@ -551,12 +550,12 @@ public class FormulaUtil {
 	}
 
 	static
-	private class VariableMap extends LinkedHashMap<FieldName, List<String>> {
+	private class VariableMap extends LinkedHashMap<String, List<String>> {
 
 		public void putAll(FunctionExpression.Argument argument){
-			Set<FieldName> names = argument.getFieldNames();
+			Set<String> names = argument.getFieldNames();
 
-			for(FieldName name : names){
+			for(String name : names){
 
 				if(!containsKey(name)){
 					put(name, null);

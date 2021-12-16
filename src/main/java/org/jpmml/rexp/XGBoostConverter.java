@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.VerificationField;
 import org.dmg.pmml.mining.MiningModel;
 import org.jpmml.converter.Feature;
@@ -82,7 +81,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		ObjFunction obj = learner.obj();
 
-		FieldName targetField = FieldName.create("_target");
+		String targetField = "_target";
 		List<String> targetCategories = null;
 
 		if(schema != null){
@@ -90,7 +89,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			RStringVector responseLevels = schema.getStringElement("response_levels", false);
 
 			if(responseName != null){
-				targetField = FieldName.create(responseName.asScalar());
+				targetField = responseName.asScalar();
 			} // End if
 
 			if(responseLevels != null){
@@ -136,13 +135,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		List<FeatureMap.Entry> entries = featureMap.getEntries();
 
-		Map<FieldName, RVector<?>> data = new LinkedHashMap<>();
+		Map<String, RVector<?>> data = new LinkedHashMap<>();
 
 		for(int i = 0; i < dataFrame.size(); i++){
 			FeatureMap.Entry entry = entries.get(i);
 			RVector<?> column = dataFrame.getVectorValue(i);
 
-			FieldName name = FieldName.create(entry.getName());
+			String name = entry.getName();
 			String value = entry.getValue();
 
 			FeatureMap.Entry.Type type = entry.getType();
@@ -195,7 +194,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 
 		List<RVector<?>> columns = new ArrayList<>(data.values());
-		List<FieldName> names = new ArrayList<>(data.keySet());
+		List<String> names = new ArrayList<>(data.keySet());
 
 		return encodeVerificationData(columns, names);
 	}

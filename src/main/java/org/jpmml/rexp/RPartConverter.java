@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.dmg.pmml.CompoundPredicate;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
@@ -174,7 +173,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 
 		for(int i = 0; i < features.size(); i++){
 			Feature feature = features.get(i);
-			Double importance = variableImportance.getElement((feature.getName()).getValue());
+			Double importance = variableImportance.getElement(feature.getName());
 
 			result.put(feature, importance);
 		}
@@ -358,7 +357,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 			for(int i = 0; i < splitNumSurrogate; i++){
 				int surrogateSplitOffset = (splitOffset + 1) + splitNumCompete + i;
 
-				feature = getFeature(FieldName.create(splitRowNames.getValue(surrogateSplitOffset)));
+				feature = getFeature(splitRowNames.getValue(surrogateSplitOffset));
 
 				predicates = encodePredicates(feature, surrogateSplitOffset, splits, csplit);
 
@@ -468,8 +467,8 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 		compoundPredicate.addPredicates(True.INSTANCE);
 	}
 
-	private Feature getFeature(FieldName name){
-		return this.formula.resolveFeature(name);
+	private Feature getFeature(String name){
+		return this.formula.resolveComplexFeature(name);
 	}
 
 	static
@@ -494,9 +493,9 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 			for(int i = 0; i < features.size(); i++){
 				Feature feature = features.get(i);
 
-				FieldName name = feature.getName();
+				String name = feature.getName();
 
-				if((name.getValue()).equals(stringName)){
+				if((name).equals(stringName)){
 					return (i + 1);
 				}
 			}

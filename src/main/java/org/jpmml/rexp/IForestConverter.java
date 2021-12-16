@@ -24,7 +24,6 @@ import java.util.List;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
@@ -77,7 +76,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		{
-			DataField dataField = encoder.createDataField(FieldName.create("pathLength"), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField("pathLength", OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.setLabel(dataField);
 		}
@@ -85,7 +84,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		for(int i = 0; i < xcols.size(); i++){
 			String xcol = xcols.getValue(i);
 
-			DataField dataField = encoder.createDataField(FieldName.create(xcol), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(xcol, OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.addFeature(dataField);
 		}
@@ -118,8 +117,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		Transformation normalizedPathLength = new AbstractTransformation(){
 
 			@Override
-			public FieldName getName(FieldName name){
-				return FieldName.create("normalizedPathLength");
+			public String getName(String name){
+				return "normalizedPathLength";
 			}
 
 			@Override
@@ -132,8 +131,8 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		Transformation anomalyScore = new AbstractTransformation(){
 
 			@Override
-			public FieldName getName(FieldName name){
-				return FieldName.create("anomalyScore");
+			public String getName(String name){
+				return "anomalyScore";
 			}
 
 			@Override
@@ -149,7 +148,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, treeModels))
-			.setOutput(ModelUtil.createPredictedOutput(FieldName.create("rawPathLength"), OpType.CONTINUOUS, DataType.DOUBLE, normalizedPathLength, anomalyScore));
+			.setOutput(ModelUtil.createPredictedOutput("rawPathLength", OpType.CONTINUOUS, DataType.DOUBLE, normalizedPathLength, anomalyScore));
 
 		return miningModel;
 	}

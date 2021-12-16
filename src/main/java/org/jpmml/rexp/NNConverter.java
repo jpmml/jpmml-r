@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -55,7 +54,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		RStringVector variables = modelList.getStringElement("variables");
 
 		{
-			DataField dataField = encoder.createDataField(FieldName.create(response.asScalar()), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(response.asScalar(), OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.setLabel(dataField);
 		}
@@ -63,7 +62,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < variables.size(); i++){
 			String variable = variables.getValue(i);
 
-			DataField dataField = encoder.createDataField(FieldName.create(variable), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(variable, OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.addFeature(dataField);
 		}

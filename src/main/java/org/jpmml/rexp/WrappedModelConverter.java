@@ -23,7 +23,6 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.CategoricalLabel;
@@ -47,7 +46,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 
 		super.encodeSchema(encoder);
 
-		FieldName targetName = FieldName.create(target.asScalar());
+		String targetName = target.asScalar();
 
 		DataField dataField = encoder.getDataField(targetName);
 

@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
@@ -64,10 +63,10 @@ public class ScorecardConverter extends GLMConverter {
 
 		double factor = (pdo.asScalar()).doubleValue() / Math.log(2);
 
-		Map<FieldName, Characteristic> fieldCharacteristics = new LinkedHashMap<>();
+		Map<String, Characteristic> fieldCharacteristics = new LinkedHashMap<>();
 
 		for(Feature feature : features){
-			FieldName name = feature.getName();
+			String name = feature.getName();
 
 			if(!(feature instanceof BinaryFeature)){
 				throw new IllegalArgumentException();
@@ -95,8 +94,8 @@ public class ScorecardConverter extends GLMConverter {
 
 		Characteristics characteristics = new Characteristics();
 
-		Collection<Map.Entry<FieldName, Characteristic>> entries = fieldCharacteristics.entrySet();
-		for(Map.Entry<FieldName, Characteristic> entry : entries){
+		Collection<Map.Entry<String, Characteristic>> entries = fieldCharacteristics.entrySet();
+		for(Map.Entry<String, Characteristic> entry : entries){
 			Characteristic characteristic = entry.getValue();
 
 			Attribute attribute = new Attribute(True.INSTANCE)

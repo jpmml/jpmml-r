@@ -20,7 +20,6 @@ package org.jpmml.rexp.visitors;
 
 import java.util.List;
 
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.HasFieldReference;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
@@ -136,7 +135,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 	}
 
 	private boolean isDefinedField(HasFieldReference<?> hasFieldReference){
-		FieldName name = hasFieldReference.getField();
+		String name = hasFieldReference.getField();
 
 		Node ancestorNode = getAncestorNode(node -> hasFieldReference(node.getPredicate(), name));
 

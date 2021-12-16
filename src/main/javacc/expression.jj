@@ -32,7 +32,6 @@ import org.dmg.pmml.Apply;
 import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
@@ -674,7 +673,7 @@ FieldRef FieldInvocationExpression():
 
 	{
 		FieldRef fieldRef = new FieldRef()
-			.setField(FieldName.create(name.image));
+			.setField(name.image);
 
 		return fieldRef;
 	}

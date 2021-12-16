@@ -31,7 +31,6 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
 import org.dmg.pmml.Field;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.BinaryFeature;
@@ -48,9 +47,9 @@ public class Formula {
 
 	private RExpEncoder encoder = null;
 
-	private Map<FieldName, FieldName> validNames = new HashMap<>();
+	private Map<String, String> validNames = new HashMap<>();
 
-	private BiMap<FieldName, Feature> features = HashBiMap.create();
+	private BiMap<String, Feature> features = HashBiMap.create();
 
 	private List<Field<?>> fields = new ArrayList<>();
 
@@ -59,47 +58,47 @@ public class Formula {
 		setEncoder(encoder);
 	}
 
-	public Feature resolveFeature(String name){
+	public Feature resolveComplexFeature(String name){
 		RExpEncoder encoder = getEncoder();
 
 		List<String> variables = split(name);
 		if(variables.size() == 1){
-			return resolveFeature(FieldName.create(name));
+			return resolveFeature(name);
 		} else
 
 		{
 			List<Feature> variableFeatures = new ArrayList<>();
 
 			for(String variable : variables){
-				Feature variableFeature = resolveFeature(FieldName.create(variable));
+				Feature variableFeature = resolveFeature(variable);
 
 				variableFeatures.add(variableFeature);
 			}
 
-			return new InteractionFeature(encoder, FieldName.create(name), DataType.DOUBLE, variableFeatures);
+			return new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures);
 		}
 	}
 
-	public Feature resolveFeature(FieldName name){
+	public Feature resolveFeature(String name){
 		Feature feature = getFeature(name);
 
 		if(feature == null){
-			throw new IllegalArgumentException(name.getValue());
+			throw new IllegalArgumentException(name);
 		}
 
 		return feature;
 	}
 
 	public Double getCoefficient(Feature feature, RDoubleVector coefficients){
-		FieldName name = feature.getName();
+		String name = feature.getName();
 
 		if(feature instanceof HasDerivedName){
-			BiMap<Feature, FieldName> inverseFeatures = this.features.inverse();
+			BiMap<Feature, String> inverseFeatures = this.features.inverse();
 
 			name = inverseFeatures.get(feature);
 		}
 
-		return coefficients.getElement(name.getValue());
+		return coefficients.getElement(name);
 	}
 
 	public Field<?> getField(int index){
@@ -167,13 +166,13 @@ public class Formula {
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
-			putFeature(FieldName.create((field.getName()).getValue() + categoryName), binaryFeature);
+			putFeature((field.getName() + categoryName), binaryFeature);
 		}
 
 		this.fields.add(field);
 	}
 
-	private Feature getFeature(FieldName name){
+	private Feature getFeature(String name){
 		Feature feature = this.features.get(name);
 
 		if(feature == null){
@@ -186,8 +185,8 @@ public class Formula {
 		return feature;
 	}
 
-	private void putFeature(FieldName name, Feature feature){
-		FieldName validName = RExpUtil.makeName(name);
+	private void putFeature(String name, Feature feature){
+		String validName = RExpUtil.makeName(name);
 
 		if(!(name).equals(validName)){
 			this.validNames.put(validName, name);

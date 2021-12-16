@@ -28,7 +28,6 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Field;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMML;
@@ -49,15 +48,15 @@ public class RExpEncoder extends ModelEncoder {
 
 	private List<Feature> features = new ArrayList<>();
 
-	private Map<FieldName, FieldName> renamedFields = new LinkedHashMap<>();
+	private Map<String, String> renamedFields = new LinkedHashMap<>();
 
 
 	@Override
 	public PMML encodePMML(Model model){
 		PMML pmml = super.encodePMML(model);
 
-		Collection<Map.Entry<FieldName, FieldName>> entries = this.renamedFields.entrySet();
-		for(Map.Entry<FieldName, FieldName> entry : entries){
+		Collection<Map.Entry<String, String>> entries = this.renamedFields.entrySet();
+		for(Map.Entry<String, String> entry : entries){
 			FieldRenamer renamer = new FieldRenamer(entry.getKey(), entry.getValue());
 
 			renamer.applyTo(pmml);
@@ -67,10 +66,10 @@ public class RExpEncoder extends ModelEncoder {
 	}
 
 	public void addFields(RExpEncoder encoder){
-		Map<FieldName, DataField> dataFields = encoder.getDataFields();
-		Map<FieldName, DerivedField> derivedFields = encoder.getDerivedFields();
+		Map<String, DataField> dataFields = encoder.getDataFields();
+		Map<String, DerivedField> derivedFields = encoder.getDerivedFields();
 
-		for(FieldName name : dataFields.keySet()){
+		for(String name : dataFields.keySet()){
 			DataField dataField = getDataField(name);
 
 			if(dataField == null){
@@ -80,7 +79,7 @@ public class RExpEncoder extends ModelEncoder {
 			}
 		}
 
-		for(FieldName name : derivedFields.keySet()){
+		for(String name : derivedFields.keySet()){
 			DerivedField derivedField = getDerivedField(name);
 
 			if(derivedField == null){
@@ -92,7 +91,7 @@ public class RExpEncoder extends ModelEncoder {
 	}
 
 	@Override
-	public DataField createDataField(FieldName name, OpType opType, DataType dataType, List<?> values){
+	public DataField createDataField(String name, OpType opType, DataType dataType, List<?> values){
 
 		if(dataType == null){
 			dataType = TypeUtil.getDataType(values);
@@ -159,7 +158,7 @@ public class RExpEncoder extends ModelEncoder {
 		return this.features;
 	}
 
-	public void renameField(FieldName name, FieldName renamedName){
+	public void renameField(String name, String renamedName){
 		this.renamedFields.put(name, renamedName);
 	}
 }

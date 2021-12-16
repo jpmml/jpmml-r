@@ -24,11 +24,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.VerificationField;
@@ -113,7 +111,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 			if(targetValues != null && outputValues == null){
 				Label label = schema.getLabel();
 
-				FieldName name = label.getName();
+				String name = label.getName();
 
 				Collection<VerificationField> verificationFields = data.keySet();
 				for(Iterator<VerificationField> verificationFieldIt = verificationFields.iterator(); verificationFieldIt.hasNext(); ){
@@ -149,7 +147,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 	protected Map<VerificationField, List<?>> encodeTargetValues(RGenericVector dataFrame, Label label){
 		List<RExp> columns = dataFrame.getValues();
-		FieldName name = label.getName();
+		String name = label.getName();
 
 		return encodeVerificationData(columns, Collections.singletonList(name));
 	}
@@ -163,19 +161,15 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		List<RExp> columns = dataFrame.getValues();
 		RStringVector columnNames = dataFrame.names();
 
-		List<FieldName> names = (columnNames.getDequotedValues()).stream()
-			.map(columnName -> FieldName.create(columnName))
-			.collect(Collectors.toList());
-
-		return encodeVerificationData(columns, names);
+		return encodeVerificationData(columns, columnNames.getDequotedValues());
 	}
 
 	static
-	protected Map<VerificationField, List<?>> encodeVerificationData(List<? extends RExp> columns, List<FieldName> names){
+	protected Map<VerificationField, List<?>> encodeVerificationData(List<? extends RExp> columns, List<String> names){
 		Map<VerificationField, List<?>> result = new LinkedHashMap<>();
 
 		for(int i = 0; i < columns.size(); i++){
-			FieldName name = names.get(i);
+			String name = names.get(i);
 			RVector<?> column = (RVector<?>)columns.get(i);
 
 			List<?> values;

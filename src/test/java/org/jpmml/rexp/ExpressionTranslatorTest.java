@@ -25,7 +25,6 @@ import org.dmg.pmml.Apply;
 import org.dmg.pmml.Constant;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
@@ -48,8 +47,8 @@ public class ExpressionTranslatorTest {
 				PMMLUtil.createConstant("1.0", DataType.DOUBLE),
 				PMMLUtil.createApply(PMMLFunctions.LN,
 					PMMLUtil.createApply(PMMLFunctions.DIVIDE,
-						new FieldRef(FieldName.create("A")),
-						new FieldRef(FieldName.create("B"))
+						new FieldRef("A"),
+						new FieldRef("B")
 					)
 				)
 			),
@@ -66,7 +65,7 @@ public class ExpressionTranslatorTest {
 		String string = "if(is.na(x)) TRUE else FALSE";
 
 		Expression expected = PMMLUtil.createApply(PMMLFunctions.IF,
-			PMMLUtil.createApply(PMMLFunctions.ISMISSING, new FieldRef(FieldName.create("x"))),
+			PMMLUtil.createApply(PMMLFunctions.ISMISSING, new FieldRef("x")),
 			PMMLUtil.createConstant("true", DataType.BOOLEAN),
 			PMMLUtil.createConstant("false", DataType.BOOLEAN)
 		);
@@ -82,10 +81,10 @@ public class ExpressionTranslatorTest {
 
 		Expression expected = PMMLUtil.createApply(PMMLFunctions.OR,
 			PMMLUtil.createApply(PMMLFunctions.AND,
-				PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL, new FieldRef(FieldName.create("a")), PMMLUtil.createConstant("0.0", DataType.DOUBLE)),
-				PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL, new FieldRef(FieldName.create("b")), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
+				PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL, new FieldRef("a"), PMMLUtil.createConstant("0.0", DataType.DOUBLE)),
+				PMMLUtil.createApply(PMMLFunctions.GREATEROREQUAL, new FieldRef("b"), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
 			),
-			PMMLUtil.createApply(PMMLFunctions.LESSOREQUAL, new FieldRef(FieldName.create("c")), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
+			PMMLUtil.createApply(PMMLFunctions.LESSOREQUAL, new FieldRef("c"), PMMLUtil.createConstant("0.0", DataType.DOUBLE))
 		);
 
 		Expression actual = ExpressionTranslator.translateExpression(string);
@@ -97,10 +96,10 @@ public class ExpressionTranslatorTest {
 	public void translateLogicalExpressionChain(){
 		String string = "(x == 0) | ((x == 1) | (x == 2)) | x == 3";
 
-		Apply left = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", DataType.INTEGER));
-		Apply middleLeft = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("1", DataType.INTEGER));
-		Apply middleRight = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("2", DataType.INTEGER));
-		Apply right = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("3", DataType.INTEGER));
+		Apply left = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef("x"), PMMLUtil.createConstant("0", DataType.INTEGER));
+		Apply middleLeft = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef("x"), PMMLUtil.createConstant("1", DataType.INTEGER));
+		Apply middleRight = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef("x"), PMMLUtil.createConstant("2", DataType.INTEGER));
+		Apply right = PMMLUtil.createApply(PMMLFunctions.EQUAL, new FieldRef("x"), PMMLUtil.createConstant("3", DataType.INTEGER));
 
 		Expression expected = PMMLUtil.createApply(PMMLFunctions.OR,
 			PMMLUtil.createApply(PMMLFunctions.OR,
@@ -128,10 +127,10 @@ public class ExpressionTranslatorTest {
 		String string = "if(x < 0) \"negative\" else if(x > 0) \"positive\" else \"zero\"";
 
 		Expression expected = PMMLUtil.createApply(PMMLFunctions.IF,
-			PMMLUtil.createApply(PMMLFunctions.LESSTHAN, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", DataType.INTEGER)),
+			PMMLUtil.createApply(PMMLFunctions.LESSTHAN, new FieldRef("x"), PMMLUtil.createConstant("0", DataType.INTEGER)),
 			PMMLUtil.createConstant("negative", DataType.STRING),
 			PMMLUtil.createApply(PMMLFunctions.IF,
-				PMMLUtil.createApply(PMMLFunctions.GREATERTHAN, new FieldRef(FieldName.create("x")), PMMLUtil.createConstant("0", DataType.INTEGER)),
+				PMMLUtil.createApply(PMMLFunctions.GREATERTHAN, new FieldRef("x"), PMMLUtil.createConstant("0", DataType.INTEGER)),
 				PMMLUtil.createConstant("positive", DataType.STRING),
 				PMMLUtil.createConstant("zero", DataType.STRING)
 			)
@@ -148,10 +147,10 @@ public class ExpressionTranslatorTest {
 
 		Expression expected = PMMLUtil.createApply(PMMLFunctions.ADD,
 			PMMLUtil.createApply(PMMLFunctions.SUBTRACT,
-				PMMLUtil.createApply(PMMLFunctions.ADD, new FieldRef(FieldName.create("A")), new FieldRef(FieldName.create("B"))),
-				new FieldRef(FieldName.create("X"))
+				PMMLUtil.createApply(PMMLFunctions.ADD, new FieldRef("A"), new FieldRef("B")),
+				new FieldRef("X")
 			),
-			new FieldRef(FieldName.create("C"))
+			new FieldRef("C")
 		);
 
 		Expression actual = ExpressionTranslator.translateExpression(string);
@@ -213,15 +212,15 @@ public class ExpressionTranslatorTest {
 
 		List<Expression> expressions = checkFunctionExpression((FunctionExpression)first.getExpression(), "child", null, null);
 
-		assertTrue(ReflectionUtil.equals(new FieldRef(FieldName.create("A")), expressions.get(0)));
-		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.LN, new FieldRef(FieldName.create("A"))), expressions.get(1)));
+		assertTrue(ReflectionUtil.equals(new FieldRef("A"), expressions.get(0)));
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.LN, new FieldRef("A")), expressions.get(1)));
 
 		assertEquals("child(1 + B, right = 0)", second.format());
 		assertEquals("child(1 + B, right = 0)", second.formatExpression());
 
 		expressions = checkFunctionExpression((FunctionExpression)second.getExpression(), "child", null, "right");
 
-		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.ADD, PMMLUtil.createConstant("1", DataType.INTEGER), new FieldRef(FieldName.create("B"))), expressions.get(0)));
+		assertTrue(ReflectionUtil.equals(PMMLUtil.createApply(PMMLFunctions.ADD, PMMLUtil.createConstant("1", DataType.INTEGER), new FieldRef("B")), expressions.get(0)));
 		assertTrue(ReflectionUtil.equals(PMMLUtil.createConstant("0", DataType.INTEGER), expressions.get(1)));
 
 		assertEquals("\"third\" = child(left = 0, c(A, B, C))", third.format());

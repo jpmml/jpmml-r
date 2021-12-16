@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
@@ -89,7 +88,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 			Schema segmentSchema = conversion.getSchema();
 			Model segmentModel = conversion.getModel();
 
-			FieldName name = FieldName.create(modelNames.getValue(i));
+			String name = modelNames.getValue(i);
 
 			OutputField outputField;
 

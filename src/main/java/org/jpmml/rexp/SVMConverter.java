@@ -26,7 +26,6 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
@@ -107,7 +106,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					};
 
 					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema)
-						.setOutput(ModelUtil.createPredictedOutput(FieldName.create("decisionFunction"), OpType.CONTINUOUS, DataType.DOUBLE, outlier));
+						.setOutput(ModelUtil.createPredictedOutput("decisionFunction", OpType.CONTINUOUS, DataType.DOUBLE, outlier));
 
 					if(yScale != null && yScale.size() > 0){
 						throw new IllegalArgumentException();
@@ -184,15 +183,13 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RStringVector columnNames = sv.dimnames(1);
 
 		{
-			FieldName name = FieldName.create("_target");
-
 			switch(svmType){
 				case C_CLASSIFICATION:
 				case NU_CLASSIFICATION:
 					{
 						RStringVector stringLevels = (RStringVector)levels;
 
-						DataField dataField = encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, stringLevels.getValues());
+						DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, stringLevels.getValues());
 
 						encoder.setLabel(dataField);
 					}
@@ -205,7 +202,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				case EPS_REGRESSION:
 				case NU_REGRESSION:
 					{
-						DataField dataField = encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
+						DataField dataField = encoder.createDataField("_target", OpType.CONTINUOUS, DataType.DOUBLE);
 
 						encoder.setLabel(dataField);
 					}
@@ -216,7 +213,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < columnNames.size(); i++){
 			String columnName = columnNames.getValue(i);
 
-			DataField dataField = encoder.createDataField(FieldName.create(columnName), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(columnName, OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.addFeature(dataField);
 		}

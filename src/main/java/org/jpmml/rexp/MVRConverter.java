@@ -24,7 +24,6 @@ import org.dmg.pmml.Apply;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
@@ -61,7 +60,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
 		{
-			FieldName name = FieldName.create(columnNames.asScalar());
+			String name = columnNames.asScalar();
 
 			DataField dataField = (DataField)encoder.getField(name);
 

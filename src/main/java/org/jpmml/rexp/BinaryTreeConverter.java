@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
@@ -50,7 +49,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	private MiningFunction miningFunction = null;
 
-	private Map<FieldName, Integer> featureIndexes = new LinkedHashMap<>();
+	private Map<String, Integer> featureIndexes = new LinkedHashMap<>();
 
 
 	public BinaryTreeConverter(S4Object binaryTree){
@@ -89,7 +88,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				throw new IllegalArgumentException();
 		}
 
-		output.addOutputFields(ModelUtil.createEntityIdField(FieldName.create("nodeId"), DataType.STRING));
+		output.addOutputFields(ModelUtil.createEntityIdField("nodeId", DataType.STRING));
 
 		TreeModel treeModel = encodeTreeModel(tree, schema)
 			.setOutput(output);
@@ -118,13 +117,13 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 			RStringVector targetCategories = levels.getStringElement(variableName);
 
-			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CATEGORICAL, RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
+			dataField = encoder.createDataField(variableName, OpType.CATEGORICAL, RExpUtil.getDataType(targetVariableClass.asScalar()), targetCategories.getValues());
 		} else
 
 		if((Boolean.FALSE).equals(categorical)){
 			this.miningFunction = MiningFunction.REGRESSION;
 
-			dataField = encoder.createDataField(FieldName.create(variableName), OpType.CONTINUOUS, DataType.DOUBLE);
+			dataField = encoder.createDataField(variableName, OpType.CONTINUOUS, DataType.DOUBLE);
 		} else
 
 		{
@@ -147,7 +146,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RNumberVector<?> splitpoint = psplit.getNumericElement("splitpoint");
 		RStringVector variableName = psplit.getStringElement("variableName");
 
-		FieldName name = FieldName.create(variableName.asScalar());
+		String name = variableName.asScalar();
 
 		DataField dataField = encoder.getDataField(name);
 		if(dataField == null){
@@ -212,7 +211,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		Predicate leftPredicate;
 		Predicate rightPredicate;
 
-		FieldName name = FieldName.create(variableName.asScalar());
+		String name = variableName.asScalar();
 
 		Integer index = this.featureIndexes.get(name);
 		if(index == null){

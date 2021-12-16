@@ -23,7 +23,6 @@ import java.util.List;
 import com.google.common.primitives.Doubles;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.Schema;
@@ -58,13 +57,13 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		RGenericVector dimnames = beta.getGenericAttribute("Dimnames");
 
 		if(classnames != null){
-			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CATEGORICAL, DataType.STRING, classnames.getValues());
+			DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, classnames.getValues());
 
 			encoder.setLabel(dataField);
 		} else
 
 		{
-			DataField dataField = encoder.createDataField(FieldName.create("_target"), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField("_target", OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.setLabel(dataField);
 		}
@@ -73,7 +72,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < rowNames.size(); i++){
 			String rowName = rowNames.getValue(i);
 
-			DataField dataField = encoder.createDataField(FieldName.create(rowName), OpType.CONTINUOUS, DataType.DOUBLE);
+			DataField dataField = encoder.createDataField(rowName, OpType.CONTINUOUS, DataType.DOUBLE);
 
 			encoder.addFeature(dataField);
 		}

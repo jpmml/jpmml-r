@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 
 public class RExpUtil {
 
@@ -70,11 +69,6 @@ public class RExpUtil {
 		RStringVector result = rexp.getStringAttribute("class");
 
 		return result;
-	}
-
-	static
-	public FieldName makeName(FieldName name){
-		return FieldName.create(makeName(name.getValue()));
 	}
 
 	static
