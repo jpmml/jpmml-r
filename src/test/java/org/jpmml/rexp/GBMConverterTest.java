@@ -18,53 +18,54 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class GBMConverterTest extends RExpTest {
+public class GBMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {
-		evaluate("GBMAdaBoost", "AuditNA");
+		evaluate("GBMAdaBoost", AUDIT_NA);
 	}
 
 	@Test
 	public void evaluateWrappedAdaBoostAuditNA() throws Exception {
-		evaluate("WrappedGBMAdaBoost", "AuditNA", new PMMLEquivalence(5e-13, 5e-13));
+		evaluate("WrappedGBMAdaBoost", AUDIT_NA, new PMMLEquivalence(5e-13, 5e-13));
 	}
 
 	@Test
 	public void evaluateFitBernoulliAuditNA() throws Exception {
-		evaluate("GBMBernoulli", "AuditNA");
+		evaluate("GBMBernoulli", AUDIT_NA);
 	}
 
 	@Test
 	public void evaluateFormulaIris() throws Exception {
-		evaluate("GBMFormula", "Iris");
+		evaluate("GBMFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateFitIris() throws Exception {
-		evaluate("GBM", "Iris");
+		evaluate("GBM", IRIS);
 	}
 
 	@Test
 	public void evaluateCaretFormulaIris() throws Exception {
-		evaluate("TrainGBMFormula", "Iris");
+		evaluate("TrainGBMFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateFormulaAutoNA() throws Exception {
-		evaluate("GBMFormula", "AutoNA");
+		evaluate("GBMFormula", AUTO_NA);
 	}
 
 	@Test
 	public void evaluateFitAutoNA() throws Exception {
-		evaluate("GBM", "AutoNA");
+		evaluate("GBM", AUTO_NA);
 	}
 
 	@Test
 	public void evaluateCaretFormulaAutoNA() throws Exception {
-		evaluate("TrainGBMFormula", "AutoNA");
+		evaluate("TrainGBMFormula", AUTO_NA);
 	}
 }

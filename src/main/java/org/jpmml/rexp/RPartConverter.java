@@ -449,7 +449,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 	}
 
 	private void makeDefault(Node node){
-		Predicate predicate = node.getPredicate();
+		Predicate predicate = node.requirePredicate();
 
 		CompoundPredicate compoundPredicate;
 

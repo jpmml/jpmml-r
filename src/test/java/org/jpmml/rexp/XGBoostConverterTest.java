@@ -18,11 +18,12 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.FloatEquivalence;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class XGBoostConverterTest extends RExpTest {
+public class XGBoostConverterTest extends RExpTest implements Datasets {
 
 	public XGBoostConverterTest(){
 		super();
@@ -30,16 +31,16 @@ public class XGBoostConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("XGBoost", "Auto", new FloatEquivalence(2));
+		evaluate("XGBoost", AUTO, new FloatEquivalence(2));
 	}
 
 	@Test
 	public void evaluateAuditNA() throws Exception {
-		evaluate("XGBoost", "AuditNA", new PMMLEquivalence(5e-6, 5e-6));
+		evaluate("XGBoost", AUDIT_NA, new PMMLEquivalence(5e-6, 5e-6));
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("XGBoost", "Iris", new PMMLEquivalence(1e-6, 1e-6));
+		evaluate("XGBoost", IRIS, new PMMLEquivalence(1e-6, 1e-6));
 	}
 }

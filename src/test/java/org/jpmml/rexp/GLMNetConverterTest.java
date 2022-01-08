@@ -18,38 +18,39 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class GLMNetConverterTest extends RExpTest {
+public class GLMNetConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("ElNet", "Auto");
+		evaluate("ElNet", AUTO);
 	}
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("ElNet", "WineQuality");
+		evaluate("ElNet", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateVisit() throws Exception {
-		evaluate("FishNet", "Visit");
+		evaluate("FishNet", VISIT);
 	}
 
 	@Test
 	public void evaluateLogNetWineColor() throws Exception {
-		evaluate("LogNet", "WineColor", new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("LogNet", WINE_COLOR, new PMMLEquivalence(5e-11, 5e-11));
 	}
 
 	@Test
 	public void evaluateMultNetIris() throws Exception {
-		evaluate("MultNet", "Iris");
+		evaluate("MultNet", IRIS);
 	}
 
 	@Test
 	public void evaluateMultNetWineColor() throws Exception {
-		evaluate("MultNet", "WineColor", new PMMLEquivalence(5e-10, 5e-10));
+		evaluate("MultNet", WINE_COLOR, new PMMLEquivalence(5e-10, 5e-10));
 	}
 }

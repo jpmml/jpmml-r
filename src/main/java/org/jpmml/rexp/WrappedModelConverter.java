@@ -72,7 +72,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 						encoder.setLabel(dataField);
 					} // End if
 
-					if(!(OpType.CATEGORICAL).equals(dataField.getOpType())){
+					if(dataField.requireOpType() != OpType.CATEGORICAL){
 						dataField = (DataField)encoder.toCategorical(targetName, values);
 
 						encoder.setLabel(dataField);
@@ -82,7 +82,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 						RBooleanVector invertLevels = DecorationUtil.getBooleanElement(wrappedModel, "invert_levels");
 
 						if(invertLevels.asScalar()){
-							Label label = new CategoricalLabel(dataField.getName(), dataField.getDataType(), Lists.reverse(values));
+							Label label = new CategoricalLabel(dataField.requireName(), dataField.requireDataType(), Lists.reverse(values));
 
 							encoder.setLabel(label);
 						}

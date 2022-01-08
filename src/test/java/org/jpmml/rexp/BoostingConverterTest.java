@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class BoostingConverterTest extends RExpTest {
+public class BoostingConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Boosting", "Audit");
+		evaluate("Boosting", AUDIT);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("Boosting", "Iris");
+		evaluate("Boosting", IRIS);
 	}
 }

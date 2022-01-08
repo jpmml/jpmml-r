@@ -18,23 +18,24 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class NNetConverterTest extends RExpTest {
+public class NNetConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("NNetFormula", "Audit", new PMMLEquivalence(5e-6, 5e-6));
+		evaluate("NNetFormula", AUDIT, new PMMLEquivalence(5e-6, 5e-6));
 	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("NNetFormula", "Auto", new PMMLEquivalence(5e-8, 5e-8));
+		evaluate("NNetFormula", AUTO, new PMMLEquivalence(5e-8, 5e-8));
 	}
 
 	@Test
 	public void evaluateFormulaIris() throws Exception {
-		evaluate("NNetFormula", "Iris", new PMMLEquivalence(1e-6, 1e-6));
+		evaluate("NNetFormula", IRIS, new PMMLEquivalence(1e-6, 1e-6));
 	}
 }

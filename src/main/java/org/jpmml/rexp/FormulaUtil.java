@@ -156,7 +156,7 @@ public class FormulaUtil {
 			List<String> categoryNames;
 			List<?> categoryValues;
 
-			if((DataType.BOOLEAN).equals(dataType)){
+			if(dataType == DataType.BOOLEAN){
 				opType = OpType.CATEGORICAL;
 
 				categoryNames = Arrays.asList("FALSE", "TRUE");
@@ -234,7 +234,7 @@ public class FormulaUtil {
 		if(responseIndex != 0){
 			DataField dataField = (DataField)formula.getField(responseIndex - 1);
 
-			String name = dataField.getName();
+			String name = dataField.requireName();
 
 			if(encoder.getDataField(name) == null){
 				encoder.addDataField(dataField);
@@ -403,7 +403,7 @@ public class FormulaUtil {
 		if(expression instanceof FieldRef){
 			FieldRef fieldRef = (FieldRef)expression;
 
-			return fieldRef.getField();
+			return fieldRef.requireField();
 		} else
 
 		if(expression instanceof Apply){
@@ -411,7 +411,7 @@ public class FormulaUtil {
 
 			DerivedField derivedField = encoder.createDerivedField((argument.formatExpression()).trim(), opType, dataType, apply);
 
-			return derivedField.getName();
+			return derivedField.requireName();
 		} else
 
 		{

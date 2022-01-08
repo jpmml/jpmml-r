@@ -18,42 +18,43 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class SVMConverterTest extends RExpTest {
+public class SVMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("LibSVMFormula", "Audit");
+		evaluate("LibSVMFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateAnomalyFormulaAudit() throws Exception {
-		evaluate("LibSVMAnomalyFormula", "Audit");
+		evaluate("LibSVMAnomalyFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("LibSVMFormula", "Auto");
+		evaluate("LibSVMFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("LibSVM", "Auto");
+		evaluate("LibSVM", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaIris() throws Exception {
-		evaluate("LibSVMFormula", "Iris");
+		evaluate("LibSVMFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateAnomalyFormulaIris() throws Exception {
-		evaluate("LibSVMAnomalyFormula", "Iris");
+		evaluate("LibSVMAnomalyFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("LibSVM", "Iris");
+		evaluate("LibSVM", IRIS);
 	}
 }

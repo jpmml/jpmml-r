@@ -92,7 +92,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 
 			OutputField outputField;
 
-			MiningFunction miningFunction = segmentModel.getMiningFunction();
+			MiningFunction miningFunction = segmentModel.requireMiningFunction();
 			switch(miningFunction){
 				case REGRESSION:
 					{

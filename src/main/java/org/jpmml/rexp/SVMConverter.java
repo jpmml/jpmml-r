@@ -157,7 +157,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				FormulaUtil.setLabel(formula, terms, levels, encoder);
 				break;
 			case ONE_CLASSIFICATION:
-				encoder.setLabel(new ContinuousLabel(null, DataType.DOUBLE));
+				encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
 				break;
 			case EPS_REGRESSION:
 			case NU_REGRESSION:
@@ -196,7 +196,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					break;
 				case ONE_CLASSIFICATION:
 					{
-						encoder.setLabel(new ContinuousLabel(null, DataType.DOUBLE));
+						encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
 					}
 					break;
 				case EPS_REGRESSION:

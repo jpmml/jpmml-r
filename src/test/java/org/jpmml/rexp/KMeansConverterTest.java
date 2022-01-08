@@ -18,12 +18,13 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class KMeansConverterTest extends RExpTest {
+public class KMeansConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("KMeans", "Iris");
+		evaluate("KMeans", IRIS);
 	}
 }

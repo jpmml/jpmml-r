@@ -70,7 +70,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		RGenericVector steps = recipe.getGenericElement("steps");
 
 		List<String> outcomeNames = this.termRoles.entrySet().stream()
-			.filter(entry -> (Role.OUTCOME).equals(entry.getValue()))
+			.filter(entry -> (entry.getValue() == Role.OUTCOME))
 			.map(entry -> entry.getKey())
 			.collect(Collectors.toList());
 

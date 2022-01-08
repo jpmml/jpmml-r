@@ -117,7 +117,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 				for(Iterator<VerificationField> verificationFieldIt = verificationFields.iterator(); verificationFieldIt.hasNext(); ){
 					VerificationField verificationField = verificationFieldIt.next();
 
-					if((verificationField.getField()).equals(name)){
+					if((verificationField.requireField()).equals(name)){
 						verificationFieldIt.remove();
 					}
 				}

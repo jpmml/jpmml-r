@@ -18,32 +18,33 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class RangerConverterTest extends RExpTest {
+public class RangerConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Ranger", "Audit");
+		evaluate("Ranger", AUDIT);
 	}
 
 	@Test
 	public void evaluateProbAudit() throws Exception {
-		evaluate("RangerProb", "Audit");
+		evaluate("RangerProb", AUDIT);
 	}
 
 	@Test
 	public void evaluateAutoNA() throws Exception {
-		evaluate("Ranger", "AutoNA");
+		evaluate("Ranger", AUTO_NA);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("Ranger", "Iris");
+		evaluate("Ranger", IRIS);
 	}
 
 	@Test
 	public void evaluateProbIris() throws Exception {
-		evaluate("RangerProb", "Iris");
+		evaluate("RangerProb", IRIS);
 	}
 }

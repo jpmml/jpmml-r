@@ -18,23 +18,24 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class CrossValGLMNetConverterTest extends RExpTest {
+public class CrossValGLMNetConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateVersicolor() throws Exception {
-		evaluate("CrossValLogNet", "Versicolor");
+		evaluate("CrossValLogNet", VERSICOLOR);
 	}
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("CrossValElNet", "WineQuality");
+		evaluate("CrossValElNet", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateWineColor() throws Exception {
-		evaluate("CrossValLogNet", "WineColor", new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("CrossValLogNet", WINE_COLOR, new PMMLEquivalence(5e-11, 5e-11));
 	}
 }

@@ -50,8 +50,8 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 			Node firstChild = children.get(0);
 			Node secondChild = children.get(1);
 
-			Predicate firstPredicate = firstChild.getPredicate();
-			Predicate secondPredicate = secondChild.getPredicate();
+			Predicate firstPredicate = firstChild.requirePredicate();
+			Predicate secondPredicate = secondChild.requirePredicate();
 
 			checkFieldReference(firstPredicate, secondPredicate);
 
@@ -103,7 +103,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 	@Override
 	public void exitNode(Node node){
-		Predicate predicate = node.getPredicate();
+		Predicate predicate = node.requirePredicate();
 
 		if(predicate instanceof True){
 			Node parentNode = getParentNode();
@@ -122,7 +122,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 		TreeModel.NoTrueChildStrategy noTrueChildStrategy = treeModel.getNoTrueChildStrategy();
 		TreeModel.SplitCharacteristic splitCharacteristic = treeModel.getSplitCharacteristic();
 
-		if(!(TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION).equals(noTrueChildStrategy) || !(TreeModel.SplitCharacteristic.BINARY_SPLIT).equals(splitCharacteristic)){
+		if((noTrueChildStrategy != TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION) || (splitCharacteristic != TreeModel.SplitCharacteristic.BINARY_SPLIT)){
 			throw new IllegalArgumentException();
 		}
 	}
@@ -135,9 +135,9 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 	}
 
 	private boolean isDefinedField(HasFieldReference<?> hasFieldReference){
-		String name = hasFieldReference.getField();
+		String name = hasFieldReference.requireField();
 
-		Node ancestorNode = getAncestorNode(node -> hasFieldReference(node.getPredicate(), name));
+		Node ancestorNode = getAncestorNode(node -> hasFieldReference(node.requirePredicate(), name));
 
 		return (ancestorNode != null);
 	}

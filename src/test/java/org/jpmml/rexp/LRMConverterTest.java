@@ -18,12 +18,13 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class LRMConverterTest extends RExpTest {
+public class LRMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("LRMFormula", "Audit");
+		evaluate("LRMFormula", AUDIT);
 	}
 }

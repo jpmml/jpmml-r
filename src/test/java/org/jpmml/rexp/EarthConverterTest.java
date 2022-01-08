@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class EarthConverterTest extends RExpTest {
+public class EarthConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("EarthFormula", "Auto");
+		evaluate("EarthFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("EarthCustFormula", "Auto");
+		evaluate("EarthCustFormula", AUTO);
 	}
 }

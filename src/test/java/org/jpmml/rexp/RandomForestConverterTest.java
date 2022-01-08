@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.google.common.primitives.UnsignedLong;
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RandomForestConverterTest extends RExpTest {
+public class RandomForestConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void selectValues(){
@@ -54,96 +55,96 @@ public class RandomForestConverterTest extends RExpTest {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("RandomForestFormula", "Audit");
+		evaluate("RandomForestFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateCustFormulaAudit() throws Exception {
-		evaluate("RandomForestCustFormula", "Audit");
+		evaluate("RandomForestCustFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("RandomForest", "Audit");
+		evaluate("RandomForest", AUDIT);
 	}
 
 	@Test
 	public void evaluateCaretFormulaAudit() throws Exception {
-		evaluate("TrainRandomForestFormula", "Audit");
+		evaluate("TrainRandomForestFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateCaretAudit() throws Exception {
-		evaluate("TrainRandomForest", "Audit");
+		evaluate("TrainRandomForest", AUDIT);
 	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("RandomForestFormula", "Auto");
+		evaluate("RandomForestFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("RandomForestCustFormula", "Auto");
+		evaluate("RandomForestCustFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("RandomForest", "Auto");
+		evaluate("RandomForest", AUTO);
 	}
 
 	@Test
 	public void evaluateCaretFormulaAuto() throws Exception {
-		evaluate("TrainRandomForestFormula", "Auto");
+		evaluate("TrainRandomForestFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateCaretAuto() throws Exception {
-		evaluate("TrainRandomForest", "Auto");
+		evaluate("TrainRandomForest", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaIris() throws Exception {
-		evaluate("RandomForestFormula", "Iris");
+		evaluate("RandomForestFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateCustFormulaIris() throws Exception {
-		evaluate("RandomForestCustFormula", "Iris");
+		evaluate("RandomForestCustFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("RandomForest", "Iris");
+		evaluate("RandomForest", IRIS);
 	}
 
 	@Test
 	public void evaluateCaretIris() throws Exception {
-		evaluate("TrainRandomForest", "Iris");
+		evaluate("TrainRandomForest", IRIS);
 	}
 
 	@Test
 	public void evaluateCaretFormulaIris() throws Exception {
-		evaluate("TrainRandomForestFormula", "Iris");
+		evaluate("TrainRandomForestFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("RandomForestFormula", "WineQuality");
+		evaluate("RandomForestFormula", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("RandomForest", "WineQuality");
+		evaluate("RandomForest", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateFormulaWineColor() throws Exception {
-		evaluate("RandomForestFormula", "WineColor");
+		evaluate("RandomForestFormula", WINE_COLOR);
 	}
 
 	@Test
 	public void evaluateWineColor() throws Exception {
-		evaluate("RandomForest", "WineColor");
+		evaluate("RandomForest", WINE_COLOR);
 	}
 }

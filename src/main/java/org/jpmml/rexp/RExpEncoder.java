@@ -107,7 +107,7 @@ public class RExpEncoder extends ModelEncoder {
 	public void setLabel(DataField dataField){
 		Label label;
 
-		OpType opType = dataField.getOpType();
+		OpType opType = dataField.requireOpType();
 		switch(opType){
 			case CATEGORICAL:
 				label = new CategoricalLabel(dataField);

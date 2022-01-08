@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class ElmNNConverterTest extends RExpTest {
+public class ElmNNConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("ElmNNFormula", "Auto");
+		evaluate("ElmNNFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("ElmNNFormula", "WineQuality");
+		evaluate("ElmNNFormula", WINE_QUALITY);
 	}
 }

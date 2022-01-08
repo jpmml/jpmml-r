@@ -18,18 +18,19 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class MultinomConverterTest extends RExpTest {
+public class MultinomConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Multinom", "Audit", new PMMLEquivalence(1e-11, Math.exp(-15)));
+		evaluate("Multinom", AUDIT, new PMMLEquivalence(1e-11, Math.exp(-15)));
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("Multinom", "Iris");
+		evaluate("Multinom", IRIS);
 	}
 }

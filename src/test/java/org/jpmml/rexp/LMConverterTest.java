@@ -18,27 +18,28 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class LMConverterTest extends RExpTest {
+public class LMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("LMFormula", "Auto");
+		evaluate("LMFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateMLRFormulaAuto() throws Exception {
-		evaluate("WrappedLMFormula", "Auto");
+		evaluate("WrappedLMFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("LMCustFormula", "Auto");
+		evaluate("LMCustFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("LMFormula", "WineQuality");
+		evaluate("LMFormula", WINE_QUALITY);
 	}
 }

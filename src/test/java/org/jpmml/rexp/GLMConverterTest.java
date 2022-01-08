@@ -18,66 +18,67 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.Batch;
 import org.junit.Test;
 
-public class GLMConverterTest extends RExpTest {
+public class GLMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("GLMFormula", "Audit");
+		evaluate("GLMFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateWrappedFormulaAudit() throws Exception {
-		evaluate("WrappedGLMFormula", "Audit");
+		evaluate("WrappedGLMFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateCustFormulaAudit() throws Exception {
-		evaluate("GLMCustFormula", "Audit");
+		evaluate("GLMCustFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateCaretFormulaAudit() throws Exception {
-		evaluate("TrainGLMFormula", "Audit");
+		evaluate("TrainGLMFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("GLMFormula", "Auto");
+		evaluate("GLMFormula", AUTO);
 
-		try(Batch batch = createBatch("GLMFormula", "Auto", LMConverter.class)){
+		try(Batch batch = createBatch("GLMFormula", AUTO, LMConverter.class)){
 			evaluate(batch);
 		}
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("GLMCustFormula", "Auto");
+		evaluate("GLMCustFormula", AUTO);
 
-		try(Batch batch = createBatch("GLMCustFormula", "Auto", LMConverter.class)){
+		try(Batch batch = createBatch("GLMCustFormula", AUTO, LMConverter.class)){
 			evaluate(batch);
 		}
 	}
 
 	@Test
 	public void evaluateCaretFormulaAuto() throws Exception {
-		evaluate("TrainGLMFormula", "Auto");
+		evaluate("TrainGLMFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaVisit() throws Exception {
-		evaluate("GLMFormula", "Visit");
+		evaluate("GLMFormula", VISIT);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("GLMFormula", "WineQuality");
+		evaluate("GLMFormula", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateCustFormulaWineQuality() throws Exception {
-		evaluate("GLMCustFormula", "WineQuality");
+		evaluate("GLMCustFormula", WINE_QUALITY);
 	}
 }

@@ -18,12 +18,13 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class OLSConverterTest extends RExpTest {
+public class OLSConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("OLSRegressionFormula", "Auto");
+		evaluate("OLSRegressionFormula", AUTO);
 	}
 }

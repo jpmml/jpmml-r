@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class BaggingConverterTest extends RExpTest {
+public class BaggingConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Bagging", "Audit");
+		evaluate("Bagging", AUDIT);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("Bagging", "Iris");
+		evaluate("Bagging", IRIS);
 	}
 }

@@ -18,22 +18,23 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class BinaryTreeConverterTest extends RExpTest {
+public class BinaryTreeConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("BinaryTree", "Audit");
+		evaluate("BinaryTree", AUDIT);
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("BinaryTree", "Auto");
+		evaluate("BinaryTree", AUTO);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("BinaryTree", "Iris");
+		evaluate("BinaryTree", IRIS);
 	}
 }

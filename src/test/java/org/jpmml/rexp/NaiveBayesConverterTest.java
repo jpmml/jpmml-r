@@ -18,27 +18,28 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class NaiveBayesConverterTest extends RExpTest {
+public class NaiveBayesConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("NaiveBayesFormula", "Audit");
+		evaluate("NaiveBayesFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("NaiveBayes", "Audit");
+		evaluate("NaiveBayes", AUDIT);
 	}
 
 	@Test
 	public void evaluateFormulaIris() throws Exception {
-		evaluate("NaiveBayesFormula", "Iris");
+		evaluate("NaiveBayesFormula", IRIS);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("NaiveBayes", "Iris");
+		evaluate("NaiveBayes", IRIS);
 	}
 }

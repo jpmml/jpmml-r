@@ -113,7 +113,7 @@ public class Formula {
 		if(field instanceof DerivedField){
 			DerivedField derivedField = (DerivedField)field;
 
-			Expression expression = derivedField.getExpression();
+			Expression expression = derivedField.requireExpression();
 			if(expression instanceof Apply){
 				Apply apply = (Apply)expression;
 
@@ -128,7 +128,7 @@ public class Formula {
 
 						int power = Integer.parseInt(string);
 
-						feature = new PowerFeature(encoder, fieldRef.getField(), DataType.DOUBLE, power);
+						feature = new PowerFeature(encoder, fieldRef.requireField(), DataType.DOUBLE, power);
 					} catch(NumberFormatException nfe){
 						// Ignored
 					}
@@ -136,7 +136,7 @@ public class Formula {
 			}
 		}
 
-		putFeature(field.getName(), feature);
+		putFeature(field.requireName(), feature);
 
 		this.fields.add(field);
 	}
@@ -150,7 +150,7 @@ public class Formula {
 
 		CategoricalFeature categoricalFeature;
 
-		if((DataType.BOOLEAN).equals(field.getDataType()) && (BooleanFeature.VALUES).equals(categoryValues)){
+		if((field.getDataType() == DataType.BOOLEAN) && (BooleanFeature.VALUES).equals(categoryValues)){
 			categoricalFeature = new BooleanFeature(encoder, field);
 		} else
 
@@ -158,7 +158,7 @@ public class Formula {
 			categoricalFeature = new CategoricalFeature(encoder, field, categoryValues);
 		}
 
-		putFeature(field.getName(), categoricalFeature);
+		putFeature(field.requireName(), categoricalFeature);
 
 		for(int i = 0; i < categoryNames.size(); i++){
 			String categoryName = categoryNames.get(i);
@@ -166,7 +166,7 @@ public class Formula {
 
 			BinaryFeature binaryFeature = new BinaryFeature(encoder, field, categoryValue);
 
-			putFeature((field.getName() + categoryName), binaryFeature);
+			putFeature((field.requireName() + categoryName), binaryFeature);
 		}
 
 		this.fields.add(field);
@@ -246,7 +246,7 @@ public class Formula {
 	static
 	private boolean checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 
-		if((function).equals(apply.getFunction())){
+		if((function).equals(apply.requireFunction())){
 			List<Expression> expressions = apply.getExpressions();
 
 			if(expressionClazzes.length == expressions.size()){

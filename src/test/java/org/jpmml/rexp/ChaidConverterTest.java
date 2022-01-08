@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class ChaidConverterTest extends PartyConverterTest {
+public class ChaidConverterTest extends PartyConverterTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Chaid", "Audit");
+		evaluate("Chaid", AUDIT);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("Chaid", "Iris");
+		evaluate("Chaid", IRIS);
 	}
 }

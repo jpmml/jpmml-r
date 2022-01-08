@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class CaretEnsembleConverterTest extends RExpTest {
+public class CaretEnsembleConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("CaretEnsemble", "Auto");
+		evaluate("CaretEnsemble", AUTO);
 	}
 
 	@Test
 	public void evaluateVersicolor() throws Exception {
-		evaluate("CaretEnsemble", "Versicolor");
+		evaluate("CaretEnsemble", VERSICOLOR);
 	}
 }

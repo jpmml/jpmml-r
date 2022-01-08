@@ -18,22 +18,23 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class MVRConverterTest extends RExpTest {
+public class MVRConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("PLSRegressionFormula", "Auto");
+		evaluate("PLSRegressionFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateCustFormulaAuto() throws Exception {
-		evaluate("PLSRegressionCustFormula", "Auto");
+		evaluate("PLSRegressionCustFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("PLSRegressionFormula", "WineQuality");
+		evaluate("PLSRegressionFormula", WINE_QUALITY);
 	}
 }

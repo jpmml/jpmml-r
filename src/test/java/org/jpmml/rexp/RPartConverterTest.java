@@ -18,62 +18,63 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class RPartConverterTest extends RExpTest {
+public class RPartConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("RPart", "Audit");
+		evaluate("RPart", AUDIT);
 	}
 
 	@Test
 	public void evaluateAuditNA() throws Exception {
-		evaluate("RPart", "AuditNA");
+		evaluate("RPart", AUDIT_NA);
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("RPart", "Auto");
+		evaluate("RPart", AUTO);
 	}
 
 	@Test
 	public void evaluateAutoNA() throws Exception {
-		evaluate("RPart", "AutoNA");
+		evaluate("RPart", AUTO_NA);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("RPart", "Iris");
+		evaluate("RPart", IRIS);
 	}
 
 	@Test
 	public void evaluateIrisNA() throws Exception {
-		evaluate("RPart", "IrisNA");
+		evaluate("RPart", IRIS_NA);
 	}
 
 	@Test
 	public void evaluateCaretIris() throws Exception {
-		evaluate("TrainRPart", "Iris");
+		evaluate("TrainRPart", IRIS);
 	}
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("RPart", "WineQuality");
+		evaluate("RPart", WINE_QUALITY);
 	}
 
 	@Test
 	public void evaluateWineQualityNA() throws Exception {
-		evaluate("RPart", "WineQualityNA");
+		evaluate("RPart", WINE_QUALITY_NA);
 	}
 
 	@Test
 	public void evaluateWineColor() throws Exception {
-		evaluate("RPart", "WineColor");
+		evaluate("RPart", WINE_COLOR);
 	}
 
 	@Test
 	public void evaluateWineColorNA() throws Exception {
-		evaluate("RPart", "WineColorNA");
+		evaluate("RPart", WINE_COLOR_NA);
 	}
 }

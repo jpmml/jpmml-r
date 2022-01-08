@@ -18,17 +18,18 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class IForestConverterTest extends RExpTest {
+public class IForestConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("IForest", "Auto");
+		evaluate("IForest", AUTO);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("IForest", "Iris");
+		evaluate("IForest", IRIS);
 	}
 }

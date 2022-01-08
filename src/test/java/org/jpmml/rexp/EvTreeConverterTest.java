@@ -18,27 +18,28 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class EvTreeConverterTest extends PartyConverterTest {
+public class EvTreeConverterTest extends PartyConverterTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("EvTree", "Audit");
+		evaluate("EvTree", AUDIT);
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("EvTree", "Iris");
+		evaluate("EvTree", IRIS);
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("EvTree", "Auto");
+		evaluate("EvTree", AUTO);
 	}
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("EvTree", "WineQuality");
+		evaluate("EvTree", WINE_QUALITY);
 	}
 }

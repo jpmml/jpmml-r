@@ -18,12 +18,13 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class NNConverterTest extends RExpTest {
+public class NNConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateWineQuality() throws Exception {
-		evaluate("NN", "WineQuality");
+		evaluate("NN", WINE_QUALITY);
 	}
 }

@@ -18,22 +18,23 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class AdaConverterTest extends RExpTest {
+public class AdaConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {
-		evaluate("AdaFormula", "Audit");
+		evaluate("AdaFormula", AUDIT);
 	}
 
 	@Test
 	public void evaluateAudit() throws Exception {
-		evaluate("Ada", "Audit");
+		evaluate("Ada", AUDIT);
 	}
 
 	@Test
 	public void evaluateFormulaVersicolor() throws Exception {
-		evaluate("AdaFormula", "Versicolor");
+		evaluate("AdaFormula", VERSICOLOR);
 	}
 }
