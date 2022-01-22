@@ -125,7 +125,7 @@ public class RExpEncoder extends ModelEncoder {
 	public void addFeature(Field<?> field){
 		Feature feature;
 
-		OpType opType = field.getOpType();
+		OpType opType = field.requireOpType();
 		switch(opType){
 			case CATEGORICAL:
 				feature = new CategoricalFeature(this, (DataField)field);

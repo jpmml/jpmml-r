@@ -23,39 +23,53 @@ import java.util.function.Predicate;
 
 import com.google.common.base.Equivalence;
 import org.dmg.pmml.PMML;
+import org.jpmml.converter.testing.ModelEncoderBatch;
 import org.jpmml.evaluator.ResultField;
-import org.jpmml.evaluator.testing.IntegrationTestBatch;
+import org.jpmml.evaluator.visitors.DefaultModelEvaluatorBattery;
 
 abstract
-public class RExpTestBatch extends IntegrationTestBatch {
+public class RExpTestBatch extends ModelEncoderBatch {
 
 	private Class<? extends Converter<? extends RExp>> converterClazz = null;
 
 
-	public RExpTestBatch(String name, String dataset, Predicate<ResultField> predicate, Equivalence<Object> equivalence){
-		super(name, dataset, predicate, equivalence);
+	public RExpTestBatch(String algorithm, String dataset, Predicate<ResultField> columnFilter, Equivalence<Object> equivalence){
+		super(algorithm, dataset, columnFilter, equivalence);
 	}
 
 	@Override
 	abstract
-	public RExpTest getIntegrationTest();
+	public RExpTest getArchiveBatchTest();
+
+	public String getRdsPath(){
+		return "/rds/" + (getAlgorithm() + getDataset()) + ".rds";
+	}
 
 	@Override
 	public PMML getPMML() throws Exception {
+		String algorithm = getAlgorithm();
 
-		try(InputStream is = open("/rds/" + getName() + getDataset() + ".rds")){
+		RExp rexp;
+
+		try(InputStream is = open(getRdsPath())){
 			RExpParser parser = new RExpParser(is);
 
-			RExp rexp = parser.parse();
-
-			Converter<RExp> converter = createConverter(rexp);
-
-			PMML pmml = converter.encodePMML();
-
-			validatePMML(pmml);
-
-			return pmml;
+			rexp = parser.parse();
 		}
+
+		Converter<RExp> converter = createConverter(rexp);
+
+		PMML pmml = converter.encodePMML();
+
+		validatePMML(pmml);
+
+		// XXX
+		if(algorithm.startsWith("RandomForest") || algorithm.startsWith("TrainRandomForest") || algorithm.startsWith("WrappedGBM")){
+			DefaultModelEvaluatorBattery visitorBattery = new DefaultModelEvaluatorBattery();
+			visitorBattery.applyTo(pmml);
+		}
+
+		return pmml;
 	}
 
 	public Converter<RExp> createConverter(RExp rexp){

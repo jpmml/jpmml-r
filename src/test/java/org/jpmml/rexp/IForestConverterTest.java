@@ -25,11 +25,11 @@ public class IForestConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("IForest", AUTO);
+		evaluate("IForest", AUTO, excludeFields("rawPathLength", "normalizedPathLength"));
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("IForest", IRIS);
+		evaluate("IForest", IRIS, excludeFields("rawPathLength", "normalizedPathLength"));
 	}
 }

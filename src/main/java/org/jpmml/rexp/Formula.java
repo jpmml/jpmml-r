@@ -150,7 +150,7 @@ public class Formula {
 
 		CategoricalFeature categoricalFeature;
 
-		if((field.getDataType() == DataType.BOOLEAN) && (BooleanFeature.VALUES).equals(categoryValues)){
+		if((field.requireDataType() == DataType.BOOLEAN) && (BooleanFeature.VALUES).equals(categoryValues)){
 			categoricalFeature = new BooleanFeature(encoder, field);
 		} else
 

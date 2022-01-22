@@ -30,7 +30,7 @@ public class SVMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAnomalyFormulaAudit() throws Exception {
-		evaluate("LibSVMAnomalyFormula", AUDIT);
+		evaluate("LibSVMAnomalyFormula", AUDIT, excludeFields("decisionFunction"));
 	}
 
 	@Test
@@ -50,7 +50,7 @@ public class SVMConverterTest extends RExpTest implements Datasets {
 
 	@Test
 	public void evaluateAnomalyFormulaIris() throws Exception {
-		evaluate("LibSVMAnomalyFormula", IRIS);
+		evaluate("LibSVMAnomalyFormula", IRIS, excludeFields("decisionFunction"));
 	}
 
 	@Test
