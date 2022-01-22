@@ -22,7 +22,7 @@ import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.Batch;
 import org.junit.Test;
 
-public class GLMConverterTest extends RExpTest implements Datasets {
+public class GLMConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

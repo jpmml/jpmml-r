@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class RPartConverterTest extends RExpTest implements Datasets {
+public class RPartConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {

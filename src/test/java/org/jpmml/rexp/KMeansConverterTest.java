@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class KMeansConverterTest extends RExpTest implements Datasets {
+public class KMeansConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateIris() throws Exception {

@@ -22,7 +22,7 @@ import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class CrossValGLMNetConverterTest extends RExpTest implements Datasets {
+public class CrossValGLMNetConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateVersicolor() throws Exception {

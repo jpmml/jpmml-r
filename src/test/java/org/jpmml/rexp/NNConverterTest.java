@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class NNConverterTest extends RExpTest implements Datasets {
+public class NNConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateWineQuality() throws Exception {

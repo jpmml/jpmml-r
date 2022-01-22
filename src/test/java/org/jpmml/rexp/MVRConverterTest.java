@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class MVRConverterTest extends RExpTest implements Datasets {
+public class MVRConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {

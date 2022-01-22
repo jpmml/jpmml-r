@@ -22,7 +22,7 @@ import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class GBMConverterTest extends RExpTest implements Datasets {
+public class GBMConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFitAdaBoostAuditNA() throws Exception {

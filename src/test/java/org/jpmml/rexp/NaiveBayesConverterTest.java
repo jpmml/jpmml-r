@@ -21,7 +21,7 @@ package org.jpmml.rexp;
 import org.jpmml.converter.testing.Datasets;
 import org.junit.Test;
 
-public class NaiveBayesConverterTest extends RExpTest implements Datasets {
+public class NaiveBayesConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

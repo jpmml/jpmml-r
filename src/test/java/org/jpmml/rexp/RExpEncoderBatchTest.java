@@ -26,29 +26,29 @@ import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 
 abstract
-public class RExpTest extends ModelEncoderBatchTest {
+public class RExpEncoderBatchTest extends ModelEncoderBatchTest {
 
-	public RExpTest(){
+	public RExpEncoderBatchTest(){
 		super(new PMMLEquivalence(1e-13, 1e-13));
 	}
 
-	public RExpTestBatch createBatch(String algorithm, String dataset, Class<? extends Converter<? extends RExp>> converterClazz){
+	public RExpEncoderBatch createBatch(String algorithm, String dataset, Class<? extends Converter<? extends RExp>> converterClazz){
 		Predicate<ResultField> columnFilter = (resultField -> true);
 		Equivalence<Object> equivalence = getEquivalence();
 
-		RExpTestBatch batch = createBatch(algorithm, dataset, columnFilter, equivalence);
+		RExpEncoderBatch batch = createBatch(algorithm, dataset, columnFilter, equivalence);
 		batch.setConverterClazz(converterClazz);
 
 		return batch;
 	}
 
 	@Override
-	public RExpTestBatch createBatch(String algorithm, String dataset, Predicate<ResultField> columnFilter, Equivalence<Object> equivalence){
-		RExpTestBatch result = new RExpTestBatch(algorithm, dataset, columnFilter, equivalence){
+	public RExpEncoderBatch createBatch(String algorithm, String dataset, Predicate<ResultField> columnFilter, Equivalence<Object> equivalence){
+		RExpEncoderBatch result = new RExpEncoderBatch(algorithm, dataset, columnFilter, equivalence){
 
 			@Override
-			public RExpTest getArchiveBatchTest(){
-				return RExpTest.this;
+			public RExpEncoderBatchTest getArchiveBatchTest(){
+				return RExpEncoderBatchTest.this;
 			}
 		};
 

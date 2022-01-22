@@ -22,7 +22,7 @@ import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class NNetConverterTest extends RExpTest implements Datasets {
+public class NNetConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAudit() throws Exception {

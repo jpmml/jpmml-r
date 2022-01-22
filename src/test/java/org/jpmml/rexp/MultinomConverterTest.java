@@ -22,7 +22,7 @@ import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class MultinomConverterTest extends RExpTest implements Datasets {
+public class MultinomConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateAudit() throws Exception {

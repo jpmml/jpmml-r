@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RandomForestConverterTest extends RExpTest implements Datasets {
+public class RandomForestConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void selectValues(){

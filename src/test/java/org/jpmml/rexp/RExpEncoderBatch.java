@@ -28,18 +28,18 @@ import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.visitors.DefaultModelEvaluatorBattery;
 
 abstract
-public class RExpTestBatch extends ModelEncoderBatch {
+public class RExpEncoderBatch extends ModelEncoderBatch {
 
 	private Class<? extends Converter<? extends RExp>> converterClazz = null;
 
 
-	public RExpTestBatch(String algorithm, String dataset, Predicate<ResultField> columnFilter, Equivalence<Object> equivalence){
+	public RExpEncoderBatch(String algorithm, String dataset, Predicate<ResultField> columnFilter, Equivalence<Object> equivalence){
 		super(algorithm, dataset, columnFilter, equivalence);
 	}
 
 	@Override
 	abstract
-	public RExpTest getArchiveBatchTest();
+	public RExpEncoderBatchTest getArchiveBatchTest();
 
 	public String getRdsPath(){
 		return "/rds/" + (getAlgorithm() + getDataset()) + ".rds";

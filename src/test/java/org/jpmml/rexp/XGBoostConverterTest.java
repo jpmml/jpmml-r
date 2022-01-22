@@ -23,7 +23,7 @@ import org.jpmml.evaluator.testing.FloatEquivalence;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.junit.Test;
 
-public class XGBoostConverterTest extends RExpTest implements Datasets {
+public class XGBoostConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	public XGBoostConverterTest(){
 		super();
