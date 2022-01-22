@@ -184,7 +184,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			if(y instanceof RIntegerVector){
 				y = randomForest.getFactorElement("y");
 
-				dataField = encoder.createDataField(name, OpType.CATEGORICAL, null, ((RFactorVector)y).getLevelValues());
+				dataField = encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, ((RFactorVector)y).getLevelValues());
 			} else
 
 			{

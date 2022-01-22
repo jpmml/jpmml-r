@@ -27,6 +27,7 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Label;
+import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 
 public class WrappedModelConverter extends FilterModelConverter<RGenericVector, RExp> {
@@ -70,7 +71,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 						dataField = encoder.createDataField(targetName, OpType.CATEGORICAL, null, values);
 
 						encoder.setLabel(dataField);
-					} // End if
+					} else
 
 					if(dataField.requireOpType() != OpType.CATEGORICAL){
 						dataField = (DataField)encoder.toCategorical(targetName, values);
@@ -82,6 +83,8 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 						RBooleanVector invertLevels = DecorationUtil.getBooleanElement(wrappedModel, "invert_levels");
 
 						if(invertLevels.asScalar()){
+							values = PMMLUtil.getValues(dataField);
+
 							Label label = new CategoricalLabel(dataField.requireName(), dataField.requireDataType(), Lists.reverse(values));
 
 							encoder.setLabel(label);

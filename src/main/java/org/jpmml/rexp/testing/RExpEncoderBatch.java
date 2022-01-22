@@ -25,7 +25,6 @@ import com.google.common.base.Equivalence;
 import org.dmg.pmml.PMML;
 import org.jpmml.converter.testing.ModelEncoderBatch;
 import org.jpmml.evaluator.ResultField;
-import org.jpmml.evaluator.visitors.DefaultModelEvaluatorBattery;
 import org.jpmml.rexp.Converter;
 import org.jpmml.rexp.ConverterFactory;
 import org.jpmml.rexp.RExp;
@@ -66,12 +65,6 @@ public class RExpEncoderBatch extends ModelEncoderBatch {
 		PMML pmml = converter.encodePMML();
 
 		validatePMML(pmml);
-
-		// XXX
-		if(algorithm.startsWith("RandomForest") || algorithm.startsWith("TrainRandomForest") || algorithm.startsWith("WrappedGBM")){
-			DefaultModelEvaluatorBattery visitorBattery = new DefaultModelEvaluatorBattery();
-			visitorBattery.applyTo(pmml);
-		}
 
 		return pmml;
 	}
