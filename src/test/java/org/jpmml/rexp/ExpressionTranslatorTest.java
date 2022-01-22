@@ -30,6 +30,8 @@ import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.model.ReflectionUtil;
+import org.jpmml.rexp.ExpressionTranslator;
+import org.jpmml.rexp.FunctionExpression;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

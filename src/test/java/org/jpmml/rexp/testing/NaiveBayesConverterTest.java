@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Villu Ruusmann
+ * Copyright (c) 2018 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -16,28 +16,31 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp;
+package org.jpmml.rexp.testing;
 
-import java.util.Collections;
-
-import org.jpmml.rexp.FunctionExpression;
+import org.jpmml.converter.testing.Datasets;
+import org.jpmml.rexp.testing.RExpEncoderBatchTest;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class FunctionExpressionTest {
+public class NaiveBayesConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
-	public void checkId(){
-		FunctionExpression expression = new FunctionExpression(null, "c", Collections.emptyList());
+	public void evaluateFormulaAudit() throws Exception {
+		evaluate("NaiveBayesFormula", AUDIT);
+	}
 
-		assertTrue(expression.hasId("base", "c"));
-		assertFalse(expression.hasId("base", "if"));
+	@Test
+	public void evaluateAudit() throws Exception {
+		evaluate("NaiveBayes", AUDIT);
+	}
 
-		expression = new FunctionExpression("base", "c", Collections.emptyList());
+	@Test
+	public void evaluateFormulaIris() throws Exception {
+		evaluate("NaiveBayesFormula", IRIS);
+	}
 
-		assertTrue(expression.hasId("base", "c"));
-		assertFalse(expression.hasId("base", "if"));
+	@Test
+	public void evaluateIris() throws Exception {
+		evaluate("NaiveBayes", IRIS);
 	}
 }

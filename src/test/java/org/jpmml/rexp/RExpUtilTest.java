@@ -18,6 +18,14 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.rexp.RBooleanVector;
+import org.jpmml.rexp.RDoubleVector;
+import org.jpmml.rexp.RExp;
+import org.jpmml.rexp.RExpUtil;
+import org.jpmml.rexp.RIntegerVector;
+import org.jpmml.rexp.RNumberVector;
+import org.jpmml.rexp.RStringVector;
+import org.jpmml.rexp.RVector;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

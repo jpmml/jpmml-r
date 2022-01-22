@@ -16,28 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp;
+package org.jpmml.rexp.testing;
 
-import java.util.Collections;
-
-import org.jpmml.rexp.FunctionExpression;
+import org.jpmml.converter.testing.Datasets;
+import org.jpmml.rexp.testing.RExpEncoderBatchTest;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class FunctionExpressionTest {
+public class LRMConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
-	public void checkId(){
-		FunctionExpression expression = new FunctionExpression(null, "c", Collections.emptyList());
-
-		assertTrue(expression.hasId("base", "c"));
-		assertFalse(expression.hasId("base", "if"));
-
-		expression = new FunctionExpression("base", "c", Collections.emptyList());
-
-		assertTrue(expression.hasId("base", "c"));
-		assertFalse(expression.hasId("base", "if"));
+	public void evaluateFormulaAudit() throws Exception {
+		evaluate("LRMFormula", AUDIT);
 	}
 }

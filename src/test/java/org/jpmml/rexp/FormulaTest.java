@@ -20,6 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.Arrays;
 
+import org.jpmml.rexp.Formula;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

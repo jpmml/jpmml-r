@@ -408,7 +408,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 	}
 
 	static
-	List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, Double split, boolean left){
+	public List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, Double split, boolean left){
 		UnsignedLong bits = toUnsignedLong(split.doubleValue());
 
 		List<Object> result = new ArrayList<>();
@@ -441,7 +441,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 	}
 
 	static
-	UnsignedLong toUnsignedLong(double value){
+	public UnsignedLong toUnsignedLong(double value){
 
 		if(!DoubleMath.isMathematicalInteger(value)){
 			throw new IllegalArgumentException();
