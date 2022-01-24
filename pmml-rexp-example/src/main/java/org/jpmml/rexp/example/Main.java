@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp;
+package org.jpmml.rexp.example;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +29,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import org.dmg.pmml.PMML;
 import org.jpmml.model.metro.MetroJAXBUtil;
+import org.jpmml.rexp.Converter;
+import org.jpmml.rexp.ConverterFactory;
+import org.jpmml.rexp.RExp;
+import org.jpmml.rexp.RExpParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
