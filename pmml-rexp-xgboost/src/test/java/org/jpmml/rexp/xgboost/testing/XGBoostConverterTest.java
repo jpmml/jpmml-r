@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp.testing;
+package org.jpmml.rexp.xgboost.testing;
 
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.FloatEquivalence;

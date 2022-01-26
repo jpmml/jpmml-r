@@ -35,6 +35,7 @@
 	<modules>
 		<module>pmml-rexp</module>
 		<module>pmml-rexp-example</module>
+		<module>pmml-rexp-xgboost</module>
 	</modules>
 
 	<scm>
@@ -58,6 +59,11 @@
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-example</artifactId>
+				<version>1.5-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jpmml</groupId>
+				<artifactId>pmml-rexp-xgboost</artifactId>
 				<version>1.5-SNAPSHOT</version>
 			</dependency>
 

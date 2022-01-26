@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp;
+package org.jpmml.rexp.xgboost;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,6 +35,16 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
+import org.jpmml.rexp.DecorationUtil;
+import org.jpmml.rexp.ModelConverter;
+import org.jpmml.rexp.RExpEncoder;
+import org.jpmml.rexp.RFactorVector;
+import org.jpmml.rexp.RGenericVector;
+import org.jpmml.rexp.RIntegerVector;
+import org.jpmml.rexp.RNumberVector;
+import org.jpmml.rexp.RRaw;
+import org.jpmml.rexp.RStringVector;
+import org.jpmml.rexp.RVector;
 import org.jpmml.xgboost.FeatureMap;
 import org.jpmml.xgboost.HasXGBoostOptions;
 import org.jpmml.xgboost.Learner;
