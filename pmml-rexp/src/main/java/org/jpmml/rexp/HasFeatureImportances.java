@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.Schema;
 
 public interface HasFeatureImportances {

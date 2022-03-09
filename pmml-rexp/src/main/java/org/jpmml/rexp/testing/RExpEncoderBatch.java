@@ -50,8 +50,6 @@ public class RExpEncoderBatch extends ModelEncoderBatch {
 
 	@Override
 	public PMML getPMML() throws Exception {
-		String algorithm = getAlgorithm();
-
 		RExp rexp;
 
 		try(InputStream is = open(getRdsPath())){

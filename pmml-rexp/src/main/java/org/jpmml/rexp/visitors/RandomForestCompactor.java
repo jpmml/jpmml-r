@@ -28,6 +28,8 @@ import org.dmg.pmml.True;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.visitors.AbstractTreeModelTransformer;
+import org.jpmml.model.UnsupportedAttributeException;
+import org.jpmml.model.UnsupportedElementException;
 
 public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
@@ -37,14 +39,14 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 		Object score = node.getScore();
 
 		if(id == null){
-			throw new IllegalArgumentException();
+			throw new UnsupportedElementException(node);
 		} // End if
 
 		if(node.hasNodes()){
 			List<Node> children = node.getNodes();
 
-			if(children.size() != 2 || score != null){
-				throw new IllegalArgumentException();
+			if(score != null || children.size() != 2){
+				throw new UnsupportedElementException(node);
 			}
 
 			Node firstChild = children.get(0);
@@ -84,7 +86,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 			} else
 
 			{
-				throw new IllegalArgumentException();
+				throw new UnsupportedElementException(node);
 			} // End if
 
 			if(update){
@@ -94,7 +96,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 		{
 			if(score == null){
-				throw new IllegalArgumentException();
+				throw new UnsupportedElementException(node);
 			}
 		}
 
@@ -119,19 +121,26 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 	@Override
 	public void enterTreeModel(TreeModel treeModel){
-		TreeModel.NoTrueChildStrategy noTrueChildStrategy = treeModel.getNoTrueChildStrategy();
-		TreeModel.SplitCharacteristic splitCharacteristic = treeModel.getSplitCharacteristic();
+		super.enterTreeModel(treeModel);
 
-		if((noTrueChildStrategy != TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION) || (splitCharacteristic != TreeModel.SplitCharacteristic.BINARY_SPLIT)){
-			throw new IllegalArgumentException();
+		TreeModel.NoTrueChildStrategy noTrueChildStrategy = treeModel.getNoTrueChildStrategy();
+		if(noTrueChildStrategy != TreeModel.NoTrueChildStrategy.RETURN_NULL_PREDICTION){
+			throw new UnsupportedAttributeException(treeModel, noTrueChildStrategy);
 		}
+
+		TreeModel.SplitCharacteristic splitCharacteristic = treeModel.getSplitCharacteristic();
+		if(splitCharacteristic != TreeModel.SplitCharacteristic.BINARY_SPLIT){
+			throw new UnsupportedAttributeException(treeModel, splitCharacteristic);
+		}
+
+		treeModel
+			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
+			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
 	}
 
 	@Override
 	public void exitTreeModel(TreeModel treeModel){
-		treeModel
-			.setNoTrueChildStrategy(TreeModel.NoTrueChildStrategy.RETURN_LAST_PREDICTION)
-			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
+		super.exitTreeModel(treeModel);
 	}
 
 	private boolean isDefinedField(HasFieldReference<?> hasFieldReference){

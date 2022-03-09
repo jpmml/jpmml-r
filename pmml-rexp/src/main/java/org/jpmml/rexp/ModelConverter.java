@@ -31,6 +31,7 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.VerificationField;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
