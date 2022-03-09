@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 
 	<name>JPMML R XGBoost converter</name>
-	<description>JPMML R XGBoost to class model converter</description>
+	<description>JPMML R XGBoost to PMML converter</description>
 
 	<licenses>
 		<license>
