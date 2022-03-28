@@ -152,12 +152,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 			RVector<?> column = dataFrame.getVectorValue(i);
 
 			String name = entry.getName();
-			String value = entry.getValue();
 
 			FeatureMap.Entry.Type type = entry.getType();
 			switch(type){
-				case BINARY_INDICATOR:
+				case INDICATOR:
 					{
+						FeatureMap.IndicatorEntry indicatorEntry = (FeatureMap.IndicatorEntry)entry;
+
 						RFactorVector factorColumn = (RFactorVector)data.get(name);
 						if(factorColumn == null){
 							factorColumn = new RFactorVector(null, null){
@@ -187,13 +188,21 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 							Number rowMask = mask.get(row);
 
 							if(rowMask != null && rowMask.doubleValue() == 1d){
+								String value = indicatorEntry.getValue();
+
+								// XXX
+								if(value == null){
+									value = "true";
+								}
+
 								factorValues.set(row, value);
 							}
 						}
 					}
 					break;
-				case FLOAT:
+				case QUANTITIVE:
 				case INTEGER:
+				case FLOAT:
 					{
 						data.put(name, column);
 					}
