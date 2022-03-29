@@ -67,14 +67,7 @@ public class ConverterFactory {
 	}
 
 	static
-	private void init(){
-		Thread thread = Thread.currentThread();
-
-		ClassLoader classLoader = thread.getContextClassLoader();
-		if(classLoader == null){
-			classLoader = ClassLoader.getSystemClassLoader();
-		}
-
+	private void init(ClassLoader classLoader){
 		Enumeration<URL> urls;
 
 		try {
@@ -137,6 +130,8 @@ public class ConverterFactory {
 	private static final Logger logger = LoggerFactory.getLogger(ConverterFactory.class);
 
 	static {
-		ConverterFactory.init();
+		ClassLoader clazzLoader = ConverterFactory.class.getClassLoader();
+
+		ConverterFactory.init(clazzLoader);
 	}
 }
