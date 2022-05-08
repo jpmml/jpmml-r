@@ -57,14 +57,12 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 			checkFieldReference(firstPredicate, secondPredicate);
 
-			boolean update = isDefinedField((HasFieldReference<?>)firstPredicate);
+			if(hasOperator(firstPredicate, SimplePredicate.Operator.LESS_OR_EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.GREATER_THAN)){
+				checkValue(firstPredicate, secondPredicate);
+			} else
 
 			if(hasOperator(firstPredicate, SimplePredicate.Operator.EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.EQUAL)){
 				// Ignored
-			} else
-
-			if(hasOperator(firstPredicate, SimplePredicate.Operator.LESS_OR_EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.GREATER_THAN)){
-				update = true;
 			} else
 
 			if(hasOperator(firstPredicate, SimplePredicate.Operator.EQUAL) && hasBooleanOperator(secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN)){
@@ -72,13 +70,10 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 			} else
 
 			if(hasBooleanOperator(firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN) && hasOperator(secondPredicate, SimplePredicate.Operator.EQUAL)){
+				children = swapChildren(node);
 
-				if(update){
-					children = swapChildren(node);
-
-					firstChild = children.get(0);
-					secondChild = children.get(1);
-				}
+				firstChild = children.get(0);
+				secondChild = children.get(1);
 			} else
 
 			if(hasBooleanOperator(firstPredicate, SimpleSetPredicate.BooleanOperator.IS_IN) && hasBooleanOperator(secondPredicate, SimpleSetPredicate.BooleanOperator.IS_IN)){
@@ -87,6 +82,16 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 
 			{
 				throw new UnsupportedElementException(node);
+			}
+
+			boolean update;
+
+			if(hasOperator(firstPredicate, SimplePredicate.Operator.LESS_OR_EQUAL) && hasOperator(secondPredicate, SimplePredicate.Operator.GREATER_THAN)){
+				update = true;
+			} else
+
+			{
+				update = isDefinedField((HasFieldReference<?>)firstPredicate);
 			} // End if
 
 			if(update){
