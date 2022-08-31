@@ -30,6 +30,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
+import org.dmg.pmml.ScoreProbability;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.BranchNode;
@@ -328,7 +329,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				maxProbability = probability;
 			}
 
-			ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
+			ScoreDistribution scoreDistribution = new ScoreProbability(value, null, probability);
 
 			scoreDistributions.add(scoreDistribution);
 		}

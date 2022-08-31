@@ -26,6 +26,7 @@ import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
+import org.dmg.pmml.ScoreProbability;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.BranchNode;
@@ -202,7 +203,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 				Object value = categoricalLabel.getValue(i);
 				Double probability = probabilities.get(i);
 
-				ScoreDistribution scoreDistribution = new ScoreDistribution(value, probability);
+				ScoreDistribution scoreDistribution = new ScoreProbability(value, null, probability);
 
 				scoreDistributions.add(scoreDistribution);
 			}

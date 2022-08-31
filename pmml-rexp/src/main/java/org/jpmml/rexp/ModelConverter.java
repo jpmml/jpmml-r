@@ -32,9 +32,9 @@ import org.dmg.pmml.PMML;
 import org.dmg.pmml.VerificationField;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
 
 abstract
@@ -110,9 +110,9 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 			} // End if
 
 			if(targetValues != null && outputValues == null){
-				Label label = schema.getLabel();
+				ScalarLabel scalarLabel = (ScalarLabel)schema.getLabel();
 
-				String name = label.getName();
+				String name = scalarLabel.getName();
 
 				Collection<VerificationField> verificationFields = data.keySet();
 				for(Iterator<VerificationField> verificationFieldIt = verificationFields.iterator(); verificationFieldIt.hasNext(); ){
@@ -123,7 +123,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 					}
 				}
 
-				data.putResultData(encodeTargetValues(targetValues, label));
+				data.putResultData(encodeTargetValues(targetValues, scalarLabel));
 			} else
 
 			if(outputValues != null){
@@ -146,9 +146,9 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 		return encodeVerificationData(dataFrame);
 	}
 
-	protected Map<VerificationField, List<?>> encodeTargetValues(RGenericVector dataFrame, Label label){
+	protected Map<VerificationField, List<?>> encodeTargetValues(RGenericVector dataFrame, ScalarLabel scalarLabel){
 		List<RExp> columns = dataFrame.getValues();
-		String name = label.getName();
+		String name = scalarLabel.getName();
 
 		return encodeVerificationData(columns, Collections.singletonList(name));
 	}

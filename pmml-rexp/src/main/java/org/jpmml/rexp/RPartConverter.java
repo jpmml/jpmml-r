@@ -28,6 +28,7 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.ScoreDistribution;
+import org.dmg.pmml.ScoreFrequency;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
 import org.dmg.pmml.tree.ClassifierNode;
@@ -259,7 +260,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 					for(int i = 0; i < categories.size(); i++){
 						List<? extends Number> recordCounts = this.recordCounts.get(i);
 
-						ScoreDistribution scoreDistribution = new ScoreDistribution()
+						ScoreDistribution scoreDistribution = new ScoreFrequency()
 							.setValue(categories.get(i))
 							.setRecordCount(recordCounts.get(offset));
 

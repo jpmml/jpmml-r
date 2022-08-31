@@ -77,14 +77,6 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		if(featureNames != null){
 			checkFeatureMap(featureMap, featureNames);
-		} // End if
-
-		if(schema != null){
-			RVector<?> missing = schema.getVectorElement("missing", false);
-
-			if(missing != null){
-				featureMap.addMissingValue(ValueUtil.asString(missing.asScalar()));
-			}
 		}
 
 		Learner learner = ensureLearner();
@@ -122,10 +114,14 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		RGenericVector booster = getObject();
 
 		RNumberVector<?> ntreeLimit = booster.getNumericElement("ntreelimit", false);
+		RGenericVector boosterSchema = booster.getGenericElement("schema", false);
+
+		RNumberVector<?> missing = boosterSchema.getNumericElement("missing", false);
 
 		Learner learner = ensureLearner();
 
 		Map<String, Object> options = new LinkedHashMap<>();
+		options.put(HasXGBoostOptions.OPTION_MISSING, missing != null ? missing.asScalar() : null);
 		options.put(HasXGBoostOptions.OPTION_COMPACT, this.compact);
 		options.put(HasXGBoostOptions.OPTION_NUMERIC, true);
 		options.put(HasXGBoostOptions.OPTION_NTREE_LIMIT, ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null);

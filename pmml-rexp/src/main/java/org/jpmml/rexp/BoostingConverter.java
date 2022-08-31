@@ -49,7 +49,7 @@ public class BoostingConverter extends AdaBagConverter {
 		List<TreeModel> treeModels = encodeTreeModels(trees);
 
 		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel))
-			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_MAJORITY_VOTE, treeModels, weights.getValues()))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.WEIGHTED_MAJORITY_VOTE, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels, weights.getValues()))
 			.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 
 		return miningModel;

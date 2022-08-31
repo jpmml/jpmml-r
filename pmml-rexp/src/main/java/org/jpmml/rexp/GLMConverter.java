@@ -29,6 +29,7 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
@@ -53,12 +54,12 @@ public class GLMConverter extends LMConverter {
 		MiningFunction miningFunction = getMiningFunction(familyFamily.asScalar());
 		switch(miningFunction){
 			case CLASSIFICATION:
-				Label label = encoder.getLabel();
+				ScalarLabel scalarLabel = (ScalarLabel)encoder.getLabel();
 
 				if(model != null){
-					RFactorVector variable = model.getFactorElement(label.getName());
+					RFactorVector variable = model.getFactorElement(scalarLabel.getName());
 
-					DataField dataField = (DataField)encoder.toCategorical(label.getName(), variable.getLevelValues());
+					DataField dataField = (DataField)encoder.toCategorical(scalarLabel.getName(), variable.getLevelValues());
 
 					encoder.setLabel(dataField);
 				}

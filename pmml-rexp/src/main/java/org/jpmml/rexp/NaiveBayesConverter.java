@@ -159,7 +159,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 		}
 
 		BayesOutput bayesOutput = new BayesOutput()
-			.setField(categoricalLabel.getName());
+			.setTargetField(categoricalLabel.getName());
 
 		{
 			TargetValueCounts targetValueCounts = new TargetValueCounts();

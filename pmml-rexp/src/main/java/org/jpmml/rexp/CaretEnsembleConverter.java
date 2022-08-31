@@ -30,6 +30,7 @@ import org.dmg.pmml.Output;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.mining.MiningModel;
+import org.dmg.pmml.mining.Segmentation;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Label;
@@ -128,7 +129,7 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 
 		segmentationModels.add(model);
 
-		MiningModel miningModel = MiningModelUtil.createModelChain(segmentationModels);
+		MiningModel miningModel = MiningModelUtil.createModelChain(segmentationModels, Segmentation.MissingPredictionTreatment.CONTINUE);
 
 		PMML pmml = encoder.encodePMML(miningModel);
 

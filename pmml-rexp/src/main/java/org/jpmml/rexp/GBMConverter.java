@@ -320,7 +320,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 		ContinuousLabel continuousLabel = (ContinuousLabel)schema.getLabel();
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(continuousLabel))
-			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, treeModels))
+			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels))
 			.setTargets(ModelUtil.createRescaleTargets(null, initF, continuousLabel));
 
 		return miningModel;

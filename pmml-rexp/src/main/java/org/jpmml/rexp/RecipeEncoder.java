@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.dmg.pmml.DataField;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
+import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
 
 public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
@@ -75,11 +76,13 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 			.collect(Collectors.toList());
 
 		if(outcomeNames.size() == 1){
+			ScalarLabel scalarLabel = (ScalarLabel)label;
+
 			String outcomeName = outcomeNames.get(0);
 
-			renameDataField(label.getName(), outcomeName);
+			renameDataField(scalarLabel.getName(), outcomeName);
 
-			label = label.toRenamedLabel(outcomeName);
+			label = scalarLabel.toRenamedLabel(outcomeName);
 		} else
 
 		if(outcomeNames.size() >= 2){
