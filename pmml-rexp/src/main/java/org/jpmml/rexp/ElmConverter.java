@@ -38,17 +38,17 @@ import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.neural_network.NeuralNetworkUtil;
 
-public class ElmNNConverter extends ModelConverter<RGenericVector> {
+public class ElmConverter extends ModelConverter<RGenericVector> {
 
-	public ElmNNConverter(RGenericVector elmNN){
-		super(elmNN);
+	public ElmConverter(RGenericVector elm){
+		super(elm);
 	}
 
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
-		RGenericVector elmNN = getObject();
+		RGenericVector elm = getObject();
 
-		RGenericVector model = DecorationUtil.getGenericElement(elmNN, "model");
+		RGenericVector model = DecorationUtil.getGenericElement(elm, "model");
 
 		RExp terms = model.getAttribute("terms");
 
@@ -67,13 +67,13 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 
 	@Override
 	public NeuralNetwork encodeModel(Schema schema){
-		RGenericVector elmNN = getObject();
+		RGenericVector elm = getObject();
 
-		RDoubleVector inpweight = elmNN.getDoubleElement("inpweight");
-		RDoubleVector biashid = elmNN.getDoubleElement("biashid");
-		RDoubleVector outweight = elmNN.getDoubleElement("outweight");
-		RStringVector actfun = elmNN.getStringElement("actfun");
-		RDoubleVector nhid = elmNN.getDoubleElement("nhid");
+		RDoubleVector inpweight = elm.getDoubleElement("inpweight");
+		RDoubleVector biashid = elm.getDoubleElement("biashid");
+		RDoubleVector outweight = elm.getDoubleElement("outweight");
+		RStringVector actfun = elm.getStringElement("actfun");
+		RDoubleVector nhid = elm.getDoubleElement("nhid");
 
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
@@ -94,13 +94,11 @@ public class ElmNNConverter extends ModelConverter<RGenericVector> {
 		NeuralLayer hiddenNeuralLayer = new NeuralLayer();
 
 		int rows = ValueUtil.asInt(nhid.asScalar());
-		int columns = 1 + features.size();
+		int columns = features.size();
 
 		for(int row = 0; row < rows; row++){
 			List<Double> weights = FortranMatrixUtil.getRow(inpweight.getValues(), rows, columns, row);
-			Double bias = biashid.getValue(row);
-
-			bias += weights.remove(0);
+			Double bias = (biashid.size() > 0 ? biashid.getValue(row) : null);
 
 			Neuron neuron = NeuralNetworkUtil.createNeuron(entities, weights, bias)
 				.setId("hidden/" + String.valueOf(row + 1));

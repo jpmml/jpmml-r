@@ -34,8 +34,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `party` - CHi-squared Automated Interaction Detection (CHAID) classification
   * [`earth`](https://cran.r-project.org/package=earth) package:
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
-  * [`elmNN`](https://cran.r-project.org/package=elmNN) package:
-    * `elmNN` - Extreme Learning Machine (ELM) regression
+  * [`elmNNRcpp`](https://CRAN.R-project.org/package=elmNNRcpp) package:
+    * `elm` - Extreme Learning Machine (ELM) regression
   * [`evtree`](https://cran.r-project.org/package=evtree) package:
     * `party` - Evolutionary Learning of Trees (EvTree) regression and classification
   * [`e1071`](https://cran.r-project.org/package=e1071) package:

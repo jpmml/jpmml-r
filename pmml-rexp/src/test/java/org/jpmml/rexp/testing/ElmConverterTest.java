@@ -19,18 +19,17 @@
 package org.jpmml.rexp.testing;
 
 import org.jpmml.converter.testing.Datasets;
-import org.jpmml.rexp.testing.RExpEncoderBatchTest;
 import org.junit.Test;
 
-public class ElmNNConverterTest extends RExpEncoderBatchTest implements Datasets {
+public class ElmConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateFormulaAuto() throws Exception {
-		evaluate("ElmNNFormula", AUTO);
+		evaluate("ElmFormula", AUTO);
 	}
 
 	@Test
 	public void evaluateFormulaWineQuality() throws Exception {
-		evaluate("ElmNNFormula", WINE_QUALITY);
+		evaluate("ElmFormula", WINE_QUALITY);
 	}
 }
