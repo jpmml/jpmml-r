@@ -10,7 +10,7 @@
 
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-r</artifactId>
-	<version>1.5-SNAPSHOT</version>
+	<version>1.5.2</version>
 	<packaging>pom</packaging>
 
 	<name>JPMML-R</name>
@@ -42,7 +42,7 @@
 		<connection>scm:git:git@github.com:jpmml/jpmml-r.git</connection>
 		<developerConnection>scm:git:git@github.com:jpmml/jpmml-r.git</developerConnection>
 		<url>git://github.com/jpmml/jpmml-r.git</url>
-		<tag>HEAD</tag>
+		<tag>1.5.2</tag>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
@@ -54,17 +54,17 @@
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp</artifactId>
-				<version>1.5-SNAPSHOT</version>
+				<version>1.5.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-example</artifactId>
-				<version>1.5-SNAPSHOT</version>
+				<version>1.5.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-xgboost</artifactId>
-				<version>1.5-SNAPSHOT</version>
+				<version>1.5.2</version>
 			</dependency>
 
 			<dependency>
