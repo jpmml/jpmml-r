@@ -6,7 +6,7 @@ source("util.R")
 auto = loadAutoCsv("Auto")
 
 generateElmFormulaAuto = function(){
-	auto.elm = elm(mpg ~ ., data = auto, nhid = 11, actfun = "purelin")
+	auto.elm = elm(mpg ~ ., data = auto, nhid = 11, actfun = "purelin", bias = TRUE)
 	auto.elm = decorate(auto.elm, data = auto)
 	print(auto.elm)
 
