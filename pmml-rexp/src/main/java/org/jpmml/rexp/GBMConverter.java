@@ -70,6 +70,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		RStringVector distributionName = distribution.getStringElement("name");
 
+		RVectorUtil.checkSize(var_names, var_type);
+
 		{
 			String responseName;
 

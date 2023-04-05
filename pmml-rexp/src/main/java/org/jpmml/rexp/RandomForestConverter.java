@@ -195,6 +195,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			encoder.setLabel(dataField);
 		}
 
+		RVectorUtil.checkSize(ncat, xNames);
+
 		for(int i = 0; i < ncat.size(); i++){
 			String name = xNames.getValue(i);
 

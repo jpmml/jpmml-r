@@ -68,9 +68,7 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 		RBooleanVector censored = multinom.getBooleanElement("censored");
 		RDoubleVector wts = multinom.getDoubleElement("wts");
 
-		if(n.size() != 3){
-			throw new IllegalArgumentException();
-		}
+		n.checkSize(3);
 
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();

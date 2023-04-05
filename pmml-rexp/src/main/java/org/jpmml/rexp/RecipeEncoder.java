@@ -109,9 +109,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		RStringVector variable = info.getStringElement("variable");
 		RStringVector value = info.getStringElement(name);
 
-		if(variable.size() != value.size()){
-			throw new IllegalArgumentException();
-		}
+		RVectorUtil.checkSize(variable, value);
 
 		Map<String, E> result = new LinkedHashMap<>();
 

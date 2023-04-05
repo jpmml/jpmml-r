@@ -67,9 +67,7 @@ public class RPartEnsembleConverter<R extends RExp> extends ModelConverter<R> {
 	public List<TreeModel> encodeTreeModels(RGenericVector trees){
 		List<TreeModel> result = new ArrayList<>();
 
-		if(trees.size() != this.schemas.size()){
-			throw new IllegalArgumentException();
-		}
+		trees.checkSize(this.schemas.size());
 
 		for(int i = 0; i < trees.size(); i++){
 			RGenericVector tree = trees.getGenericValue(i);

@@ -53,8 +53,25 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		return (size() == 0);
 	}
 
+	public void checkSize(int size){
+		List<E> values = getValues();
+
+		if(values.size() != size){
+			throw new IllegalArgumentException("Expected " + size + " element(s), got " + values.size() + " element(s)");
+		}
+	}
+
+	public void checkMinSize(int size){
+		List<E> values = getValues();
+
+		if(values.size() < size){
+			throw new IllegalArgumentException("Expected " + size + " or more element(s), got " + values.size() + " element(s)");
+		}
+	}
+
 	public E asScalar(){
 		List<E> values = getValues();
+
 		if(values.size() != 1){
 			throw new IllegalStateException();
 		}

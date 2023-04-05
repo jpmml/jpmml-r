@@ -236,10 +236,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 		SchemaUtil.checkSize(scaled.size(), features);
 
-		if(scaled.size() != columnNames.size()){
-			throw new IllegalArgumentException();
-		}
-
 		RDoubleVector xScaledCenter = xScale.getDoubleElement("scaled:center");
 		RDoubleVector xScaledScale = xScale.getDoubleElement("scaled:scale");
 

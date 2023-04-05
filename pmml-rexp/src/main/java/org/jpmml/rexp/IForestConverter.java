@@ -61,9 +61,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		RStringVector xcols = iForest.getStringElement("xcols");
 		RBooleanVector colisfactor = iForest.getBooleanElement("colisfactor");
 
-		if(xcols.size() != colisfactor.size()){
-			throw new IllegalArgumentException();
-		}
+		RVectorUtil.checkSize(xcols, colisfactor);
 
 		boolean hasFactors = false;
 

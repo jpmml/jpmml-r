@@ -227,9 +227,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		if(breaks != null && index == null){
 			ContinuousFeature continuousFeature = (ContinuousFeature)feature;
 
-			if(kids.size() != 2){
-				throw new IllegalArgumentException();
-			}
+			kids.checkSize(2);
 
 			Predicate leftPredicate;
 			Predicate rightPredicate;
@@ -255,9 +253,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		if(breaks == null && index != null){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
 
-			if(kids.size() < 2){
-				throw new IllegalArgumentException();
-			}
+			kids.checkMinSize(2);
 
 			List<?> values = categoricalFeature.getValues();
 
@@ -289,9 +285,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 	private List<Object> selectValues(List<?> values, RIntegerVector index, int flag){
 		List<Object> result = new ArrayList<>();
 
-		if(values.size() != index.size()){
-			throw new IllegalArgumentException();
-		}
+		index.checkSize(values.size());
 
 		for(int i = 0; i < values.size(); i++){
 			Object value = values.get(i);

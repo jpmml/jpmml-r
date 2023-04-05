@@ -224,9 +224,11 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 			@Override
 			public Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
 
-				if(splitValue.doubleValue() != 0d || (terminalClassCount == null || terminalClassCount.size() != levels.size())){
+				if(splitValue.doubleValue() != 0d || (terminalClassCount == null)){
 					throw new IllegalArgumentException();
 				}
+
+				RVectorUtil.checkSize(levels, terminalClassCount);
 
 				node = new ClassifierNode(node);
 

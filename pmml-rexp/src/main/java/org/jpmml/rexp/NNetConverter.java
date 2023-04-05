@@ -75,9 +75,7 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector wts = nnet.getDoubleElement("wts");
 		RStringVector lev = nnet.getStringElement("lev", false);
 
-		if(n.size() != 3){
-			throw new IllegalArgumentException();
-		}
+		n.checkSize(3);
 
 		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
