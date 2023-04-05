@@ -49,6 +49,10 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		return values.iterator();
 	}
 
+	public boolean isEmpty(){
+		return (size() == 0);
+	}
+
 	public E asScalar(){
 		List<E> values = getValues();
 		if(values.size() != 1){

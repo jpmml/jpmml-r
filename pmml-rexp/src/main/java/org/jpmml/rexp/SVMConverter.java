@@ -108,7 +108,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema)
 						.setOutput(ModelUtil.createPredictedOutput("decisionFunction", OpType.CONTINUOUS, DataType.DOUBLE, outlier));
 
-					if(yScale != null && yScale.size() > 0){
+					if(yScale != null && !yScale.isEmpty()){
 						throw new IllegalArgumentException();
 					}
 				}
@@ -118,7 +118,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 				{
 					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema);
 
-					if(yScale != null && yScale.size() > 0){
+					if(yScale != null && !yScale.isEmpty()){
 						RDoubleVector yScaledCenter = yScale.getDoubleElement("scaled:center");
 						RDoubleVector yScaledScale = yScale.getDoubleElement("scaled:scale");
 

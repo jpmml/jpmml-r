@@ -98,7 +98,7 @@ public class ElmConverter extends ModelConverter<RGenericVector> {
 
 		for(int row = 0; row < rows; row++){
 			List<Double> weights = FortranMatrixUtil.getRow(inpweight.getValues(), rows, columns, row);
-			Double bias = (biashid.size() > 0 ? biashid.getValue(row) : null);
+			Double bias = (!biashid.isEmpty() ? biashid.getValue(row) : null);
 
 			Neuron neuron = NeuralNetworkUtil.createNeuron(entities, weights, bias)
 				.setId("hidden/" + String.valueOf(row + 1));

@@ -205,7 +205,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RNumberVector<?> splitpoint = psplit.getNumericElement("splitpoint");
 		RStringVector variableName = psplit.getStringElement("variableName");
 
-		if(ssplits.size() > 0){
+		if(!ssplits.isEmpty()){
 			throw new IllegalArgumentException();
 		}
 
