@@ -35,6 +35,7 @@ import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.general_regression.GeneralRegressionModelUtil;
 
@@ -117,9 +118,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 		List<Feature> features = encoder.getFeatures();
 
-		if(scale.size() != features.size()){
-			throw new IllegalArgumentException();
-		}
+		SchemaUtil.checkSize(scale.size(), features);
 
 		for(int i = 0; i < features.size(); i++){
 			Feature feature = features.get(i);

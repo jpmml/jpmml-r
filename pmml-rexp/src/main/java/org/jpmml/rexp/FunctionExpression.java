@@ -127,7 +127,7 @@ public class FunctionExpression extends Expression {
 	}
 
 	public boolean hasArguments(){
-		return (this.arguments != null && this.arguments.size() > 0);
+		return (this.arguments != null && !this.arguments.isEmpty());
 	}
 
 	public FunctionExpression addArguments(Argument... arguments){

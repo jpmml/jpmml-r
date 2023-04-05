@@ -42,6 +42,7 @@ import org.jpmml.converter.FortranMatrix;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.Transformation;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.support_vector_machine.LibSVMUtil;
@@ -233,7 +234,9 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 		List<Feature> features = encoder.getFeatures();
 
-		if((scaled.size() != columnNames.size()) || (scaled.size() != features.size())){
+		SchemaUtil.checkSize(scaled.size(), features);
+
+		if(scaled.size() != columnNames.size()){
 			throw new IllegalArgumentException();
 		}
 

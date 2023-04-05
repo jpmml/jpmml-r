@@ -229,10 +229,6 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 			if(kids.size() != 2){
 				throw new IllegalArgumentException();
-			} // End if
-
-			if(breaks.size() != 1){
-				throw new IllegalArgumentException();
 			}
 
 			Predicate leftPredicate;

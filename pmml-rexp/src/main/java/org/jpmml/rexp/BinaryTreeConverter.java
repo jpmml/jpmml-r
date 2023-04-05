@@ -295,11 +295,6 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private Node encodeRegressionScore(Node node, RDoubleVector probabilities){
-
-		if(probabilities.size() != 1){
-			throw new IllegalArgumentException();
-		}
-
 		Double probability = probabilities.asScalar();
 
 		node.setScore(probability);

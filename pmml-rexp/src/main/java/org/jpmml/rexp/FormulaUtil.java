@@ -85,7 +85,7 @@ public class FormulaUtil {
 			}
 
 			List<String> categories = context.getCategories(variable);
-			if(categories != null && categories.size() > 0){
+			if(categories != null && !categories.isEmpty()){
 				opType = OpType.CATEGORICAL;
 			}
 
@@ -172,7 +172,7 @@ public class FormulaUtil {
 				DerivedField derivedField = encoder.createDerivedField(name, opType, dataType, expression)
 					.addExtensions(PMMLUtil.createExtension("variable", (Object)variable));
 
-				if(categoryNames != null && categoryNames.size() > 0){
+				if(categoryNames != null && !categoryNames.isEmpty()){
 					formula.addField(derivedField, categoryNames, categoryValues);
 				} else
 
@@ -186,7 +186,7 @@ public class FormulaUtil {
 			} else
 
 			{
-				if(categoryNames != null && categoryNames.size() > 0){
+				if(categoryNames != null && !categoryNames.isEmpty()){
 					DataField dataField = encoder.createDataField(name, OpType.CATEGORICAL, dataType, categories);
 
 					formula.addField(dataField, categoryNames, categoryValues);
@@ -210,7 +210,7 @@ public class FormulaUtil {
 				OpType opType = OpType.CONTINUOUS;
 				DataType dataType = DataType.DOUBLE;
 
-				if(categories != null && categories.size() > 0){
+				if(categories != null && !categories.isEmpty()){
 					opType = OpType.CATEGORICAL;
 				}
 
