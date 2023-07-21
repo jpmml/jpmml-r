@@ -32,12 +32,11 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMML;
 import org.jpmml.converter.CategoricalFeature;
-import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
-import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelEncoder;
+import org.jpmml.converter.ScalarLabelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.TypeUtil;
 import org.jpmml.model.visitors.FieldRenamer;
@@ -105,21 +104,7 @@ public class RExpEncoder extends ModelEncoder {
 	}
 
 	public void setLabel(DataField dataField){
-		Label label;
-
-		OpType opType = dataField.requireOpType();
-		switch(opType){
-			case CATEGORICAL:
-				label = new CategoricalLabel(dataField);
-				break;
-			case CONTINUOUS:
-				label = new ContinuousLabel(dataField);
-				break;
-			default:
-				throw new IllegalArgumentException();
-		}
-
-		setLabel(label);
+		setLabel(ScalarLabelUtil.createScalarLabel(dataField));
 	}
 
 	public void addFeature(Field<?> field){
@@ -127,11 +112,11 @@ public class RExpEncoder extends ModelEncoder {
 
 		OpType opType = field.requireOpType();
 		switch(opType){
-			case CATEGORICAL:
-				feature = new CategoricalFeature(this, (DataField)field);
-				break;
 			case CONTINUOUS:
 				feature = new ContinuousFeature(this, field);
+				break;
+			case CATEGORICAL:
+				feature = new CategoricalFeature(this, (DataField)field);
 				break;
 			default:
 				throw new IllegalArgumentException();
