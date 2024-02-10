@@ -36,11 +36,11 @@ import org.dmg.pmml.support_vector_machine.SigmoidKernel;
 import org.dmg.pmml.support_vector_machine.SupportVectorMachineModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrix;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.Transformation;
@@ -102,7 +102,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 						@Override
 						public Expression createExpression(FieldRef fieldRef){
-							return PMMLUtil.createApply(PMMLFunctions.LESSOREQUAL, fieldRef, PMMLUtil.createConstant(0d));
+							return ExpressionUtil.createApply(PMMLFunctions.LESSOREQUAL, fieldRef, ExpressionUtil.createConstant(0d));
 						}
 					};
 
@@ -260,11 +260,11 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			Expression expression = continuousFeature.ref();
 
 			if(!ValueUtil.isZero(center)){
-				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(center));
+				expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, expression, ExpressionUtil.createConstant(center));
 			} // End if
 
 			if(!ValueUtil.isOne(scale)){
-				expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(scale));
+				expression = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, expression, ExpressionUtil.createConstant(scale));
 			}
 
 			DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("scale", continuousFeature), OpType.CONTINUOUS, DataType.DOUBLE, expression);

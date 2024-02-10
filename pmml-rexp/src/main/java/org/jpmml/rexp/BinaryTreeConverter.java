@@ -42,6 +42,7 @@ import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.FieldNames;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
@@ -89,7 +90,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				throw new IllegalArgumentException();
 		}
 
-		output.addOutputFields(ModelUtil.createEntityIdField("nodeId", DataType.STRING));
+		output.addOutputFields(ModelUtil.createEntityIdField(FieldNames.NODE_ID, DataType.STRING));
 
 		TreeModel treeModel = encodeTreeModel(tree, schema)
 			.setOutput(output);

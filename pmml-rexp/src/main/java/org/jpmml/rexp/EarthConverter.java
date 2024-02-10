@@ -31,12 +31,12 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
@@ -186,15 +186,15 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 
 		switch(dir){
 			case -1:
-				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, PMMLUtil.createConstant(cut), feature.ref());
+				expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, ExpressionUtil.createConstant(cut), feature.ref());
 				break;
 			case 1:
-				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, feature.ref(), PMMLUtil.createConstant(cut));
+				expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, feature.ref(), ExpressionUtil.createConstant(cut));
 				break;
 			default:
 				throw new IllegalArgumentException();
 		}
 
-		return PMMLUtil.createApply(PMMLFunctions.MAX, expression, PMMLUtil.createConstant(0d));
+		return ExpressionUtil.createApply(PMMLFunctions.MAX, expression, ExpressionUtil.createConstant(0d));
 	}
 }

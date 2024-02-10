@@ -31,11 +31,11 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrixUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.ValueUtil;
 
 public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
@@ -105,30 +105,30 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 			Double max = ranges.get(1);
 
 			if(!ValueUtil.isZero(min)){
-				expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(min));
+				expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, expression, ExpressionUtil.createConstant(min));
 			} // End if
 
 			if(!ValueUtil.isOne(max - min)){
-				expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(max - min));
+				expression = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, expression, ExpressionUtil.createConstant(max - min));
 			}
 		}
 
 		Double mean = this.mean.get(name);
 		if(mean != null && !ValueUtil.isZero(mean)){
-			expression = PMMLUtil.createApply(PMMLFunctions.SUBTRACT, expression, PMMLUtil.createConstant(mean));
+			expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, expression, ExpressionUtil.createConstant(mean));
 		}
 
 		Double std = this.std.get(name);
 		if(std != null && !ValueUtil.isOne(std)){
-			expression = PMMLUtil.createApply(PMMLFunctions.DIVIDE, expression, PMMLUtil.createConstant(std));
+			expression = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, expression, ExpressionUtil.createConstant(std));
 		}
 
 		Double median = this.median.get(name);
 		if(median != null){
-			expression = PMMLUtil.createApply(PMMLFunctions.IF,
-				PMMLUtil.createApply(PMMLFunctions.ISNOTMISSING, new FieldRef(name)),
+			expression = ExpressionUtil.createApply(PMMLFunctions.IF,
+				ExpressionUtil.createApply(PMMLFunctions.ISNOTMISSING, new FieldRef(name)),
 				expression,
-				PMMLUtil.createConstant(median)
+				ExpressionUtil.createConstant(median)
 			);
 		}
 

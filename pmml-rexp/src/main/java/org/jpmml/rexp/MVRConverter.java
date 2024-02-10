@@ -29,11 +29,11 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
@@ -130,7 +130,7 @@ public class MVRConverter extends ModelConverter<RGenericVector> {
 
 			ContinuousFeature continuousFeature = feature.toContinuousFeature();
 
-			Apply apply = PMMLUtil.createApply(PMMLFunctions.DIVIDE, continuousFeature.ref(), PMMLUtil.createConstant(factor));
+			Apply apply = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, continuousFeature.ref(), ExpressionUtil.createConstant(factor));
 
 			DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("scale", continuousFeature), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 

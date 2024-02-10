@@ -35,7 +35,7 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
-import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.visitors.ExpressionCompactor;
 
 public class ExpressionTranslator {
@@ -423,10 +423,10 @@ Expression IfExpression():
 
 	{
 		if(second != null){
-			return PMMLUtil.createApply(PMMLFunctions.IF, condition, first, second);
+			return ExpressionUtil.createApply(PMMLFunctions.IF, condition, first, second);
 		}
 
-		return PMMLUtil.createApply(PMMLFunctions.IF, condition, first);
+		return ExpressionUtil.createApply(PMMLFunctions.IF, condition, first);
 	}
 }
 
@@ -437,7 +437,7 @@ Expression OrExpression():
 	Expression right;
 }
 {
-	left = AndExpression() (operator = <OR> right = AndExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator), left, right); })*
+	left = AndExpression() (operator = <OR> right = AndExpression() { left = ExpressionUtil.createApply(translateLogicalOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -451,7 +451,7 @@ Expression AndExpression():
 	Expression right;
 }
 {
-	left = NegationExpression() (operator = <AND> right = NegationExpression() { left = PMMLUtil.createApply(translateLogicalOperator(operator), left, right); })*
+	left = NegationExpression() (operator = <AND> right = NegationExpression() { left = ExpressionUtil.createApply(translateLogicalOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -468,7 +468,7 @@ Expression NegationExpression():
 
 	{
 		if(operator != null){
-			return PMMLUtil.createApply(PMMLFunctions.NOT, expression);
+			return ExpressionUtil.createApply(PMMLFunctions.NOT, expression);
 		}
 		
 		return expression;
@@ -482,7 +482,7 @@ Expression RelationalExpression():
 	Expression right;
 }
 {
-	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression() { left = PMMLUtil.createApply(translateRelationalOperator(operator), left, right); })?
+	left = AdditiveExpression() ((operator = <EQUAL> | operator = <NOT_EQUAL> | operator = <LESS_THAN> | operator = <LESS_OR_EQUAL> | operator = <GREATER_THAN> | operator = <GREATER_OR_EQUAL>) right = AdditiveExpression() { left = ExpressionUtil.createApply(translateRelationalOperator(operator), left, right); })?
 
 	{
 		return left;
@@ -496,7 +496,7 @@ Expression AdditiveExpression():
 	Expression right;
 }
 {
-	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression() { left = PMMLUtil.createApply(translateArithmeticOperator(operator), left, right); })*
+	left = MultiplicativeExpression() ((operator = <PLUS> | operator = <MINUS>) right = MultiplicativeExpression() { left = ExpressionUtil.createApply(translateArithmeticOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -510,7 +510,7 @@ Expression MultiplicativeExpression():
 	Expression right;
 }
 {
-	left = UnaryExpression() ((operator = <MULTIPLY> | operator = <DIVIDE> | operator = <MODULO>) right = UnaryExpression() { left = PMMLUtil.createApply(translateArithmeticOperator(operator), left, right); })*
+	left = UnaryExpression() ((operator = <MULTIPLY> | operator = <DIVIDE> | operator = <MODULO>) right = UnaryExpression() { left = ExpressionUtil.createApply(translateArithmeticOperator(operator), left, right); })*
 
 	{
 		return left;
@@ -527,7 +527,7 @@ Expression UnaryExpression():
 
 	{
 		if(sign != null && sign.kind == MINUS){
-			expression = PMMLUtil.toNegative(expression);
+			expression = ExpressionUtil.toNegative(expression);
 		}
 
 		return expression;
@@ -541,7 +541,7 @@ Expression ExponentiationExpression():
 	Expression right = null;
 }
 {
-	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = UnaryExpression() { left = PMMLUtil.createApply(PMMLFunctions.POW, left, right); })?
+	left = PrimaryExpression() ((operator = <POWER> | operator = <POWER_MULTIPLY>) right = UnaryExpression() { left = ExpressionUtil.createApply(PMMLFunctions.POW, left, right); })?
 
 	{
 		return left;
@@ -604,7 +604,7 @@ Expression FunctionInvocationExpression():
 				FunctionExpression.Argument argument = arguments.get(0);
 
 				if(!argument.hasTag() && !(argument.getExpression() instanceof FunctionExpression)){
-					return PMMLUtil.createApply(pmmlFunction, argument.getExpression());
+					return ExpressionUtil.createApply(pmmlFunction, argument.getExpression());
 				}
 			}
 		} catch(IllegalArgumentException iae){
