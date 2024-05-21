@@ -103,7 +103,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		encoder.setLabel(label);
 
-		List<Feature> features = featureMap.encodeFeatures(encoder);
+		List<Feature> features = featureMap.encodeFeatures(learner, encoder);
 		for(Feature feature : features){
 			encoder.addFeature(feature);
 		}
@@ -126,11 +126,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		options.put(HasXGBoostOptions.OPTION_NUMERIC, true);
 		options.put(HasXGBoostOptions.OPTION_NTREE_LIMIT, ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null);
 
-		Schema xgbSchema = learner.toXGBoostSchema(true, schema);
+		Schema xgbSchema = learner.toXGBoostSchema(schema);
 
-		MiningModel miningModel = learner.encodeMiningModel(options, xgbSchema);
-
-		return miningModel;
+		return learner.encodeModel(options, xgbSchema);
 	}
 
 	@Override
