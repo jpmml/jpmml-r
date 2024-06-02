@@ -49,6 +49,10 @@
 		<url>https://github.com/jpmml/jpmml-r/issues</url>
 	</issueManagement>
 
+	<properties>
+		<project.build.outputTimestamp>2024-06-02T05:30:00Z</project.build.outputTimestamp>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -110,7 +114,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
+				<version>3.13.0</version>
 				<configuration>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
@@ -121,7 +125,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.7.0</version>
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
 				</configuration>
@@ -138,8 +142,13 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.3.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.2.5</version>
 				<configuration>
 					<argLine>${jacoco.agent}</argLine>
 					<trimStackTrace>false</trimStackTrace>
