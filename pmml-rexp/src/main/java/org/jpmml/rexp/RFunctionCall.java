@@ -18,44 +18,19 @@
  */
 package org.jpmml.rexp;
 
-public class RFunctionCall extends RExp {
+public class RFunctionCall extends RPair {
 
-	private RExp tag = null;
+	public RFunctionCall(RExp tag, RExp function, RPair arguments, RPair attributes){
+		super(tag, function, attributes);
 
-	private RExp function = null;
-
-	private RExp arguments = null;
-
-
-	public RFunctionCall(RExp tag, RExp function, RExp arguments, RPair attributes){
-		super(attributes);
-
-		setTag(tag);
-		setFunction(function);
-		setArguments(arguments);
-	}
-
-	public RExp getTag(){
-		return this.tag;
-	}
-
-	private void setTag(RExp tag){
-		this.tag = tag;
+		setNext(arguments);
 	}
 
 	public RExp getFunction(){
-		return this.function;
+		return getValue();
 	}
 
-	private void setFunction(RExp function){
-		this.function = function;
-	}
-
-	public RExp getArguments(){
-		return this.arguments;
-	}
-
-	private void setArguments(RExp arguments){
-		this.arguments = arguments;
+	public RPair getArguments(){
+		return getNext();
 	}
 }

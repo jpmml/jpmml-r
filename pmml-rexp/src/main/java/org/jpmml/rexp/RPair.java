@@ -65,7 +65,7 @@ public class RPair extends RExp {
 		return this.tag;
 	}
 
-	private void setTag(RExp tag){
+	void setTag(RExp tag){
 		this.tag = tag;
 	}
 
@@ -73,7 +73,7 @@ public class RPair extends RExp {
 		return this.value;
 	}
 
-	private void setValue(RExp value){
+	void setValue(RExp value){
 		this.value = value;
 	}
 

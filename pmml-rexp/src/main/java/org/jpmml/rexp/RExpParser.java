@@ -215,7 +215,7 @@ public class RExpParser {
 
 		RExp tag = readTag(flags);
 		RExp function = readRExp();
-		RExp arguments = readRExp();
+		RPair arguments = (RPair)readRExp();
 
 		return new RFunctionCall(tag, function, arguments, attributes);
 	}
@@ -337,9 +337,9 @@ public class RExpParser {
 	private RExp readBytecode(int flags) throws IOException {
 		int length = readInt();
 
-		readBC1();
+		RExp[] reps = new RExp[length];
 
-		return null;
+		return readBC1(reps);
 	}
 
 	private RExp readExternalPointer(int flags) throws IOException {
@@ -363,14 +363,18 @@ public class RExpParser {
 		return new RRaw(value, readAttributes(flags));
 	}
 
-	private void readBC1() throws IOException {
+	private RExp readBC1(RExp[] reps) throws IOException {
 		RExp code = readRExp();
 
-		readBCConsts();
+		RExp[] constants = readBCConsts(reps);
+
+		return constants[0];
 	}
 
-	private void readBCConsts() throws IOException {
+	private RExp[] readBCConsts(RExp[] reps) throws IOException {
 		int n = readInt();
+
+		RExp[] pool = new RExp[n];
 
 		for(int i = 0; i < n; i++){
 			int type = readInt();
@@ -378,25 +382,27 @@ public class RExpParser {
 			switch(type){
 				case SExpTypes.LISTSXP:
 				case SExpTypes.LANGSXP:
-					readBCLang(type);
+					pool[i] = readBCLang(type, reps);
 					break;
 				case SExpTypes.BCODESXP:
-					readBC1();
+					pool[i] = readBC1(reps);
 					break;
 				case SerializationTypes.ATTRLISTSXP:
 				case SerializationTypes.ATTRLANGSXP:
 				case SerializationTypes.BCREPREF:
 				case SerializationTypes.BCREPDEF:
-					readBCLang(type);
+					pool[i] = readBCLang(type, reps);
 					break;
 				default:
-					readRExp();
+					pool[i] = readRExp();
 					break;
 			}
 		}
+
+		return pool;
 	}
 
-	private void readBCLang(int type) throws IOException {
+	private RExp readBCLang(int type, RExp[] reps) throws IOException {
 
 		switch(type){
 			case SExpTypes.LISTSXP:
@@ -410,26 +416,53 @@ public class RExpParser {
 					type = readInt();
 				}
 
+				RPair attributes;
+
 				switch(type){
 					case SerializationTypes.ATTRLISTSXP:
 					case SerializationTypes.ATTRLANGSXP:
-						readAttributes();
+						attributes = readAttributes();
 						break;
 					default:
+						attributes = null;
 						break;
 				}
 
-				RExp tag = readRExp();
+				RPair pair;
 
-				readBCLang(readInt());
-				readBCLang(readInt());
-				break;
+				switch(type){
+					case SExpTypes.LISTSXP:
+					case SerializationTypes.ATTRLISTSXP:
+						pair = new RPair(null, null, attributes);
+						break;
+					case SExpTypes.LANGSXP:
+					case SerializationTypes.ATTRLANGSXP:
+						pair = new RFunctionCall(null, null, null, attributes);
+						break;
+					default:
+						throw new UnsupportedOperationException(String.valueOf(type));
+				}
+
+				if(pos >= 0){
+					reps[pos] = pair;
+				}
+
+				RExp tag = readRExp();
+				pair.setTag(tag);
+
+				RExp value = readBCLang(readInt(), reps);
+				pair.setValue(value);
+
+				RPair next = (RPair)readBCLang(readInt(), reps);
+				if(next != null){
+					pair.setNext(next);
+				}
+
+				return pair;
 			case SerializationTypes.BCREPREF:
-				readInt();
-				break;
+				return reps[readInt()];
 			default:
-				readRExp();
-				break;
+				return readRExp();
 		}
 	}
 
