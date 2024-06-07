@@ -71,6 +71,20 @@ createIris = function(iris){
 	storeCsv(irisNA, "IrisNA")
 }
 
+loadModeChoice = function(){
+	data = read.table("http://www.apollochoicemodelling.com/files/examples/data/apollo_modeChoiceData.csv", sep = ",", header = TRUE)
+
+	return (data)
+}
+
+createModeChoice = function(){
+	modeChoice = loadModeChoice()
+
+	modeChoice = subset(modeChoice, modeChoice$RP == 1)
+
+	storeCsv(modeChoice, "ModeChoice")
+}
+
 loadWineQuality = function(color){
 	data = read.table(paste("http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-", color, ".csv", sep = ""), sep = ";", header = TRUE)
 
@@ -109,4 +123,5 @@ data(iris)
 createAudit(audit)
 createAuto()
 createIris(iris)
+createModeChoice()
 createWineQuality()

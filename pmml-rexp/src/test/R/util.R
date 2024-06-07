@@ -30,6 +30,12 @@ loadIrisCsv = function(name){
 	return (iris)
 }
 
+loadModeChoiceCsv = function(name){
+	modeChoice = loadCsv(name)
+
+	return (modeChoice)
+}
+
 loadVersicolorCsv = function(name){
 	versicolor = loadCsv(name)
 	versicolor$Species = as.factor(versicolor$Species)

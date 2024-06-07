@@ -25,6 +25,8 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`adabag`](https://cran.r-project.org/package=adabag) package:
     * `bagging` - Bagging classification
     * `boosting` - Boosting classification
+  * [`apollo`](https://cran.r-project.org/package=apollo)
+    * `maxLik`- Discrete Choice Model (DCM) classification
   * [`caret`](https://cran.r-project.org/package=caret) package:
     * `preProcess` - Transformation methods "range", "center", "scale" and "medianImpute"
     * `train` - Selected JPMML-R model types

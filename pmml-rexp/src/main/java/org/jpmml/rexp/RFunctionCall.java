@@ -18,19 +18,113 @@
  */
 package org.jpmml.rexp;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
 public class RFunctionCall extends RPair {
 
-	public RFunctionCall(RExp tag, RExp function, RPair arguments, RPair attributes){
-		super(tag, function, attributes);
+	public RFunctionCall(RExp tag, RExp value, RPair arguments, RPair attributes){
+		super(tag, value, attributes);
 
 		setNext(arguments);
 	}
 
-	public RExp getFunction(){
-		return getValue();
+	public boolean hasValue(String string){
+		RString value = (RString)getValue();
+
+		return Objects.equals(string, value.getValue());
 	}
 
-	public RPair getArguments(){
-		return getNext();
+	public Iterator<RPair> arguments(){
+		Iterator<RPair> result = new Iterator<RPair>(){
+
+			private RPair next = getNext();
+
+
+			@Override
+			public boolean hasNext(){
+				return (this.next != null);
+			}
+
+			@Override
+			public RPair next(){
+				RPair result = this.next;
+
+				if(result == null){
+					throw new NoSuchElementException();
+				}
+
+				this.next = result.getNext();
+
+				return result;
+			}
+		};
+
+		return result;
+	}
+
+	public Iterator<RExp> argumentValues(){
+		Iterator<RExp> result = new Iterator<RExp>(){
+
+			private Iterator<RPair> argumentIt = arguments();
+
+
+			@Override
+			public boolean hasNext(){
+				return this.argumentIt.hasNext();
+			}
+
+			@Override
+			public RExp next(){
+				RPair argument = this.argumentIt.next();
+
+				return argument.getValue();
+			}
+		};
+
+		return result;
+	}
+
+	public String toTreeString(String indent){
+		StringBuilder sb = new StringBuilder();
+
+		// Operator
+		RString value = (RString)getValue();
+
+		sb.append(indent).append(value.getValue());
+
+		indent += "\t";
+
+		// Operands
+		for(Iterator<RExp> it = argumentValues(); it.hasNext(); ){
+			RExp argValue = it.next();
+
+			sb.append("\n");
+
+			if(argValue instanceof RString){
+				RString string = (RString)argValue;
+
+				sb.append(indent).append(string.getValue()).append(" // ").append(argValue.getClass().getSimpleName());
+			} else
+
+			if(argValue instanceof RVector){
+				RVector<?> vector = (RVector<?>)argValue;
+
+				sb.append(indent).append(vector.asScalar()).append(" // ").append(argValue.getClass().getSimpleName());
+			} else
+
+			if(argValue instanceof RFunctionCall){
+				RFunctionCall functionCall = (RFunctionCall)argValue;
+
+				sb.append(functionCall.toTreeString(indent));
+			} else
+
+			{
+				throw new IllegalArgumentException(argValue.getClass().getName());
+			}
+		}
+
+		return sb.toString();
 	}
 }
