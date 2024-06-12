@@ -103,7 +103,8 @@ generateNLModeChoice = function(){
 		b_tt_air  = 0,
 		b_tt_rail = 0,
 		b_access  = 0,
-		b_cost    = 0
+		b_cost    = 0,
+		lambda_PT = 1
 	)
 
 	apollo_fixed <<- c("asc_car")
@@ -127,7 +128,7 @@ generateNLModeChoice = function(){
 		V[["rail"]] = asc_rail + b_tt_rail * time_rail + b_access * access_rail + b_cost * cost_rail
 
 		### Specify nests for NL model
-		nlNests = list(root = 1, PT = 0.75)
+		nlNests = list(root = 1, PT = lambda_PT)
 
 		### Specify tree structure for NL model
 		nlStructure = list()

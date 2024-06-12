@@ -58,6 +58,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 	private Map<?, RFunctionCall> nlStructures = null;
 
+	private Map<String, Double> estimates = null;
+
 
 	public MaxLikConverter(RGenericVector maxLik){
 		super(maxLik);
@@ -66,25 +68,19 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
 		parseApolloProbabilities();
+		parseEstimate();
 
 		RGenericVector maxLik = getObject();
 
-		RDoubleVector estimate = maxLik.getDoubleElement("estimate");
 		RStringVector modelTypeList = maxLik.getStringElement("modelTypeList");
-
-		RStringVector estimateNames = estimate.names();
-
-		Map<String, Double> betas = new LinkedHashMap<>();
-
-		for(int i = 0; i < estimate.size(); i++){
-			betas.put(estimateNames.getDequotedValue(i), estimate.getValue(i));
-		}
 
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
 			throw new IllegalArgumentException();
 		}
+
+		Map<String, Double> estimates = this.estimates;
 
 		List<?> choices = new ArrayList<>(utilityFunctions.keySet());
 
@@ -97,7 +93,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		for(Object choice : choices){
 			RFunctionCall functionCall = utilityFunctions.get(choice);
 
-			Expression expression = toPMML(functionCall, betas, encoder);
+			Expression expression = toPMML(functionCall, estimates, encoder);
 
 			DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, expression);
 
@@ -122,7 +118,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						throw new IllegalArgumentException();
 					}
 
-					Map<?, ?> lambdas = parseList(nlNests);
+					Map<?, ?> lambdas = parseList(nlNests, estimates);
 
 					if(nlStructures.isEmpty()){
 						throw new IllegalArgumentException();
@@ -225,7 +221,9 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					RFunctionCall nlNests = this.nlNests;
 					Map<?, RFunctionCall> nlStructures = this.nlStructures;
 
-					Map<?, ?> lambdas = parseList(nlNests);
+					Map<String, Double> estimates = this.estimates;
+
+					Map<?, ?> lambdas = parseList(nlNests, estimates);
 
 					Map<Object, Object> nlTree = new LinkedHashMap<>();
 
@@ -353,6 +351,22 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		this.nlStructures = nlStructures;
 	}
 
+	private void parseEstimate(){
+		RGenericVector maxLik = getObject();
+
+		RDoubleVector estimate = maxLik.getDoubleElement("estimate");
+
+		RStringVector estimateNames = estimate.names();
+
+		Map<String, Double> estimates = new LinkedHashMap<>();
+
+		for(int i = 0; i < estimate.size(); i++){
+			estimates.put(estimateNames.getDequotedValue(i), estimate.getValue(i));
+		}
+
+		this.estimates = estimates;
+	}
+
 	static
 	private boolean matchVariable(RExp argValue, String variableName){
 
@@ -422,14 +436,14 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Expression toPMML(RExp argumentValue, Map<String, Double> betas, RExpEncoder encoder){
+	private Expression toPMML(RExp argumentValue, Map<String, Double> estimates, RExpEncoder encoder){
 
 		if(argumentValue instanceof RString){
 			RString string = (RString)argumentValue;
 
 			String stringValue = string.getValue();
-			if(betas.containsKey(stringValue)){
-				return ExpressionUtil.createConstant(betas.get(stringValue));
+			if(estimates.containsKey(stringValue)){
+				return ExpressionUtil.createConstant(estimates.get(stringValue));
 			}
 
 			DataField dataField = encoder.getDataField(stringValue);
@@ -455,15 +469,15 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			try {
 				switch(value.getValue()){
 					case "(":
-						return toPMML(it.next(), betas, encoder);
+						return toPMML(it.next(), estimates, encoder);
 					case "+":
 					case "-":
 					case "*":
 					case "/":
 						// XXX
 						return ExpressionUtil.createApply(value.getValue(),
-							toPMML(it.next(), betas, encoder),
-							toPMML(it.next(), betas, encoder)
+							toPMML(it.next(), estimates, encoder),
+							toPMML(it.next(), estimates, encoder)
 						);
 					default:
 						throw new IllegalArgumentException(value.getValue());
@@ -482,7 +496,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Map<?, ?> parseList(RFunctionCall functionCall){
+	private Map<?, ?> parseList(RFunctionCall functionCall, Map<String, Double> estimates){
 
 		if(!functionCall.hasValue("list")){
 			throw new IllegalArgumentException();
@@ -494,9 +508,23 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			RPair arg = it.next();
 
 			RString tag = (RString)arg.getTag();
-			RVector<?> value = (RVector<?>)arg.getValue();
+			RExp value = arg.getValue();
 
-			result.put(tag.getValue(), value.asScalar());
+			if(value instanceof RString){
+				RString string = (RString)value;
+
+				result.put(tag.getValue(), estimates.get(string.getValue()));
+			} else
+
+			if(value instanceof RVector){
+				RVector<?> vector = (RVector<?>)value;
+
+				result.put(tag.getValue(), vector.asScalar());
+			} else
+
+			{
+				throw new IllegalArgumentException();
+			}
 		}
 
 		return result;
