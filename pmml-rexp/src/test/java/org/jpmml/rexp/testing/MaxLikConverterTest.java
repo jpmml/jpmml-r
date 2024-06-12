@@ -23,7 +23,12 @@ import org.junit.Test;
 public class MaxLikConverterTest extends RExpEncoderBatchTest {
 
 	@Test
-	public void evaluateIris() throws Exception {
+	public void evaluateMNLModeChoice() throws Exception {
 		evaluate("MNL", "ModeChoice");
+	}
+
+	@Test
+	public void evaluateNLModeChoice() throws Exception {
+		evaluate("NL", "ModeChoice");
 	}
 }
