@@ -80,7 +80,9 @@ loadModeChoice = function(){
 createModeChoice = function(){
 	modeChoice = loadModeChoice()
 
-	modeChoice = subset(modeChoice, modeChoice$RP == 1)
+	modeChoice = subset(modeChoice, modeChoice$SP == 1)
+	modeChoice$RP = NULL
+	modeChoice$RP_journey = NULL
 
 	storeCsv(modeChoice, "ModeChoice")
 }
