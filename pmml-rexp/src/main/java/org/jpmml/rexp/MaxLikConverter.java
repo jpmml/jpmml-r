@@ -52,6 +52,8 @@ import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
+	private Map<String, RExp> variables = null;
+
 	private Map<?, RFunctionCall> utilityFunctions = null;
 
 	private RFunctionCall nlNests = null;
@@ -74,6 +76,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector modelTypeList = maxLik.getStringElement("modelTypeList");
 
+		Map<String, RExp> variables = this.variables;
+
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
@@ -93,7 +97,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		for(Object choice : choices){
 			RFunctionCall functionCall = utilityFunctions.get(choice);
 
-			Expression expression = toPMML(functionCall, estimates, encoder);
+			Expression expression = toPMML(functionCall, variables, estimates, encoder);
 
 			DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, expression);
 
@@ -295,6 +299,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		Map<String, RExp> variables = new LinkedHashMap<>();
+
 		Map<Object, RFunctionCall> utilityFunctions = new LinkedHashMap<>();
 
 		RFunctionCall nlNests = null;
@@ -312,26 +318,34 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					RExp firstArgValue = it2.next();
 					RExp secondArgValue = it2.next();
 
-					if(matchVariable(firstArgValue, "nlNests")){
-						nlNests = (RFunctionCall)secondArgValue;
+					if(firstArgValue instanceof RString){
+						RString string = (RString)firstArgValue;
 
-						continue;
-					}
+						if(matchVariable(firstArgValue, "nlNests")){
+							nlNests = (RFunctionCall)secondArgValue;
 
-					Object choice;
+							continue;
+						}
 
-					choice = matchUtilityFunction(firstArgValue);
-					if(choice != null){
-						utilityFunctions.put(choice, (RFunctionCall)secondArgValue);
+						variables.put(string.getValue(), secondArgValue);
+					} else
 
-						continue;
-					}
+					if(firstArgValue instanceof RFunctionCall){
+						Object choice;
 
-					choice = matchNLStructure(firstArgValue);
-					if(choice != null){
-						nlStructures.put(choice, (RFunctionCall)secondArgValue);
+						choice = matchUtilityFunction(firstArgValue);
+						if(choice != null){
+							utilityFunctions.put(choice, (RFunctionCall)secondArgValue);
 
-						continue;
+							continue;
+						}
+
+						choice = matchNLStructure(firstArgValue);
+						if(choice != null){
+							nlStructures.put(choice, (RFunctionCall)secondArgValue);
+
+							continue;
+						}
 					}
 				}
 			} else
@@ -344,6 +358,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		if(!Collections.disjoint(utilityFunctions.keySet(), nlStructures.keySet())){
 			throw new IllegalArgumentException();
 		}
+
+		this.variables = variables;
 
 		this.utilityFunctions = utilityFunctions;
 
@@ -436,22 +452,35 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Expression toPMML(RExp argumentValue, Map<String, Double> estimates, RExpEncoder encoder){
+	private Expression toPMML(RExp argumentValue, Map<String, RExp> variables, Map<String, Double> estimates, RExpEncoder encoder){
 
 		if(argumentValue instanceof RString){
 			RString string = (RString)argumentValue;
 
 			String stringValue = string.getValue();
+
 			if(estimates.containsKey(stringValue)){
 				return ExpressionUtil.createConstant(estimates.get(stringValue));
 			}
 
-			DataField dataField = encoder.getDataField(stringValue);
-			if(dataField == null){
-				dataField = encoder.createDataField(stringValue, OpType.CONTINUOUS, DataType.DOUBLE);
+			Field<?> field;
+
+			try {
+				field = encoder.getField(stringValue);
+			} catch(IllegalArgumentException iae){
+
+				if(variables.containsKey(stringValue)){
+					Expression expression = toPMML(variables.get(stringValue), variables, estimates, encoder);
+
+					field = encoder.createDerivedField(stringValue, OpType.CONTINUOUS, DataType.DOUBLE, expression);
+				} else
+
+				{
+					field = encoder.createDataField(stringValue, OpType.CONTINUOUS, DataType.DOUBLE);
+				}
 			}
 
-			return new FieldRef(dataField);
+			return new FieldRef(field);
 		} else
 
 		if(argumentValue instanceof RNumberVector){
@@ -466,33 +495,42 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			RString value = (RString)functionCall.getValue();
 			Iterator<RExp> it = functionCall.argumentValues();
 
-			try {
-				switch(value.getValue()){
-					case "(":
-						return toPMML(it.next(), estimates, encoder);
-					case "+":
-					case "-":
-					case "*":
-					case "/":
-						// XXX
-						return ExpressionUtil.createApply(value.getValue(),
-							toPMML(it.next(), estimates, encoder),
-							toPMML(it.next(), estimates, encoder)
-						);
-					default:
-						throw new IllegalArgumentException(value.getValue());
-				}
-			} finally {
-
-				if(it.hasNext()){
-					throw new IllegalStateException();
-				}
+			switch(value.getValue()){
+				case "(":
+					return toPMML(it.next(), variables, estimates, encoder);
+				case "+":
+				case "-":
+				case "*":
+				case "/":
+					return toBinaryExpression(value.getValue(), it, variables, estimates, encoder);
+				case "^":
+					return toBinaryExpression(PMMLFunctions.POW, it, variables, estimates, encoder);
+				case "==":
+					return ExpressionUtil.createApply(PMMLFunctions.IF,
+						toBinaryExpression(PMMLFunctions.EQUAL, it, variables, estimates, encoder),
+						ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
+					);
+				case "!=":
+					return ExpressionUtil.createApply(PMMLFunctions.IF,
+						toBinaryExpression(PMMLFunctions.NOTEQUAL, it, variables, estimates, encoder),
+						ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
+					);
+				default:
+					throw new IllegalArgumentException(value.getValue());
 			}
 		} else
 
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	static
+	private Apply toBinaryExpression(String function, Iterator<RExp> it, Map<String, RExp> variables, Map<String, Double> estimates, RExpEncoder encoder){
+		return ExpressionUtil.createApply(function,
+			toPMML(it.next(), variables, estimates, encoder),
+			toPMML(it.next(), variables, estimates, encoder)
+		);
 	}
 
 	static
