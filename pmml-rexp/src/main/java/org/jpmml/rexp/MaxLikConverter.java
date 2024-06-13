@@ -55,21 +55,21 @@ import org.jpmml.converter.regression.RegressionModelUtil;
 
 public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
+	private RFunctionCall settings = null;
+
 	private Map<String, RExp> variables = null;
 
-	private RFunctionCall availabilities = null;
-
 	private Map<?, RFunctionCall> utilityFunctions = null;
-
-	private Map<?, Feature> availabilityFeatures = null;
-
-	private Map<?, Feature> utilityFunctionFeatures = null;
 
 	private RFunctionCall nlNests = null;
 
 	private Map<?, RFunctionCall> nlStructures = null;
 
 	private Map<String, Double> estimates = null;
+
+	private Map<?, Feature> availabilityFeatures = null;
+
+	private Map<?, Feature> utilityFunctionFeatures = null;
 
 
 	public MaxLikConverter(RGenericVector maxLik){
@@ -85,9 +85,15 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector modelTypeList = maxLik.getStringElement("modelTypeList");
 
-		Map<String, RExp> variables = this.variables;
+		RFunctionCall settings = this.settings;
 
-		RFunctionCall availabilities = this.availabilities;
+		Map<String, RExp> settingsMap = parseList(settings, (value) -> value);
+
+		RFunctionCall alternatives = (RFunctionCall)settingsMap.get("alternatives");
+		RFunctionCall availabilities = (RFunctionCall)settingsMap.get("avail");
+		RString choiceVar = (RString)settingsMap.get("choiceVar");
+
+		Map<String, RExp> variables = this.variables;
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
@@ -98,7 +104,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		List<?> choices = new ArrayList<>(utilityFunctions.keySet());
 
-		DataField choiceField = encoder.createDataField("choice", OpType.CATEGORICAL, TypeUtil.getDataType(choices, DataType.STRING), choices);
+		DataField choiceField = encoder.createDataField(choiceVar.getValue(), OpType.CATEGORICAL, TypeUtil.getDataType(choices, DataType.STRING), choices);
 
 		encoder.setLabel(choiceField);
 
@@ -386,8 +392,11 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
+		RFunctionCall settings = null;
+
 		Map<String, RExp> variables = new LinkedHashMap<>();
 
+		RFunctionCall alternatives = null;
 		RFunctionCall availabilities = null;
 		Map<Object, RFunctionCall> utilityFunctions = new LinkedHashMap<>();
 
@@ -409,8 +418,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					if(firstArgValue instanceof RString){
 						RString string = (RString)firstArgValue;
 
-						if(matchVariable(firstArgValue, "avail")){
-							availabilities = (RFunctionCall)secondArgValue;
+						if(matchVariable(firstArgValue, "mnl_settings") || matchVariable(firstArgValue, "nl_settings")){
+							settings = (RFunctionCall)secondArgValue;
 
 							continue;
 						} else
@@ -449,13 +458,17 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			}
 		}
 
+		if(settings == null){
+			throw new IllegalArgumentException();
+		} // End if
+
 		if(!Collections.disjoint(utilityFunctions.keySet(), nlStructures.keySet())){
 			throw new IllegalArgumentException();
 		}
 
-		this.variables = variables;
+		this.settings = settings;
 
-		this.availabilities = availabilities;
+		this.variables = variables;
 		this.utilityFunctions = utilityFunctions;
 
 		this.nlNests = nlNests;

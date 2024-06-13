@@ -62,13 +62,10 @@ generateMNLModeChoice = function(){
 		V[["air"]]  = asc_air  + b_tt_air  * time_air  + b_access * access_air  + b_cost * cost_air    + b_no_frills * ( service_air == 1 )  + b_wifi * ( service_air == 2 )  + b_food * ( service_air == 3 )
 		V[["rail"]] = asc_rail + b_tt_rail * time_rail + b_access * access_rail + b_cost * cost_rail   + b_no_frills * ( service_rail == 1 ) + b_wifi * ( service_rail == 2 ) + b_food * ( service_rail == 3 )
 
-		alternatives = c(car=1, bus=2, air=3, rail=4)
-		avail = list(car=av_car, bus=av_bus, air=av_air, rail=av_rail)
-
 		### Define settings for MNL model component
 		mnl_settings = list(
-			alternatives  = alternatives, 
-			avail         = avail, 
+			alternatives  = c(car=1, bus=2, air=3, rail=4), 
+			avail         = list(car=av_car, bus=av_bus, air=av_air, rail=av_rail), 
 			choiceVar     = choice,
 			utilities     = V
 		)
@@ -169,13 +166,10 @@ generateNLModeChoice = function(){
 		nlStructure[["PT"]]     = c("bus","fastPT")
 		nlStructure[["fastPT"]] = c("air","rail")
 
-		alternatives = c(car=1, bus=2, air=3, rail=4)
-		avail = list(car=av_car, bus=av_bus, air=av_air, rail=av_rail)
-
 		### Define settings for NL model
 		nl_settings = list(
-			alternatives = alternatives,
-			avail        = avail,
+			alternatives = c(car=1, bus=2, air=3, rail=4),
+			avail        = list(car=av_car, bus=av_bus, air=av_air, rail=av_rail),
 			choiceVar    = choice,
 			utilities    = V,
 			nlNests      = nlNests,
