@@ -328,7 +328,14 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 							Feature nextFeature = toExpFeature(utilityFunctionFeatures.get(nextChoice), encoder);
 
 							DerivedField derivedField = encoder.ensureDerivedField(FieldNameUtil.create("term", currentChoice, nextChoice), OpType.CONTINUOUS, DataType.DOUBLE, () -> {
-								Apply choiceApply = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, currentFeature.ref(), nextFeature.ref());
+								// Can't divide by zero.
+								// A division by integer zero raises an invalid result error.
+								// However, a division by floating-point zero succeeds - the result is a (positive-) infinity.
+								Apply choiceApply = ExpressionUtil.createApply(PMMLFunctions.IF,
+									ExpressionUtil.createApply(PMMLFunctions.EQUAL, nextFeature.ref(), ExpressionUtil.createConstant(0d)),
+									ExpressionUtil.createConstant(0d),
+									ExpressionUtil.createApply(PMMLFunctions.DIVIDE, currentFeature.ref(), nextFeature.ref())
+								);
 
 								if(lambda.doubleValue() != 1d){
 									choiceApply = ExpressionUtil.createApply(PMMLFunctions.POW, choiceApply, ExpressionUtil.createConstant(1d / lambda.doubleValue()));
