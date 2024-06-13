@@ -19,12 +19,14 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.dmg.pmml.Apply;
 import org.dmg.pmml.DataField;
@@ -44,6 +46,7 @@ import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
+import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLEncoder;
 import org.jpmml.converter.Schema;
@@ -54,7 +57,13 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 	private Map<String, RExp> variables = null;
 
+	private RFunctionCall availabilities = null;
+
 	private Map<?, RFunctionCall> utilityFunctions = null;
+
+	private Map<?, Feature> availabilityFeatures = null;
+
+	private Map<?, Feature> utilityFunctionFeatures = null;
 
 	private RFunctionCall nlNests = null;
 
@@ -78,6 +87,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		Map<String, RExp> variables = this.variables;
 
+		RFunctionCall availabilities = this.availabilities;
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
@@ -92,7 +102,32 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		encoder.setLabel(choiceField);
 
-		Map<Object, Feature> choiceFeatures = new LinkedHashMap<>();
+		Map<Object, Feature> availabilityFeatures = null;
+
+		if(availabilities != null){
+			Function<RExp, Feature> function = new Function<RExp, Feature>(){
+
+				@Override
+				public Feature apply(RExp rexp){
+
+					if(rexp instanceof RString){
+						RString string = (RString)rexp;
+
+						DataField availabilityField = encoder.createDataField(string.getValue(), OpType.CONTINUOUS, DataType.INTEGER, Arrays.asList(0, 1));
+
+						return new ContinuousFeature(encoder, availabilityField);
+					} else
+
+					{
+						throw new IllegalArgumentException();
+					}
+				}
+			};
+
+			availabilityFeatures = (Map)parseList(availabilities, function);
+		}
+
+		Map<Object, Feature> utilityFunctionFeatures = new LinkedHashMap<>();
 
 		for(Object choice : choices){
 			RFunctionCall functionCall = utilityFunctions.get(choice);
@@ -103,7 +138,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 			Feature feature = new ContinuousFeature(encoder, derivedField);
 
-			choiceFeatures.put(choice, feature);
+			utilityFunctionFeatures.put(choice, feature);
 
 			// XXX
 			encoder.addFeature(feature);
@@ -122,7 +157,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						throw new IllegalArgumentException();
 					}
 
-					Map<?, ?> lambdas = parseList(nlNests, estimates);
+					Map<?, Number> lambdas = parseLambdas(nlNests, estimates);
 
 					if(nlStructures.isEmpty()){
 						throw new IllegalArgumentException();
@@ -138,7 +173,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					Collections.reverse(choices);
 
 					for(Object choice : choices){
-						Number lambda = (Number)lambdas.get(choice);
+						Number lambda = lambdas.get(choice);
 
 						RFunctionCall functionCall = nlStructures.get(choice);
 
@@ -147,49 +182,79 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 							throw new IllegalArgumentException();
 						}
 
-						Apply apply = ExpressionUtil.createApply(PMMLFunctions.SUM);
+						// Availability
+						if(availabilities != null){
+							Apply apply = ExpressionUtil.createApply(PMMLFunctions.SUM);
 
-						for(Object childChoice : childChoices){
-							Feature choiceFeature = choiceFeatures.get(childChoice);
+							for(Object childChoice : childChoices){
+								Feature availabilityFeature = availabilityFeatures.get(childChoice);
 
-							if(choiceFeature == null){
-								throw new IllegalArgumentException();
+								apply.addExpressions(availabilityFeature.ref());
 							}
 
-							Apply choiceApply;
+							apply = ExpressionUtil.createApply(PMMLFunctions.IF,
+								ExpressionUtil.createApply(PMMLFunctions.GREATERTHAN, apply, ExpressionUtil.createConstant(0)),
+								ExpressionUtil.createConstant(1), ExpressionUtil.createConstant(0)
+							);
+
+							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("availability", choice), OpType.CONTINUOUS, DataType.INTEGER, apply);
+
+							Feature availabilityfeature = new ContinuousFeature(encoder, derivedField);
+
+							availabilityFeatures.put(choice, availabilityfeature);
+						}
+
+						// Utility function
+						{
+							Apply apply = ExpressionUtil.createApply(PMMLFunctions.SUM);
+
+							for(Object childChoice : childChoices){
+								Feature feature = utilityFunctionFeatures.get(childChoice);
+
+								Apply choiceApply;
+
+								if(lambda.doubleValue() != 1d){
+									choiceApply = ExpressionUtil.createApply(PMMLFunctions.EXP,
+										ExpressionUtil.createApply(PMMLFunctions.DIVIDE, feature.ref(), ExpressionUtil.createConstant(lambda))
+									);
+								} else
+
+								{
+									choiceApply = ExpressionUtil.createApply(PMMLFunctions.EXP,
+										feature.ref()
+									);
+								} // End if
+
+								if(availabilities != null){
+									Feature availabilityFeature = availabilityFeatures.get(childChoice);
+
+									choiceApply = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, availabilityFeature.ref(), choiceApply);
+								}
+
+								apply.addExpressions(choiceApply);
+							}
+
+							apply = ExpressionUtil.createApply(PMMLFunctions.LN, apply);
 
 							if(lambda.doubleValue() != 1d){
-								choiceApply = ExpressionUtil.createApply(PMMLFunctions.EXP,
-									ExpressionUtil.createApply(PMMLFunctions.DIVIDE, choiceFeature.ref(), ExpressionUtil.createConstant(lambda))
-								);
-							} else
-
-							{
-								choiceApply = ExpressionUtil.createApply(PMMLFunctions.EXP,
-									choiceFeature.ref()
-								);
+								apply = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, apply, ExpressionUtil.createConstant(lambda));
 							}
 
-							apply.addExpressions(choiceApply);
+							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+
+							Feature feature = new ContinuousFeature(encoder, derivedField);
+
+							utilityFunctionFeatures.put(choice, feature);
 						}
-
-						apply = ExpressionUtil.createApply(PMMLFunctions.LN, apply);
-
-						if(lambda.doubleValue() != 1d){
-							apply = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, apply, ExpressionUtil.createConstant(lambda));
-						}
-
-						DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, apply);
-
-						Feature feature = new ContinuousFeature(encoder, derivedField);
-
-						choiceFeatures.put(choice, feature);
 					}
 				}
 				break;
 			default:
 				throw new IllegalArgumentException();
 		}
+
+		this.availabilityFeatures = availabilityFeatures;
+		this.utilityFunctionFeatures = utilityFunctionFeatures;
 	}
 
 	@Override
@@ -202,6 +267,9 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
+		Map<?, Feature> availabilityFeatures = this.availabilityFeatures;
+		Map<?, Feature> utilityFunctionFeatures = this.utilityFunctionFeatures;
+
 		List<RegressionTable> regressionTables = new ArrayList<>();
 
 		String modelType = modelTypeList.getValue(0);
@@ -211,7 +279,13 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					for(int i = 0; i < categoricalLabel.size(); i++){
 						Object choice = categoricalLabel.getValue(i);
 
-						Feature feature = toExpFeature(getUtilityFeature(choice, encoder), encoder);
+						Feature feature = toExpFeature(utilityFunctionFeatures.get(choice), encoder);
+
+						if(availabilityFeatures != null && !availabilityFeatures.isEmpty()){
+							Feature availabilityFeature = availabilityFeatures.get(choice);
+
+							feature = new InteractionFeature(encoder, FieldNameUtil.create("interaction", availabilityFeature, feature), DataType.DOUBLE, Arrays.asList(availabilityFeature, feature));
+						}
 
 						RegressionTable regressionTable = RegressionModelUtil.createRegressionTable(Collections.singletonList(feature), Collections.singletonList(1d), null)
 							.setTargetCategory(choice);
@@ -227,7 +301,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 					Map<String, Double> estimates = this.estimates;
 
-					Map<?, ?> lambdas = parseList(nlNests, estimates);
+					Map<?, Number> lambdas = parseLambdas(nlNests, estimates);
 
 					Map<Object, Object> nlTree = new LinkedHashMap<>();
 
@@ -248,13 +322,13 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						Apply apply = ExpressionUtil.createApply(PMMLFunctions.PRODUCT);
 
 						for(Object currentChoice = choice, nextChoice = nlTree.get(currentChoice); nextChoice != null; currentChoice = nextChoice, nextChoice = nlTree.get(currentChoice)){
-							Number lambda = (Number)lambdas.get(nextChoice);
+							Number lambda = lambdas.get(nextChoice);
 
-							Feature currentUtilityFeature = toExpFeature(getUtilityFeature(currentChoice, encoder), encoder);
-							Feature nextUtilityFeature = toExpFeature(getUtilityFeature(nextChoice, encoder), encoder);
+							Feature currentFeature = toExpFeature(utilityFunctionFeatures.get(currentChoice), encoder);
+							Feature nextFeature = toExpFeature(utilityFunctionFeatures.get(nextChoice), encoder);
 
 							DerivedField derivedField = encoder.ensureDerivedField(FieldNameUtil.create("term", currentChoice, nextChoice), OpType.CONTINUOUS, DataType.DOUBLE, () -> {
-								Apply choiceApply = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, currentUtilityFeature.ref(), nextUtilityFeature.ref());
+								Apply choiceApply = ExpressionUtil.createApply(PMMLFunctions.DIVIDE, currentFeature.ref(), nextFeature.ref());
 
 								if(lambda.doubleValue() != 1d){
 									choiceApply = ExpressionUtil.createApply(PMMLFunctions.POW, choiceApply, ExpressionUtil.createConstant(1d / lambda.doubleValue()));
@@ -269,6 +343,12 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("term", choice), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
 						Feature feature = new ContinuousFeature(encoder, derivedField);
+
+						if(availabilityFeatures != null && !availabilityFeatures.isEmpty()){
+							Feature availabilityFeature = availabilityFeatures.get(choice);
+
+							feature = new InteractionFeature(encoder, FieldNameUtil.create("interaction", availabilityFeature, feature), DataType.DOUBLE, Arrays.asList(availabilityFeature, feature));
+						}
 
 						RegressionTable regressionTable = RegressionModelUtil.createRegressionTable(Collections.singletonList(feature), Collections.singletonList(1d), null)
 							.setTargetCategory(choice);
@@ -301,6 +381,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		Map<String, RExp> variables = new LinkedHashMap<>();
 
+		RFunctionCall availabilities = null;
 		Map<Object, RFunctionCall> utilityFunctions = new LinkedHashMap<>();
 
 		RFunctionCall nlNests = null;
@@ -320,6 +401,12 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 					if(firstArgValue instanceof RString){
 						RString string = (RString)firstArgValue;
+
+						if(matchVariable(firstArgValue, "avail")){
+							availabilities = (RFunctionCall)secondArgValue;
+
+							continue;
+						} else
 
 						if(matchVariable(firstArgValue, "nlNests")){
 							nlNests = (RFunctionCall)secondArgValue;
@@ -361,6 +448,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		this.variables = variables;
 
+		this.availabilities = availabilities;
 		this.utilityFunctions = utilityFunctions;
 
 		this.nlNests = nlNests;
@@ -433,13 +521,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		}
 
 		return null;
-	}
-
-	static
-	private ContinuousFeature getUtilityFeature(Object choice, PMMLEncoder encoder){
-		Field<?> field = encoder.getField(FieldNameUtil.create("utility", choice));
-
-		return new ContinuousFeature(encoder, field);
 	}
 
 	static
@@ -534,13 +615,41 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Map<?, ?> parseList(RFunctionCall functionCall, Map<String, Double> estimates){
+	private Map<?, Number> parseLambdas(RFunctionCall functionCall, Map<String, Double> estimates){
+		Function<RExp, Number> function = new Function<RExp, Number>(){
+
+			@Override
+			public Number apply(RExp rexp){
+
+				if(rexp instanceof RString){
+					RString string = (RString)rexp;
+
+					return estimates.get(string.getValue());
+				} else
+
+				if(rexp instanceof RNumberVector){
+					RNumberVector<?> numberVector = (RNumberVector<?>)rexp;
+
+					return numberVector.asScalar();
+				} else
+
+				{
+					throw new IllegalArgumentException();
+				}
+			}
+		};
+
+		return parseList(functionCall, function);
+	}
+
+	static
+	private <V> Map<String, V> parseList(RFunctionCall functionCall, Function<RExp, V> function){
 
 		if(!functionCall.hasValue("list")){
 			throw new IllegalArgumentException();
 		}
 
-		Map<Object, Object> result = new LinkedHashMap<>();
+		Map<String, V> result = new LinkedHashMap<>();
 
 		for(Iterator<RPair> it = functionCall.arguments(); it.hasNext(); ){
 			RPair arg = it.next();
@@ -548,21 +657,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			RString tag = (RString)arg.getTag();
 			RExp value = arg.getValue();
 
-			if(value instanceof RString){
-				RString string = (RString)value;
-
-				result.put(tag.getValue(), estimates.get(string.getValue()));
-			} else
-
-			if(value instanceof RVector){
-				RVector<?> vector = (RVector<?>)value;
-
-				result.put(tag.getValue(), vector.asScalar());
-			} else
-
-			{
-				throw new IllegalArgumentException();
-			}
+			result.put(tag.getValue(), function.apply(value));
 		}
 
 		return result;
