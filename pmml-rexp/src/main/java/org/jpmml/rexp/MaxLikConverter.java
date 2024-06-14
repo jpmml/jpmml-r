@@ -152,9 +152,9 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		String modelType = modelTypeList.getValue(0);
 		switch(modelType){
-			case "MNL":
+			case MaxLikConverter.TYPE_MNL:
 				break;
-			case "NL":
+			case MaxLikConverter.TYPE_NL:
 				{
 					RFunctionCall nlNests = this.nlNests;
 					Map<?, RFunctionCall> nlStructures = this.nlStructures;
@@ -280,7 +280,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		String modelType = modelTypeList.getValue(0);
 		switch(modelType){
-			case "MNL":
+			case MaxLikConverter.TYPE_MNL:
 				{
 					for(int i = 0; i < categoricalLabel.size(); i++){
 						Object choice = categoricalLabel.getValue(i);
@@ -300,7 +300,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					}
 				}
 				break;
-			case "NL":
+			case MaxLikConverter.TYPE_NL:
 				{
 					RFunctionCall nlNests = this.nlNests;
 					Map<?, RFunctionCall> nlStructures = this.nlStructures;
@@ -395,9 +395,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		RFunctionCall settings = null;
 
 		Map<String, RExp> variables = new LinkedHashMap<>();
-
-		RFunctionCall alternatives = null;
-		RFunctionCall availabilities = null;
 		Map<Object, RFunctionCall> utilityFunctions = new LinkedHashMap<>();
 
 		RFunctionCall nlNests = null;
@@ -700,4 +697,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		return result;
 	}
+
+	private static final String TYPE_MNL = "MNL";
+	private static final String TYPE_NL = "NL";
 }
