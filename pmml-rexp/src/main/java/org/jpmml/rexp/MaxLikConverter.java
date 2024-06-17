@@ -20,13 +20,16 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Iterables;
 import org.dmg.pmml.Apply;
@@ -73,7 +76,9 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 	private Map<?, RFunctionCall> nlStructures = null;
 
-	private Map<String, Double> estimates = null;
+	private Map<?, Number> lambdas = null;
+
+	private Map<?, ?> nlTree = null;
 
 	private Map<?, Feature> availabilityFeatures = null;
 
@@ -89,13 +94,26 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	@Override
 	public void encodeSchema(RExpEncoder encoder){
 		parseApolloProbabilities();
-		parseEstimate();
 
 		RGenericVector maxLik = getObject();
 
+		RDoubleVector estimate = maxLik.getDoubleElement("estimate");
 		RStringVector modelTypeList = maxLik.getStringElement("modelTypeList");
 
+		RStringVector estimateNames = estimate.names();
+
+		Map<String, Double> estimates = new LinkedHashMap<>();
+
+		for(int i = 0; i < estimate.size(); i++){
+			estimates.put(estimateNames.getDequotedValue(i), estimate.getValue(i));
+		}
+
+		String modelType = modelTypeList.getValue(0);
+
 		RFunctionCall settings = this.settings;
+		if(settings == null){
+			throw new IllegalArgumentException();
+		}
 
 		Map<String, RExp> settingsMap = parseList(settings, (value) -> value);
 
@@ -103,16 +121,23 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		RFunctionCall availabilities = (RFunctionCall)settingsMap.get("avail");
 		RString choiceVar = (RString)settingsMap.get("choiceVar");
 
+		List<?> choices = (parseVector(alternatives).entrySet()).stream()
+			.sorted((left, right) -> {
+				return ((Comparable)left.getValue()).compareTo((Comparable)right.getValue());
+			})
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+
 		Map<String, RExp> variables = this.variables;
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
 			throw new IllegalArgumentException();
+		} else
+
+		if(!(new LinkedHashSet<>(choices)).equals(utilityFunctions.keySet())){
+			throw new IllegalArgumentException();
 		}
-
-		Map<String, Double> estimates = this.estimates;
-
-		List<?> choices = new ArrayList<>(utilityFunctions.keySet());
 
 		DataField choiceField = encoder.createDataField(choiceVar.getValue(), OpType.CATEGORICAL, TypeUtil.getDataType(choices, DataType.STRING), choices);
 
@@ -181,7 +206,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			outputFields.clear();
 		}
 
-		String modelType = modelTypeList.getValue(0);
 		switch(modelType){
 			case MaxLikConverter.TYPE_MNL:
 				break;
@@ -200,23 +224,21 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						throw new IllegalArgumentException();
 					} // End if
 
-					if(!Objects.equals(lambdas.keySet(), nlStructures.keySet())){
-						throw new IllegalArgumentException();
-					}
-
-					choices = new ArrayList<>(nlStructures.keySet());
+					List<?> nestCHoices = new ArrayList<>(nlStructures.keySet());
 
 					// XXX
-					Collections.reverse(choices);
+					Collections.reverse(nestCHoices);
 
-					for(Object choice : choices){
-						Number lambda = lambdas.get(choice);
+					Map<Object, Object> nlTree = new LinkedHashMap<>();
 
-						RFunctionCall functionCall = nlStructures.get(choice);
+					for(Object nestChoice : nestCHoices){
+						Number lambda = lambdas.get(nestChoice);
 
-						List<?> childChoices = parseVector(functionCall);
-						if(childChoices.isEmpty()){
-							throw new IllegalArgumentException();
+						RFunctionCall functionCall = nlStructures.get(nestChoice);
+
+						Collection<?> childChoices = parseVector(functionCall).values();
+						for(Object childChoice : childChoices){
+							nlTree.put(childChoice, nestChoice);
 						}
 
 						// Availability
@@ -234,11 +256,11 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 								ExpressionUtil.createConstant(1), ExpressionUtil.createConstant(0)
 							);
 
-							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("availability", choice), OpType.CONTINUOUS, DataType.INTEGER, apply);
+							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("availability", nestChoice), OpType.CONTINUOUS, DataType.INTEGER, apply);
 
 							Feature availabilityfeature = new ContinuousFeature(encoder, derivedField);
 
-							availabilityFeatures.put(choice, availabilityfeature);
+							availabilityFeatures.put(nestChoice, availabilityfeature);
 						}
 
 						// Utility function
@@ -277,11 +299,11 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 								apply = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, apply, ExpressionUtil.createConstant(lambda));
 							}
 
-							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, apply);
+							DerivedField derivedField = encoder.createDerivedField(FieldNameUtil.create("utility", nestChoice), OpType.CONTINUOUS, DataType.DOUBLE, apply);
 
 							Feature feature = new ContinuousFeature(encoder, derivedField);
 
-							utilityFunctionFeatures.put(choice, feature);
+							utilityFunctionFeatures.put(nestChoice, feature);
 
 							Apply expApply = ExpressionUtil.createApply(PMMLFunctions.EXP, feature.ref());
 
@@ -289,13 +311,17 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 							Feature expFeature = new ContinuousFeature(encoder, expDerivedField);
 
-							expUtilityFunctionFeatures.put(choice, expFeature);
+							expUtilityFunctionFeatures.put(nestChoice, expFeature);
 						}
 					}
+
+					this.lambdas = lambdas;
+
+					this.nlTree = nlTree;
 				}
 				break;
 			default:
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException(modelType);
 		}
 
 		this.availabilityFeatures = availabilityFeatures;
@@ -310,6 +336,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		RStringVector modelTypeList = maxLik.getStringElement("modelTypeList");
 
+		String modelType = modelTypeList.getValue(0);
+
 		PMMLEncoder encoder = schema.getEncoder();
 		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
@@ -321,7 +349,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		List<RegressionTable> regressionTables = new ArrayList<>();
 
-		String modelType = modelTypeList.getValue(0);
 		switch(modelType){
 			case MaxLikConverter.TYPE_MNL:
 				{
@@ -345,25 +372,9 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 				break;
 			case MaxLikConverter.TYPE_NL:
 				{
-					RFunctionCall nlNests = this.nlNests;
-					Map<?, RFunctionCall> nlStructures = this.nlStructures;
+					Map<?, Number> lambdas = this.lambdas;
 
-					Map<String, Double> estimates = this.estimates;
-
-					Map<?, Number> lambdas = parseLambdas(nlNests, estimates);
-
-					Map<Object, Object> nlTree = new LinkedHashMap<>();
-
-					List<?> choices = new ArrayList<>(nlStructures.keySet());
-
-					for(Object choice : choices){
-						RFunctionCall functionCall = nlStructures.get(choice);
-
-						List<?> childChoices = parseVector(functionCall);
-						for(Object childChoice : childChoices){
-							nlTree.put(childChoice, choice);
-						}
-					}
+					Map<?, ?> nlTree = this.nlTree;
 
 					for(int i = 0; i < categoricalLabel.size(); i++){
 						Object choice = categoricalLabel.getValue(i);
@@ -615,14 +626,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			}
 		}
 
-		if(settings == null){
-			throw new IllegalArgumentException();
-		} // End if
-
-		if(!Collections.disjoint(utilityFunctions.keySet(), nlStructures.keySet())){
-			throw new IllegalArgumentException();
-		}
-
 		this.settings = settings;
 
 		this.variables = variables;
@@ -630,22 +633,6 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		this.nlNests = nlNests;
 		this.nlStructures = nlStructures;
-	}
-
-	private void parseEstimate(){
-		RGenericVector maxLik = getObject();
-
-		RDoubleVector estimate = maxLik.getDoubleElement("estimate");
-
-		RStringVector estimateNames = estimate.names();
-
-		Map<String, Double> estimates = new LinkedHashMap<>();
-
-		for(int i = 0; i < estimate.size(); i++){
-			estimates.put(estimateNames.getDequotedValue(i), estimate.getValue(i));
-		}
-
-		this.estimates = estimates;
 	}
 
 	static
@@ -832,18 +819,35 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private List<?> parseVector(RFunctionCall functionCall){
+	private Map<?, ?> parseVector(RFunctionCall functionCall){
 
 		if(!functionCall.hasValue("c")){
 			throw new IllegalArgumentException();
 		}
 
-		List<Object> result = new ArrayList<>();
+		Map<Object, Object> result = new LinkedHashMap<>();
 
-		for(Iterator<RExp> it = functionCall.argumentValues(); it.hasNext(); ){
-			RVector<?> argValue = (RVector<?>)it.next();
+		for(Iterator<RPair> it = functionCall.arguments(); it.hasNext(); ){
+			RPair arg = it.next();
 
-			result.add(argValue.asScalar());
+			RString tag = (RString)arg.getTag();
+			RExp value = arg.getValue();
+
+			if(value instanceof RVector){
+				RVector<?> vector = (RVector<?>)value;
+
+				if(tag != null){
+					result.put(tag.getValue(), vector.asScalar());
+				} else
+
+				{
+					result.put((result.size() + 1), vector.asScalar());
+				}
+			} else
+
+			{
+				throw new IllegalArgumentException();
+			}
 		}
 
 		return result;
