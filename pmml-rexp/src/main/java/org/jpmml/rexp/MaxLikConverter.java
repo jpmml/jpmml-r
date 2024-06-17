@@ -112,7 +112,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		RFunctionCall settings = this.settings;
 		if(settings == null){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Missing model settings (variable \'" + modelType.toLowerCase() + "_settings\')");
 		}
 
 		Map<String, RExp> settingsMap = parseList(settings, (value) -> value);
@@ -132,11 +132,11 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Missing utility function set (variable \'V\')");
 		} else
 
 		if(!(new LinkedHashSet<>(choices)).equals(utilityFunctions.keySet())){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Invalid utility function set");
 		}
 
 		DataField choiceField = encoder.createDataField(choiceVar.getValue(), OpType.CATEGORICAL, TypeUtil.getDataType(choices, DataType.STRING), choices);
@@ -215,13 +215,13 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					Map<?, RFunctionCall> nlStructures = this.nlStructures;
 
 					if(nlNests == null){
-						throw new IllegalArgumentException();
+						throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Missing nest lambda parameters (variable \'nlNests\')");
 					}
 
 					Map<?, Number> lambdas = parseLambdas(nlNests, estimates);
 
 					if(nlStructures.isEmpty()){
-						throw new IllegalArgumentException();
+						throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Missing nest structure (variable \'nlStructure\')");
 					} // End if
 
 					List<?> nestCHoices = new ArrayList<>(nlStructures.keySet());
