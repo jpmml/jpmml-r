@@ -577,7 +577,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 			if(argValue instanceof RFunctionCall){
 				RFunctionCall functionCall = (RFunctionCall)argValue;
 
-				if(functionCall.hasValue("=")){
+				if(functionCall.hasValue("=") || functionCall.hasValue("<-")){
 					Iterator<RExp> it2 = functionCall.argumentValues();
 
 					RExp firstArgValue = it2.next();

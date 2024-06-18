@@ -167,7 +167,7 @@ generateNLModeChoice = function(){
 		nlStructure[["fastPT"]] = c("air","rail")
 
 		### Define settings for NL model
-		nl_settings = list(
+		nl_settings <- list(
 			alternatives = c(car=1, bus=2, air=3, rail=4),
 			avail        = list(car=av_car, bus=av_bus, air=av_air, rail=av_rail),
 			choiceVar    = choice,
