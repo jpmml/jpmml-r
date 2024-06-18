@@ -23,7 +23,7 @@ generateMNLModeChoice = function(){
 		modelName       = "MNL_SP",
 		modelDescr      = "Simple MNL model on mode choice SP data",
 		indivID         = "ID",
-		outputDirectory = "/dev/null"
+		outputDirectory = "/tmp"
 	)
 
 	apollo_beta <<- c(
@@ -98,7 +98,7 @@ generateNLModeChoice = function(){
 		modelName       = "NL_three_levels",
 		modelDescr      = "Three-level NL model with socio-demographics on mode choice SP data",
 		indivID         = "ID", 
-		outputDirectory = "/dev/null"
+		outputDirectory = "/tmp"
 	)
 
 	apollo_beta <<- c(
@@ -195,8 +195,6 @@ generateNLModeChoice = function(){
 	storeRds(model, "NLModeChoice")
 	storeCsv(choice, "NLModeChoice")
 }
-
-rm(list = c("database", "apollo_control", "apollo_beta", "apollo_fixed"))
 
 set.seed(42)
 
