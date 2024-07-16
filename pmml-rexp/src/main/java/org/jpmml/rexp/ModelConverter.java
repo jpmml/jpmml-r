@@ -58,7 +58,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 
 			FeatureImportanceMap featureImportances = hasFeatureImportances.getFeatureImportances(schema);
 			if(featureImportances != null && !featureImportances.isEmpty()){
-				ModelEncoder encoder = (ModelEncoder)schema.getEncoder();
+				ModelEncoder encoder = schema.getEncoder();
 
 				Collection<Map.Entry<Feature, Number>> entries = featureImportances.entrySet();
 				for(Map.Entry<Feature, Number> entry : entries){

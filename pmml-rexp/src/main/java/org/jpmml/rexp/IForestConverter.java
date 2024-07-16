@@ -140,7 +140,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 
 			@Override
 			public Expression createExpression(FieldRef fieldRef){
-				return ExpressionUtil.createApply(PMMLFunctions.POW, ExpressionUtil.createConstant(2d), ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, ExpressionUtil.createConstant(-1d), fieldRef));
+				return ExpressionUtil.createApply(PMMLFunctions.POW, ExpressionUtil.createConstant(2d), ExpressionUtil.toNegative(fieldRef));
 			}
 		};
 
