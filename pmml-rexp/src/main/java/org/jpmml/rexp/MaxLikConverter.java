@@ -41,6 +41,7 @@ import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.MathContext;
 import org.dmg.pmml.MiningFunction;
+import org.dmg.pmml.MissingValueTreatmentMethod;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.Output;
@@ -56,6 +57,7 @@ import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.InteractionFeature;
+import org.jpmml.converter.MissingValueDecorator;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
@@ -155,6 +157,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						RString string = (RString)rexp;
 
 						DataField availabilityField = encoder.createDataField(string.getValue(), OpType.CONTINUOUS, DataType.INTEGER, Arrays.asList(0, 1));
+
+						encoder.addDecorator(availabilityField, new MissingValueDecorator(MissingValueTreatmentMethod.AS_VALUE, 1));
 
 						return new ContinuousFeature(encoder, availabilityField);
 					} else
