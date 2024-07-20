@@ -37,8 +37,10 @@ import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.DerivedField;
 import org.dmg.pmml.Expression;
+import org.dmg.pmml.Extension;
 import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldRef;
+import org.dmg.pmml.InlineTable;
 import org.dmg.pmml.MathContext;
 import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.MissingValueTreatmentMethod;
@@ -60,6 +62,7 @@ import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.MissingValueDecorator;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.TypeUtil;
 import org.jpmml.converter.ValueUtil;
@@ -228,14 +231,14 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						throw new IllegalArgumentException("Invalid \'apollo_probabilities\' element. Missing nest structure (variable \'nlStructure\')");
 					} // End if
 
-					List<?> nestCHoices = new ArrayList<>(nlStructures.keySet());
+					List<?> nestChoices = new ArrayList<>(nlStructures.keySet());
 
-					// XXX
-					Collections.reverse(nestCHoices);
+					// Handle lower levels first, higher levels last
+					Collections.reverse(nestChoices);
 
 					Map<Object, Object> nlTree = new LinkedHashMap<>();
 
-					for(Object nestChoice : nestCHoices){
+					for(Object nestChoice : nestChoices){
 						Number lambda = lambdas.get(nestChoice);
 
 						RFunctionCall functionCall = nlStructures.get(nestChoice);
@@ -320,6 +323,10 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					}
 
 					this.lambdas = lambdas;
+
+					Extension extension = encodeNlStructures(nlTree);
+
+					choiceField.addExtensions(extension);
 
 					this.nlTree = nlTree;
 				}
@@ -554,6 +561,31 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		features.add(feature);
 		coefficients.add(coefficient);
+	}
+
+	private Extension encodeNlStructures(Map<?, ?> nlTree){
+		Map<String, List<Object>> data = new LinkedHashMap<>();
+
+		List<Object> parents = new ArrayList<>();
+		List<Object> children = new ArrayList<>();
+
+		(nlTree.entrySet()).stream()
+			.forEach(entry -> {
+				parents.add(entry.getValue());
+				children.add(entry.getKey());
+			});
+
+		if(!parents.isEmpty() && Objects.equals(parents.get(parents.size() - 1), "root")){
+			Collections.reverse(parents);
+			Collections.reverse(children);
+		}
+
+		data.put("parent", parents);
+		data.put("child", children);
+
+		InlineTable inlineTable = PMMLUtil.createInlineTable(data);
+
+		return PMMLUtil.createExtension("nlStructures", inlineTable);
 	}
 
 	private void parseApolloProbabilities(){
