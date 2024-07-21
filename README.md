@@ -106,7 +106,7 @@ Enter the project root directory and build using [Apache Maven](https://maven.ap
 mvn clean install
 ```
 
-The build produces a library JAR file `pmml-rexp/target/pmml-rexp-1.5-SNAPSHOT.jar`, and an executable uber-JAR file `pmml-rexp-example/target/pmml-rexp-example-executable-1.5-SNAPSHOT.jar`.
+The build produces a library JAR file `pmml-rexp/target/pmml-rexp-1.6-SNAPSHOT.jar`, and an executable uber-JAR file `pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar`.
 
 # Usage #
 
@@ -131,17 +131,17 @@ saveRDS(rf, "rf.rds", version = 2)
 
 Converting the RDS file `rf.rds` to a PMML file `rf.pmml`:
 ```
-java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.5-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
+java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
 Getting help:
 ```
-java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.5-SNAPSHOT.jar --help
+java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --help
 ```
 
 The conversion of large files (1 GB and beyond) can be sped up by increasing the JVM heap size using `-Xms` and `-Xmx` options:
 ```
-java -Xms4G -Xmx8G -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.5-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
+java -Xms4G -Xmx8G -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
 # Documentation #
