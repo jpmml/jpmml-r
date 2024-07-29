@@ -138,7 +138,7 @@ public class RExp {
 		return this.attributes;
 	}
 
-	private void setAttributes(RPair attributes){
+	void setAttributes(RPair attributes){
 		this.attributes = attributes;
 	}
 }

@@ -25,7 +25,9 @@ import java.io.PushbackInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import com.google.common.io.ByteStreams;
@@ -33,6 +35,8 @@ import com.google.common.io.ByteStreams;
 public class RExpParser {
 
 	private RDataInput input = null;
+
+	private Map<RSymbol, REnvironment> namespaces = new LinkedHashMap<>();
 
 	private List<RExp> referenceTable = new ArrayList<>();
 
@@ -106,13 +110,13 @@ public class RExpParser {
 			case SerializationTypes.BASEENVSXP:
 				return null; // XXX
 			case SerializationTypes.EMPTYENVSXP:
-				return null; // XXX
+				return REnvironment.EMPTY;
 			case SerializationTypes.NAMESPACESXP:
 				return readNamespace();
 			case SerializationTypes.BASENAMESPACESXP:
 				return null; // XXX
 			case SerializationTypes.MISSINGARGSXP:
-				return null; // XXX
+				return RSymbol.MISSING_ARG;
 			case SerializationTypes.UNBOUNDVALUESXP:
 				return null; // XXX
 			case SerializationTypes.GLOBALENVSXP:
@@ -182,22 +186,27 @@ public class RExpParser {
 		return new RClosure(attributes, environment, parameters, body);
 	}
 
-	private RExp readEnvironment(int flags) throws IOException {
-		RExp rexp = null;
+	private REnvironment readEnvironment(int flags) throws IOException {
+		REnvironment environment = new REnvironment(){
+		};
 
 		readInt();
 
 		// "MUST register before filling in"
-		this.referenceTable.add(rexp);
+		this.referenceTable.add(environment);
 
 		// "Now fill it in"
 		RExp parent = readRExp();
 		RPair frame = (RPair)readRExp();
 		RExp hashtab = readRExp();
 
+		environment.setVariables(frame);
+
 		RPair attributes = (RPair)readRExp();
 
-		return rexp;
+		environment.setAttributes(attributes);
+
+		return environment;
 	}
 
 	private RExp readPromise(int flags) throws IOException {
@@ -343,16 +352,18 @@ public class RExpParser {
 	}
 
 	private RExp readExternalPointer(int flags) throws IOException {
-		RExp rexp = null;
+		RExternalPtr externalPtr = new RExternalPtr(null);
 
-		this.referenceTable.add(rexp);
+		this.referenceTable.add(externalPtr);
 
 		RExp protected_ = readRExp();
 		RExp tag = readRExp();
 
-		readAttributes(flags);
+		RPair attributes = readAttributes(flags);
 
-		return rexp;
+		externalPtr.setAttributes(attributes);
+
+		return externalPtr;
 	}
 
 	private RRaw readRaw(int flags) throws IOException {
@@ -476,11 +487,20 @@ public class RExpParser {
 			throw new UnsupportedOperationException();
 		}
 
-		readStringVector(flags);
+		RStringVector name = readStringVector(flags);
 
-		this.referenceTable.add(null);
+		RSymbol symbol = new RSymbol(name.getValue(0));
 
-		return null;
+		REnvironment namespace = this.namespaces.get(symbol);
+		if(namespace == null){
+			namespace = new REnvironment(){};
+
+			this.namespaces.put(symbol, namespace);
+		}
+
+		this.referenceTable.add(namespace);
+
+		return namespace;
 	}
 
 	private RExp readReference(int flags) throws IOException {
