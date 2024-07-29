@@ -53,7 +53,13 @@ public class ConverterFactory {
 	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter<?>> clazz, R rexp){
 
 		try {
-			Constructor<?> constructor = clazz.getDeclaredConstructor(rexp.getClass());
+			Class<? extends RExp> rexpClazz = rexp.getClass();
+
+			while(rexpClazz.isAnonymousClass()){
+				rexpClazz = (Class)rexpClazz.getSuperclass();
+			}
+
+			Constructor<?> constructor = clazz.getDeclaredConstructor(rexpClazz);
 
 			return (Converter<R>)constructor.newInstance(rexp);
 		} catch(Exception e){

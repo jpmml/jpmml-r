@@ -30,6 +30,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jpmml</groupId>
+			<artifactId>pmml-rexp-lightgbm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-rexp-xgboost</artifactId>
 		</dependency>
 

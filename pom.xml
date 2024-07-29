@@ -35,6 +35,7 @@
 	<modules>
 		<module>pmml-rexp</module>
 		<module>pmml-rexp-example</module>
+		<module>pmml-rexp-lightgbm</module>
 		<module>pmml-rexp-xgboost</module>
 	</modules>
 
@@ -67,6 +68,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
+				<artifactId>pmml-rexp-lightgbm</artifactId>
+				<version>1.6-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-xgboost</artifactId>
 				<version>1.6-SNAPSHOT</version>
 			</dependency>
@@ -86,6 +92,12 @@
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-evaluator-testing</artifactId>
 				<version>1.6.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.jpmml</groupId>
+				<artifactId>pmml-lightgbm</artifactId>
+				<version>1.5.4</version>
 			</dependency>
 
 			<dependency>
