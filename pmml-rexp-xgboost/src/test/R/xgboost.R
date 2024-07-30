@@ -20,7 +20,7 @@ auto.matrix = model.matrix(auto.formula, data = auto.frame, contrasts.arg = auto
 
 auto.DMatrix = xgb.DMatrix(auto.matrix, label = auto_y)
 
-generateXGBoostAutoNA = function(){
+generateXGBoostAuto = function(){
 	auto.xgboost = xgboost(data = auto.DMatrix, objective = "reg:linear", nrounds = 71)
 	auto.xgboost = decorate(auto.xgboost, fmap = auto.frame.fmap, response_name = "mpg", ntreelimit = 17, compact = TRUE)
 	auto.xgboost = verify(auto.xgboost, newdata = auto.matrix[sample(nrow(auto.matrix), 10), ], response_name = "mpg", ntreelimit = 17)
@@ -33,7 +33,7 @@ generateXGBoostAutoNA = function(){
 
 set.seed(42)
 
-generateXGBoostAutoNA()
+generateXGBoostAuto()
 
 audit = loadAuditCsv("AuditNA")
 audit$Deductions = NULL
