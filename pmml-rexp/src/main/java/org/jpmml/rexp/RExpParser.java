@@ -36,6 +36,8 @@ public class RExpParser {
 
 	private RDataInput input = null;
 
+	private String nativeEncoding = null;
+
 	private Map<RSymbol, REnvironment> namespaces = new LinkedHashMap<>();
 
 	private List<RExp> referenceTable = new ArrayList<>();
@@ -47,12 +49,21 @@ public class RExpParser {
 
 	public RExp parse() throws IOException {
 		int version = readInt();
-		if(version != 2){
+
+		if(version < 2 || version > 3){
 			throw new IllegalArgumentException(String.valueOf(version));
 		}
 
 		int writerVersion = readInt();
 		int releaseVersion = readInt();
+
+		if(version == 3){
+			int length = readInt();
+
+			byte[] buffer = readByteArray(length);
+
+			this.nativeEncoding = new String(buffer);
+		}
 
 		RExp result = readRExp();
 

@@ -126,7 +126,7 @@ library("randomForest")
 
 rf = randomForest(Species ~ ., data = iris)
 
-saveRDS(rf, "rf.rds", version = 2)
+saveRDS(rf, "rf.rds")
 ```
 
 ### The JPMML-R side of operations
