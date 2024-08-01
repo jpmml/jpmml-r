@@ -4,6 +4,7 @@ library("plyr")
 library("dplyr")
 library("recipes")
 library("r2pmml")
+library("statmod")
 
 source("util.R")
 
@@ -122,7 +123,18 @@ generateGLMFormulaVisit = function(){
 	storeCsv(data.frame("docvis" = docvis), "GLMFormulaVisit")
 }
 
+generateStatmodGLMFormulaVisit = function(){
+	visit.glm = glm(docvis ~ ., data = visit, family = tweedie(var.power = 1.25, link.power = 1.5))
+	print(visit.glm)
+
+	docvis = predict(visit.glm, newdata = visit, type = "response")
+
+	storeRds(visit.glm, "StatmodGLMFormulaVisit")
+	storeCsv(data.frame("docvis" = docvis), "StatmodGLMFormulaVisit")
+}
+
 generateGLMFormulaVisit()
+generateStatmodGLMFormulaVisit()
 
 wine_quality = loadWineQualityCsv("WineQuality")
 

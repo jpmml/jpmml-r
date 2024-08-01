@@ -21,7 +21,6 @@ package org.jpmml.rexp.testing;
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.Batch;
 import org.jpmml.rexp.LMConverter;
-import org.jpmml.rexp.testing.RExpEncoderBatchTest;
 import org.junit.Test;
 
 public class GLMConverterTest extends RExpEncoderBatchTest implements Datasets {
@@ -72,6 +71,11 @@ public class GLMConverterTest extends RExpEncoderBatchTest implements Datasets {
 	@Test
 	public void evaluateFormulaVisit() throws Exception {
 		evaluate("GLMFormula", VISIT);
+	}
+
+	@Test
+	public void evaluateStatmodGLMFormulaVisit() throws Exception {
+		evaluate("StatmodGLMFormula", VISIT);
 	}
 
 	@Test

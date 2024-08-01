@@ -135,6 +135,7 @@ public class GLMConverter extends LMConverter {
 			case GAMMA:
 			case IGAUSS:
 			case POISSON:
+			case TWEEDIE:
 				return MiningFunction.REGRESSION;
 			default:
 				throw new IllegalArgumentException();
@@ -155,6 +156,8 @@ public class GLMConverter extends LMConverter {
 				return GeneralRegressionModel.Distribution.IGAUSS;
 			case "poisson":
 				return GeneralRegressionModel.Distribution.POISSON;
+			case "Tweedie":
+				return GeneralRegressionModel.Distribution.TWEEDIE;
 			default:
 				throw new IllegalArgumentException(family);
 		}
@@ -162,6 +165,10 @@ public class GLMConverter extends LMConverter {
 
 	static
 	private GeneralRegressionModel.LinkFunction parseLinkFunction(String link){
+
+		if(link.startsWith("mu^")){
+			return GeneralRegressionModel.LinkFunction.POWER;
+		}
 
 		switch(link){
 			case "cloglog":
@@ -185,6 +192,10 @@ public class GLMConverter extends LMConverter {
 
 	static
 	private Double parseLinkParameter(String link){
+
+		if(link.startsWith("mu^")){
+			return Double.valueOf(link.substring("mu^".length()));
+		}
 
 		switch(link){
 			case "inverse":
