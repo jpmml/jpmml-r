@@ -1,4 +1,5 @@
 library("caret")
+library("MASS")
 library("mlr")
 library("plyr")
 library("dplyr")
@@ -123,6 +124,16 @@ generateGLMFormulaVisit = function(){
 	storeCsv(data.frame("docvis" = docvis), "GLMFormulaVisit")
 }
 
+generateNegbinGLMFormulaVisit = function(){
+	visit.glm = glm(docvis ~ ., data = visit, family = negative.binomial(theta = 1.5))
+	print(visit.glm)
+
+	docvis = predict(visit.glm, newdata = visit, type = "response")
+
+	storeRds(visit.glm, "NegbinGLMFormulaVisit")
+	storeCsv(data.frame("docvis" = docvis), "NegbinGLMFormulaVisit")
+}
+
 generateStatmodGLMFormulaVisit = function(){
 	visit.glm = glm(docvis ~ ., data = visit, family = tweedie(var.power = 1.25, link.power = 1.5))
 	print(visit.glm)
@@ -134,6 +145,7 @@ generateStatmodGLMFormulaVisit = function(){
 }
 
 generateGLMFormulaVisit()
+generateNegbinGLMFormulaVisit()
 generateStatmodGLMFormulaVisit()
 
 wine_quality = loadWineQualityCsv("WineQuality")

@@ -108,6 +108,7 @@ public class GLMConverter extends LMConverter {
 
 		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(label), null, null, null)
 			.setDistribution(parseFamily(familyFamily.asScalar()))
+			.setDistParameter(parseDistParameter(familyFamily.asScalar()))
 			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
 			.setLinkParameter(parseLinkParameter(familyLink.asScalar()));
 
@@ -131,9 +132,10 @@ public class GLMConverter extends LMConverter {
 		switch(distribution){
 			case BINOMIAL:
 				return MiningFunction.CLASSIFICATION;
-			case NORMAL:
 			case GAMMA:
 			case IGAUSS:
+			case NEGBIN:
+			case NORMAL:
 			case POISSON:
 			case TWEEDIE:
 				return MiningFunction.REGRESSION;
@@ -144,6 +146,10 @@ public class GLMConverter extends LMConverter {
 
 	static
 	private GeneralRegressionModel.Distribution parseFamily(String family){
+
+		if(family.startsWith("Negative Binomial(")){
+			return GeneralRegressionModel.Distribution.NEGBIN;
+		}
 
 		switch(family){
 			case "binomial":
@@ -164,7 +170,24 @@ public class GLMConverter extends LMConverter {
 	}
 
 	static
+	private Number parseDistParameter(String family){
+
+		if(family.startsWith("Negative Binomial(") && family.endsWith(")")){
+			return Double.valueOf(family.substring("Negative Binomial(".length(), family.length() - ")".length()));
+		}
+
+		switch(family){
+			default:
+				return null;
+		}
+	}
+
+	static
 	private GeneralRegressionModel.LinkFunction parseLinkFunction(String link){
+
+		if(link.startsWith("Negative Binomial(")){
+			return GeneralRegressionModel.LinkFunction.NEGBIN;
+		} else
 
 		if(link.startsWith("mu^")){
 			return GeneralRegressionModel.LinkFunction.POWER;
@@ -191,7 +214,7 @@ public class GLMConverter extends LMConverter {
 	}
 
 	static
-	private Double parseLinkParameter(String link){
+	private Number parseLinkParameter(String link){
 
 		if(link.startsWith("mu^")){
 			return Double.valueOf(link.substring("mu^".length()));

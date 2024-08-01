@@ -74,6 +74,11 @@ public class GLMConverterTest extends RExpEncoderBatchTest implements Datasets {
 	}
 
 	@Test
+	public void evaluateNegbinGLMFormulaVisit() throws Exception {
+		evaluate("NegbinGLMFormula", VISIT);
+	}
+
+	@Test
 	public void evaluateStatmodGLMFormulaVisit() throws Exception {
 		evaluate("StatmodGLMFormula", VISIT);
 	}
