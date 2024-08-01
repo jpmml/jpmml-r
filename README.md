@@ -36,7 +36,7 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `party` - CHi-squared Automated Interaction Detection (CHAID) classification
   * [`earth`](https://cran.r-project.org/package=earth) package:
     * `earth` - Multivariate Adaptive Regression Spline (MARS) regression
-  * [`elmNNRcpp`](https://CRAN.R-project.org/package=elmNNRcpp) package:
+  * [`elmNNRcpp`](https://cran.r-project.org/package=elmNNRcpp) package:
     * `elm` - Extreme Learning Machine (ELM) regression
   * [`evtree`](https://cran.r-project.org/package=evtree) package:
     * `party` - Evolutionary Learning of Trees (EvTree) regression and classification
@@ -52,6 +52,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`lightgbm`](https://cran.r-project.org/package=lightgbm) package:
     * `lgb.Booster` - LightGBM regression and classification.
+  * [`MASS`](https://cran.r-project.org/package=MASS) package:
+    * `negbin` - Generalized Linear Model (GLM) regression.
   * [`mlr`](https://cran.r-project.org/package=mlr) package:
     * `WrappedModel` - Selected JPMML-R model types.
   * [`neuralnet`](https://cran.r-project.org/package=neuralnet) package:
