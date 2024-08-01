@@ -79,7 +79,10 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`r2pmml`](https://github.com/jpmml/r2pmml) package:
     * `scorecard` - Scorecard regression
   * `stats` package:
-    * `glm` - Generalized Linear Model (GLM) regression and classification
+    * `glm` - Generalized Linear Model (GLM) regression and classification:
+      * `binomial`, `gaussian`, `Gamma`, `inverse.gamma` and `poisson` families
+      * `MASS::negative.binomial` family
+      * `statmod::tweedie` family
     * `kmeans` - K-Means clustering
     * `lm` - Linear Model (LM) regression
   * [`xgboost`](https://cran.r-project.org/package=xgboost) package:
@@ -106,6 +109,7 @@ Java library and command-line application for converting [R](https://www.r-proje
 # Installation #
 
 Enter the project root directory and build using [Apache Maven](https://maven.apache.org/):
+
 ```
 mvn clean install
 ```
@@ -123,6 +127,7 @@ A typical workflow can be summarized as follows:
 ### The R side of operations
 
 The following R script trains a Random Forest (RF) model and saves it in RDS data format to a file `rf.rds`:
+
 ```R
 library("randomForest")
 
@@ -134,16 +139,19 @@ saveRDS(rf, "rf.rds")
 ### The JPMML-R side of operations
 
 Converting the RDS file `rf.rds` to a PMML file `rf.pmml`:
+
 ```
 java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
 
 Getting help:
+
 ```
 java -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --help
 ```
 
 The conversion of large files (1 GB and beyond) can be sped up by increasing the JVM heap size using `-Xms` and `-Xmx` options:
+
 ```
 java -Xms4G -Xmx8G -jar pmml-rexp-example/target/pmml-rexp-example-executable-1.6-SNAPSHOT.jar --rds-input rf.rds --pmml-output rf.pmml
 ```
