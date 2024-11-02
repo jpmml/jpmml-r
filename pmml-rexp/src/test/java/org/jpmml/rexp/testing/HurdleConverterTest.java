@@ -16,9 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-R.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.rexp.evaluator;
+package org.jpmml.rexp.testing;
 
-public interface RExpFunctions {
+import org.jpmml.evaluator.FunctionRegistry;
+import org.jpmml.rexp.evaluator.RExpFunctions;
+import org.jpmml.rexp.evaluator.functions.PPois;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-	String PPOIS = "stats::ppois";
+public class HurdleConverterTest extends RExpEncoderBatchTest {
+
+	@BeforeClass
+	static
+	public void setup(){
+		FunctionRegistry.putFunction(RExpFunctions.PPOIS, new PPois());
+	}
+
+	@Test
+	public void evaluateNMES1988() throws Exception {
+		evaluate("Hurdle", "NMES1988");
+	}
 }

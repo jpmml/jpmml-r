@@ -87,6 +87,10 @@ createModeChoice = function(){
 	storeCsv(modeChoice, "ModeChoice")
 }
 
+createNMES1988 = function(nmes){
+	storeCsv(nmes, "NMES1988")
+}
+
 loadWineQuality = function(color){
 	data = read.table(paste("http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-", color, ".csv", sep = ""), sep = ";", header = TRUE)
 
@@ -121,9 +125,11 @@ createWineQuality = function(){
 
 data(audit)
 data(iris)
+data("NMES1988", package = "AER")
 
 createAudit(audit)
 createAuto()
 createIris(iris)
 createModeChoice()
+createNMES1988(NMES1988)
 createWineQuality()

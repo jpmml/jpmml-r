@@ -36,6 +36,12 @@ loadModeChoiceCsv = function(name){
 	return (modeChoice)
 }
 
+loadNMES1988Csv = function(name){
+	nmes = loadCsv(name)
+
+	return (nmes)
+}
+
 loadVersicolorCsv = function(name){
 	versicolor = loadCsv(name)
 	versicolor$Species = as.factor(versicolor$Species)

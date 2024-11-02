@@ -187,14 +187,21 @@ public class FormulaUtil {
 			} else
 
 			{
+				DataField dataField = encoder.getDataField(name);
+
 				if(categoryNames != null && !categoryNames.isEmpty()){
-					DataField dataField = encoder.createDataField(name, OpType.CATEGORICAL, dataType, categories);
+
+					if(dataField == null){
+						dataField = encoder.createDataField(name, OpType.CATEGORICAL, dataType, categories);
+					}
 
 					formula.addField(dataField, categoryNames, categoryValues);
 				} else
 
 				{
-					DataField dataField = encoder.createDataField(name, OpType.CONTINUOUS, dataType);
+					if(dataField == null){
+						dataField = encoder.createDataField(name, OpType.CONTINUOUS, dataType);
+					}
 
 					formula.addField(dataField);
 				}

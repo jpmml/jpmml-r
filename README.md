@@ -67,6 +67,8 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `party` - Recursive Partytioning (Party) regression and classification
   * [`pls`](https://cran.r-project.org/package=pls) package:
     * `mvr` - Multivariate Regression (MVR) regression
+  * [`pscl`](https://cran.r-project.org/package=pscl) package:
+    * `hurdle` - Hurdle regression
   * [`randomForest`](https://cran.r-project.org/package=randomForest) package:
     * `randomForest` - Random Forest (RF) regression and classification
   * [`ranger`](https://cran.r-project.org/package=ranger) package:
