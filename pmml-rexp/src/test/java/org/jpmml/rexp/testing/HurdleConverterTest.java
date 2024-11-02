@@ -18,9 +18,8 @@
  */
 package org.jpmml.rexp.testing;
 
-import org.jpmml.evaluator.FunctionRegistry;
+import org.jpmml.rexp.evaluator.RExpFunctionRegistry;
 import org.jpmml.rexp.evaluator.RExpFunctions;
-import org.jpmml.rexp.evaluator.functions.PPois;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,7 +28,7 @@ public class HurdleConverterTest extends RExpEncoderBatchTest {
 	@BeforeClass
 	static
 	public void setup(){
-		FunctionRegistry.putFunction(RExpFunctions.PPOIS, new PPois());
+		RExpFunctionRegistry.propagate(RExpFunctions.PPOIS);
 	}
 
 	@Test
