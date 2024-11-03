@@ -34,6 +34,7 @@ public class RExpUtil {
 		switch(type){
 			case "character":
 			case "factor":
+			case "ordered":
 				return DataType.STRING;
 			case "numeric":
 				return DataType.DOUBLE;

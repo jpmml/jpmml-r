@@ -51,11 +51,12 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`IsolationForest`](https://r-forge.r-project.org/R/?group_id=479) package:
     * `iForest` - Isolation Forest (IF) anomaly detection
   * [`lightgbm`](https://cran.r-project.org/package=lightgbm) package:
-    * `lgb.Booster` - LightGBM regression and classification.
+    * `lgb.Booster` - LightGBM regression and classification
   * [`MASS`](https://cran.r-project.org/package=MASS) package:
-    * `negbin` - Generalized Linear Model (GLM) regression.
+    * `negbin` - Generalized Linear Model (GLM) regression
+    * `polr` - Ordinal regression
   * [`mlr`](https://cran.r-project.org/package=mlr) package:
-    * `WrappedModel` - Selected JPMML-R model types.
+    * `WrappedModel` - Selected JPMML-R model types
   * [`neuralnet`](https://cran.r-project.org/package=neuralnet) package:
     * `nn` - Neural Network (NN) regression
   * [`nnet`](https://cran.r-project.org/package=nnet) package:
