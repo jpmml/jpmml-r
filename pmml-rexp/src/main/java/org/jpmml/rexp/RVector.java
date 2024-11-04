@@ -94,7 +94,12 @@ public class RVector<E> extends RExp implements Iterable<E> {
 	}
 
 	public boolean hasElement(String name){
-		RStringVector names = getStringAttribute("names");
+
+		if(isEmpty()){
+			return false;
+		}
+
+		RStringVector names = names();
 
 		List<String> values = names.getDequotedValues();
 
@@ -104,7 +109,12 @@ public class RVector<E> extends RExp implements Iterable<E> {
 	}
 
 	private E findElement(String name, boolean required){
-		RStringVector names = getStringAttribute("names");
+
+		if(isEmpty()){
+			return null;
+		}
+
+		RStringVector names = names();
 
 		List<String> values = names.getDequotedValues();
 

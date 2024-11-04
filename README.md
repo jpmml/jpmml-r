@@ -77,6 +77,7 @@ Java library and command-line application for converting [R](https://www.r-proje
   * [`rms`](https://cran.r-project.org/package=rms) package:
     * `lrm` - Binary Logistic Regression (LR) classification
     * `ols` - Ordinary Least Squares (OLS) regression
+    * `orm` - Ordinal regression
   * [`rpart`](https://cran.r-project.org/package=rpart) package:
     * `rpart` - Recursive Partitioning (RPart) regression and classification
   * [`r2pmml`](https://github.com/jpmml/r2pmml) package:
