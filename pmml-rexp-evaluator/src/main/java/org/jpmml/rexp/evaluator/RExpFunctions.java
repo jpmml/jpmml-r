@@ -20,5 +20,5 @@ package org.jpmml.rexp.evaluator;
 
 public interface RExpFunctions {
 
-	String PPOIS = "stats::ppois";
+	String STATS_PPOIS = "stats::ppois";
 }

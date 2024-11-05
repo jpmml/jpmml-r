@@ -62,7 +62,7 @@ public class RExpFunctionRegistry {
 	static {
 		ImmutableMap.Builder<String, Function> builder = new ImmutableMap.Builder<>();
 
-		builder.put(RExpFunctions.PPOIS, new PPois());
+		builder.put(RExpFunctions.STATS_PPOIS, new PPois());
 
 		rexpFunctions = builder.build();
 	}

@@ -85,7 +85,7 @@ public class HurdleConverter extends Converter<RGenericVector> {
 		Expression adjExpression = ExpressionUtil.createApply(PMMLFunctions.EXP,
 			ExpressionUtil.createApply(PMMLFunctions.SUBTRACT,
 				ExpressionUtil.createApply(PMMLFunctions.LN, new FieldRef(zeroPredictField)),
-				ExpressionUtil.createApply(RExpFunctions.PPOIS, ExpressionUtil.createConstant(0), new FieldRef(countPredictField))
+				ExpressionUtil.createApply(RExpFunctions.STATS_PPOIS, ExpressionUtil.createConstant(0), new FieldRef(countPredictField))
 			)
 		);
 

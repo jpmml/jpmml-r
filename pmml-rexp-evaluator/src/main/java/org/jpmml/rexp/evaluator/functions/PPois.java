@@ -31,7 +31,7 @@ import org.jpmml.rexp.evaluator.RExpFunctions;
 public class PPois extends AbstractFunction {
 
 	public PPois(){
-		super(RExpFunctions.PPOIS, Arrays.asList("x", "lambda"));
+		super(RExpFunctions.STATS_PPOIS, Arrays.asList("x", "lambda"));
 	}
 
 	@Override
