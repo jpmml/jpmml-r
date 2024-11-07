@@ -52,7 +52,7 @@ public class ModelFrameFormulaContext implements FormulaContext {
 			return vector;
 		}
 
-		return model;
+		return null;
 	}
 
 	public RGenericVector getModel(){
