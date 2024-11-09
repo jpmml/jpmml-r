@@ -28,7 +28,7 @@ public class HurdleConverterTest extends RExpEncoderBatchTest {
 	@BeforeClass
 	static
 	public void setup(){
-		RExpFunctionRegistry.propagate(RExpFunctions.STATS_PPOIS);
+		RExpFunctionRegistry.publish(RExpFunctions.STATS_PPOIS);
 	}
 
 	@Test

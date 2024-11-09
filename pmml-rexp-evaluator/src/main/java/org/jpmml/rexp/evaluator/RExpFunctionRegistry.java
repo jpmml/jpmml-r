@@ -37,17 +37,17 @@ public class RExpFunctionRegistry {
 	}
 
 	static
-	public void propagate(String name){
-		propagate(key -> Objects.equals(name, key));
+	public void publish(String name){
+		publish(key -> Objects.equals(name, key));
 	}
 
 	static
-	public void propagateAll(){
-		propagate(key -> true);
+	public void publishAll(){
+		publish(key -> true);
 	}
 
 	static
-	private void propagate(Predicate<String> predicate){
+	private void publish(Predicate<String> predicate){
 		(RExpFunctionRegistry.rexpFunctions.entrySet()).stream()
 			.filter(entry -> predicate.test(entry.getKey()))
 			.forEach(entry -> FunctionRegistry.putFunction(entry.getKey(), entry.getValue()));
