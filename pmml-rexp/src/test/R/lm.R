@@ -11,7 +11,7 @@ generateLMFormulaAuto = function(){
 
 	mpg = predict(auto.lm, newdata = auto)
 
-	storeRds(auto.lm, "LMFormulaAuto")
+	storeRds(auto.lm, "LMFormulaAuto", ascii = TRUE)
 	storeCsv(data.frame("mpg" = mpg), "LMFormulaAuto")
 }
 
@@ -21,7 +21,7 @@ generateLMCustFormulaAuto = function(){
 
 	mpg = predict(auto.lm, newdata = auto)
 
-	storeRds(auto.lm, "LMCustFormulaAuto")
+	storeRds(auto.lm, "LMCustFormulaAuto", ascii = TRUE)
 	storeCsv(data.frame("mpg" = mpg), "LMCustFormulaAuto")
 }
 

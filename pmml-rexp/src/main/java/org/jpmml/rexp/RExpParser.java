@@ -44,13 +44,33 @@ public class RExpParser {
 
 
 	public RExpParser(InputStream is) throws IOException {
-		this.input = new XDRInput(init(new PushbackInputStream(is, 2))){
+		InputStream decompressedIs = maybeDecompress(new PushbackInputStream(is, 2));
 
-			@Override
-			public RExpParser getParser(){
-				return RExpParser.this;
-			}
-		};
+		PushbackInputStream pushbackIs = new PushbackInputStream(decompressedIs, 1);
+
+		int first = pushbackIs.read();
+
+		pushbackIs.unread(first);
+
+		if(first == 'A'){
+			this.input = new TextInput(pushbackIs){
+
+				@Override
+				public RExpParser getParser(){
+					return RExpParser.this;
+				}
+			};
+		} else
+
+		{
+			this.input = new BinaryInput(pushbackIs){
+
+				@Override
+				public RExpParser getParser(){
+					return RExpParser.this;
+				}
+			};
+		}
 	}
 
 	public RExp parse() throws IOException {
@@ -565,7 +585,7 @@ public class RExpParser {
 	}
 
 	static
-	private InputStream init(PushbackInputStream is) throws IOException {
+	private InputStream maybeDecompress(PushbackInputStream is) throws IOException {
 		byte[] gzipMagic = new byte[2];
 
 		ByteStreams.readFully(is, gzipMagic);

@@ -24,12 +24,12 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 abstract
-public class XDRInput implements RDataInput {
+public class BinaryInput implements RDataInput {
 
 	private DataInputStream dis = null;
 
 
-	public XDRInput(InputStream is) throws IOException {
+	public BinaryInput(InputStream is) throws IOException {
 		DataInputStream dis = new DataInputStream(is);
 
 		byte first = dis.readByte();

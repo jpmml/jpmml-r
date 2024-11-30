@@ -1,5 +1,5 @@
-storeRds = function(x, name){
-	saveRDS(x, paste("../resources/rds/", name, ".rds", sep = ""), version = 2)
+storeRds = function(x, name, ascii = FALSE){
+	saveRDS(x, paste("../resources/rds/", name, ".rds", sep = ""), version = 2, ascii = ascii)
 }
 
 loadCsv = function(name){
