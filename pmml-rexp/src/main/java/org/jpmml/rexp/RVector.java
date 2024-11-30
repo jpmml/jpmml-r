@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,6 +35,12 @@ public class RVector<E> extends RExp implements Iterable<E> {
 	public DataType getDataType();
 
 	abstract
+	int type();
+
+	abstract
+	void writeValues(RDataOutput output) throws IOException;
+
+	abstract
 	public int size();
 
 	abstract
@@ -41,6 +48,30 @@ public class RVector<E> extends RExp implements Iterable<E> {
 
 	abstract
 	public List<E> getValues();
+
+	@Override
+	public void write(RDataOutput output) throws IOException {
+		RPair attributes = getAttributes();
+
+		int flags = type();
+
+		if(attributes != null){
+			flags = SerializationUtil.setHasAttributes(flags);
+		}
+
+		output.writeInt(flags);
+
+		writeValues(output);
+
+		if(attributes != null){
+			attributes.write(output);
+		}
+	}
+
+	@Override
+	public String toString(){
+		return String.valueOf(getValues());
+	}
 
 	@Override
 	public Iterator<E> iterator(){
@@ -128,10 +159,5 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		}
 
 		return null;
-	}
-
-	@Override
-	public String toString(){
-		return String.valueOf(getValues());
 	}
 }

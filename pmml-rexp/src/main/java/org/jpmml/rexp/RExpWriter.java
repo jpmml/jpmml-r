@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2024 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -19,43 +19,38 @@
 package org.jpmml.rexp;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class RString extends RExp {
+public class RExpWriter {
 
-	private String value = null;
+	private RDataOutput output = null;
+
+	private Map<Object, Integer> referenceTable = new LinkedHashMap<>();
 
 
-	public RString(String value){
-		super(null);
+	public RExpWriter(OutputStream os) throws IOException {
+		this.output = new XDROutput(os){
 
-		setValue(value);
+			@Override
+			public RExpWriter getWriter(){
+				return RExpWriter.this;
+			}
+		};
 	}
 
-	@Override
-	public void write(RDataOutput output) throws IOException {
-		String value = getValue();
+	public void write(RExp rexp) throws IOException {
+		this.output.writeInt(2);
 
-		output.writeInt(SExpTypes.CHARSXP);
+		// XXX
+		this.output.writeInt(0);
+		this.output.writeInt(0);
 
-		if(value == null){
-			output.writeInt(-1);
-		} else
-
-		{
-			byte[] bytes = value.getBytes();
-
-			output.writeInt(bytes.length);
-			output.writeByteArray(bytes);
-		}
+		rexp.write(this.output);
 	}
 
-	public String getValue(){
-		return this.value;
+	public Map<Object, Integer> getReferenceTable(){
+		return this.referenceTable;
 	}
-
-	private void setValue(String value){
-		this.value = value;
-	}
-
-	public static final RString NA = new RString("NA");
 }

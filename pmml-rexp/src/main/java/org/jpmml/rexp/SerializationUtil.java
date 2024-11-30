@@ -49,8 +49,18 @@ public class SerializationUtil {
 	}
 
 	static
+	public int setHasAttributes(int flags){
+		return setHasBit(flags, SerializationUtil.HAS_ATTR_BIT_MASK);
+	}
+
+	static
 	public boolean hasTag(int flags){
 		return hasBit(flags, SerializationUtil.HAS_TAG_BIT_MASK);
+	}
+
+	static
+	public int setHasTag(int flags){
+		return setHasBit(flags, SerializationUtil.HAS_TAG_BIT_MASK);
 	}
 
 	static
@@ -78,6 +88,11 @@ public class SerializationUtil {
 		return (flags & mask) == mask;
 	}
 
+	static
+	private int setHasBit(int flags, int mask){
+		return (flags | mask);
+	}
+
 	private static final int IS_OBJECT_BIT_MASK = (1 << 8);
 	private static final int HAS_ATTR_BIT_MASK = (1 << 9);
 	private static final int HAS_TAG_BIT_MASK = (1 << 10);
@@ -85,4 +100,6 @@ public class SerializationUtil {
 	private static final int BYTES_BIT_MASK = (1 << 1);
 	private static final int LATIN1_BIT_MASK = (1 << 2);
 	private static final int UTF8_BIT_MASK = (1 << 3);
+	private static final int CACHED_BIT_MASK = (1 << 5);
+	private static final int ASCII_BIT_MASK = (1 << 6);
 }

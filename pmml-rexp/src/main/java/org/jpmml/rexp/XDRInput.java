@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+abstract
 public class XDRInput implements RDataInput {
 
 	private DataInputStream dis = null;

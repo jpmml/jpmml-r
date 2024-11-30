@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -34,6 +35,24 @@ public class RBooleanVector extends RVector<Boolean> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	int type(){
+		return SExpTypes.LGLSXP;
+	}
+
+	@Override
+	void writeValues(RDataOutput output) throws IOException {
+		int[] values = this.values;
+
+		int length = values.length;
+
+		output.writeInt(length);
+
+		for(int i = 0; i < length; i++){
+			output.writeInt(values[i]);
+		}
 	}
 
 	@Override

@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +35,26 @@ public class RStringVector extends RVector<String> {
 		super(attributes);
 
 		setValues(values);
+	}
+
+	@Override
+	int type(){
+		return SExpTypes.STRSXP;
+	}
+
+	@Override
+	void writeValues(RDataOutput output) throws IOException {
+		List<String> values = getValues();
+
+		int length = values.size();
+
+		output.writeInt(length);
+
+		for(int i = 0; i < length; i++){
+			RString string = new RString(values.get(i));
+
+			string.write(output);
+		}
 	}
 
 	@Override

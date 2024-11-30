@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.common.primitives.Doubles;
@@ -32,6 +33,24 @@ public class RDoubleVector extends RNumberVector<Double> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	int type(){
+		return SExpTypes.REALSXP;
+	}
+
+	@Override
+	void writeValues(RDataOutput output) throws IOException {
+		double[] values = this.values;
+
+		int length = values.length;
+
+		output.writeInt(length);
+
+		for(int i = 0; i < length; i++){
+			output.writeDouble(values[i]);
+		}
 	}
 
 	@Override

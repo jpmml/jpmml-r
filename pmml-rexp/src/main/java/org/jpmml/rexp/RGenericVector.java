@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
@@ -31,6 +32,26 @@ public class RGenericVector extends RVector<RExp> {
 		super(attributes);
 
 		setValues(values);
+	}
+
+	@Override
+	int type(){
+		return SExpTypes.VECSXP;
+	}
+
+	@Override
+	void writeValues(RDataOutput output) throws IOException {
+		List<RExp> values = getValues();
+
+		int length = values.size();
+
+		output.writeInt(length);
+
+		for(int i = 0; i < length; i++){
+			RExp value = values.get(i);
+
+			value.write(output);
+		}
 	}
 
 	@Override

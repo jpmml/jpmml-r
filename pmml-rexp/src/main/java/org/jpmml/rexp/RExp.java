@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
+
 abstract
 public class RExp {
 
@@ -26,6 +28,11 @@ public class RExp {
 
 	public RExp(RPair attributes){
 		setAttributes(attributes);
+	}
+
+	@SuppressWarnings("unused")
+	public void write(RDataOutput output) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 
 	public RStringVector names(){

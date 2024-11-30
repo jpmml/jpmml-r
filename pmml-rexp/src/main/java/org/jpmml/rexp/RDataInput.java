@@ -23,6 +23,8 @@ import java.io.IOException;
 
 public interface RDataInput extends Closeable {
 
+	RExpParser getParser();
+
 	int readInt() throws IOException;
 
 	double readDouble() throws IOException;

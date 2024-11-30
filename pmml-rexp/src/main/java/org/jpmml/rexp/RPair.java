@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 public class RPair extends RExp {
@@ -34,6 +36,63 @@ public class RPair extends RExp {
 
 		setTag(tag);
 		setValue(value);
+	}
+
+	@Override
+	public void write(RDataOutput output) throws IOException {
+		RExp tag = getTag();
+		RExp value = getValue();
+		RPair attributes = getAttributes();
+		RPair next = getNext();
+
+		int flags = SExpTypes.LISTSXP;
+
+		if(attributes != null){
+			flags = SerializationUtil.setHasAttributes(flags);
+		} // End if
+
+		if(tag != null){
+			flags = SerializationUtil.setHasTag(flags);
+		}
+
+		output.writeInt(flags);
+
+		if(attributes != null){
+			attributes.write(output);
+		} // End if
+
+		if(tag != null){
+			RString string = (RString)tag;
+
+			RExpWriter writer = output.getWriter();
+
+			Map<Object, Integer> referenceTable = writer.getReferenceTable();
+
+			Integer index = referenceTable.get(string.getValue());
+			if(index == null){
+				referenceTable.put(string.getValue(), referenceTable.size() + 1);
+
+				output.writeInt(SExpTypes.SYMSXP);
+
+				string.write(output);
+			} else
+
+			{
+				output.writeInt(SerializationTypes.REFSXP);
+
+				output.writeInt(index);
+			}
+		}
+
+		value.write(output);
+
+		if(next != null){
+			next.write(output);
+		} else
+
+		{
+			output.writeInt(SerializationTypes.NILVALUESXP);
+		}
 	}
 
 	public RPair getValue(int index){

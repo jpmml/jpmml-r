@@ -44,7 +44,13 @@ public class RExpParser {
 
 
 	public RExpParser(InputStream is) throws IOException {
-		this.input = new XDRInput(init(new PushbackInputStream(is, 2)));
+		this.input = new XDRInput(init(new PushbackInputStream(is, 2))){
+
+			@Override
+			public RExpParser getParser(){
+				return RExpParser.this;
+			}
+		};
 	}
 
 	public RExp parse() throws IOException {

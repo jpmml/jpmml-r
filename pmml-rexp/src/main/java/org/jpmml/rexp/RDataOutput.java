@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2024 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -18,44 +18,16 @@
  */
 package org.jpmml.rexp;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public class RString extends RExp {
+public interface RDataOutput extends Closeable {
 
-	private String value = null;
+	RExpWriter getWriter();
 
+	void writeInt(int value) throws IOException;
 
-	public RString(String value){
-		super(null);
+	void writeDouble(double value) throws IOException;
 
-		setValue(value);
-	}
-
-	@Override
-	public void write(RDataOutput output) throws IOException {
-		String value = getValue();
-
-		output.writeInt(SExpTypes.CHARSXP);
-
-		if(value == null){
-			output.writeInt(-1);
-		} else
-
-		{
-			byte[] bytes = value.getBytes();
-
-			output.writeInt(bytes.length);
-			output.writeByteArray(bytes);
-		}
-	}
-
-	public String getValue(){
-		return this.value;
-	}
-
-	private void setValue(String value){
-		this.value = value;
-	}
-
-	public static final RString NA = new RString("NA");
+	void writeByteArray(byte[] bytes) throws IOException;
 }

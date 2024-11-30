@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -34,6 +35,24 @@ public class RIntegerVector extends RNumberVector<Integer> {
 		super(attributes);
 
 		this.values = values;
+	}
+
+	@Override
+	int type(){
+		return SExpTypes.INTSXP;
+	}
+
+	@Override
+	void writeValues(RDataOutput output) throws IOException {
+		int[] values = this.values;
+
+		int lengthj = values.length;
+
+		output.writeInt(lengthj);
+
+		for(int i = 0; i < lengthj; i++){
+			output.writeInt(values[i]);
+		}
 	}
 
 	@Override
