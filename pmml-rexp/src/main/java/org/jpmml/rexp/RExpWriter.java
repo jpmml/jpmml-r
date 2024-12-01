@@ -18,12 +18,13 @@
  */
 package org.jpmml.rexp;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class RExpWriter {
+public class RExpWriter implements Closeable {
 
 	private RDataOutput output = null;
 
@@ -31,13 +32,35 @@ public class RExpWriter {
 
 
 	public RExpWriter(OutputStream os) throws IOException {
-		this.output = new XDROutput(os){
+		this(os, false);
+	}
 
-			@Override
-			public RExpWriter getWriter(){
-				return RExpWriter.this;
-			}
-		};
+	public RExpWriter(OutputStream os, boolean ascii) throws IOException {
+
+		if(ascii){
+			this.output = new TextOutput(os){
+
+				@Override
+				public RExpWriter getWriter(){
+					return RExpWriter.this;
+				}
+			};
+		} else
+
+		{
+			this.output = new BinaryOutput(os){
+
+				@Override
+				public RExpWriter getWriter(){
+					return RExpWriter.this;
+				}
+			};
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.output.close();
 	}
 
 	public void write(RExp rexp) throws IOException {

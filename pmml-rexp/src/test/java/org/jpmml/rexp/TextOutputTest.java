@@ -18,18 +18,18 @@
  */
 package org.jpmml.rexp;
 
-import java.io.Closeable;
-import java.io.IOException;
+import org.junit.Test;
 
-public interface RDataOutput extends Closeable {
+import static org.junit.Assert.assertEquals;
 
-	RExpWriter getWriter();
+public class TextOutputTest {
 
-	String escape(String string);
+	@Test
+	public void encode(){
+		assertEquals("\\0", TextOutput.encode("\0"));
 
-	void writeInt(int value) throws IOException;
+		assertEquals("\\\\", TextOutput.encode("\\"));
 
-	void writeDouble(double value) throws IOException;
-
-	void writeByteArray(byte[] bytes) throws IOException;
+		assertEquals("Hello\\40World!", TextOutput.encode("Hello World!"));
+	}
 }

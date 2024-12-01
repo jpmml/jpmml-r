@@ -42,6 +42,8 @@ public class RString extends RExp {
 		} else
 
 		{
+			value = output.escape(value);
+
 			byte[] bytes = value.getBytes();
 
 			output.writeInt(bytes.length);

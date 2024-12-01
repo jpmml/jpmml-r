@@ -18,6 +18,7 @@
  */
 package org.jpmml.rexp;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,7 @@ import java.util.zip.GZIPInputStream;
 
 import com.google.common.io.ByteStreams;
 
-public class RExpParser {
+public class RExpParser implements Closeable {
 
 	private RDataInput input = null;
 
@@ -71,6 +72,11 @@ public class RExpParser {
 				}
 			};
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.input.close();
 	}
 
 	public RExp parse() throws IOException {

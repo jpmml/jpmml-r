@@ -31,6 +31,7 @@ public class TextInputTest {
 		assertEquals("\\", TextInput.decode("\\\\"));
 		assertEquals("\\", TextInput.decode("\\134"));
 
+		assertEquals("Hello World!", TextInput.decode("Hello\\40World!"));
 		assertEquals("Hello World!", TextInput.decode("Hello\\040World!"));
 	}
 }

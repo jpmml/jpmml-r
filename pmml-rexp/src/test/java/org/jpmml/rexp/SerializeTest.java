@@ -33,26 +33,52 @@ public class SerializeTest {
 
 	@Test
 	public void rdsRealVector() throws IOException {
-		RDoubleVector realVec = (RDoubleVector)rdsClone("RealVector");
+		RDoubleVector realVec = (RDoubleVector)parse("RealVector");
 
+		checkRealVector(rdsClone(realVec));
+		checkRealVector(rdsClone(realVec, true));
+	}
+
+	@Test
+	public void rdsIntegerVector() throws IOException {
+		RIntegerVector integerVec = (RIntegerVector)parse("IntegerVector");
+
+		checkIntegerVector(rdsClone(integerVec));
+		checkIntegerVector(rdsClone(integerVec, true));
+	}
+
+	@Test
+	public void rdsNamedList() throws IOException {
+		RGenericVector namedList = (RGenericVector)parse("NamedList");
+
+		checkNamedList(rdsClone(namedList));
+		checkNamedList(rdsClone(namedList, true));
+	}
+
+	@Test
+	public void rdsDataFrame() throws IOException {
+		RGenericVector dataFrame = (RGenericVector)parse("DataFrame");
+
+		checkDataFrame(rdsClone(dataFrame));
+		checkDataFrame(rdsClone(dataFrame, true));
+	}
+
+	static
+	private void checkRealVector(RDoubleVector realVec){
 		assertEquals(5 - 1, realVec.size());
 
 		assertEquals(Arrays.asList(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, Double.NaN), realVec.getValues());
 	}
 
-	@Test
-	public void rdsIntegerVector() throws IOException {
-		RIntegerVector integerVec = (RIntegerVector)rdsClone("IntegerVector");
-
+	static
+	private void checkIntegerVector(RIntegerVector integerVec){
 		assertEquals(3 - 1, integerVec.size());
 
 		assertEquals(Arrays.asList(null, null), integerVec.getValues());
 	}
 
-	@Test
-	public void rdsNamedList() throws IOException {
-		RGenericVector namedList = (RGenericVector)rdsClone("NamedList");
-
+	static
+	private void checkNamedList(RGenericVector namedList){
 		assertFalse(namedList.hasAttribute("class"));
 
 		assertEquals(10, namedList.size());
@@ -74,10 +100,8 @@ public class SerializeTest {
 		assertEquals(Arrays.asList("alpha", "beta", "gamma"), (namedList.getFactorElement("factor_vector")).getFactorValues());
 	}
 
-	@Test
-	public void rdsDataFrame() throws IOException {
-		RGenericVector dataFrame = (RGenericVector)rdsClone("DataFrame");
-
+	static
+	private void checkDataFrame(RGenericVector dataFrame){
 		assertEquals(Arrays.asList("data.frame"), (dataFrame.getStringAttribute("class")).getValues());
 
 		assertEquals(5, dataFrame.size());
@@ -90,40 +114,44 @@ public class SerializeTest {
 	}
 
 	static
-	private RExp rdsClone(String name) throws IOException {
-		RExp rexp;
-
-		try(InputStream is = SerializeTest.class.getResourceAsStream("/rds/" + name + ".rds")){
-			rexp = parse(is);
-		}
-
-		return rdsClone(rexp);
+	private <E extends RExp> E rdsClone(E rexp) throws IOException {
+		return rdsClone(rexp, false);
 	}
 
 	static
-	private RExp rdsClone(RExp rexp) throws IOException {
+	private <E extends RExp> E rdsClone(E rexp, boolean ascii) throws IOException {
 		DirectByteArrayOutputStream buffer = new DirectByteArrayOutputStream(10 * 1024);
 
 		try(OutputStream os = buffer){
-			write(rexp, os);
+			write(rexp, os, ascii);
 		} // End try
 
 		try(InputStream is = buffer.getInputStream()){
+			return (E)parse(is);
+		}
+	}
+
+	static
+	private RExp parse(String name) throws IOException {
+
+		try(InputStream is = SerializeTest.class.getResourceAsStream("/rds/" + name + ".rds")){
 			return parse(is);
 		}
 	}
 
 	static
 	private RExp parse(InputStream is) throws IOException {
-		RExpParser parser = new RExpParser(is);
 
-		return parser.parse();
+		try(RExpParser parser = new RExpParser(is)){
+			return parser.parse();
+		}
 	}
 
 	static
-	private void write(RExp rexp, OutputStream os) throws IOException {
-		RExpWriter writer = new RExpWriter(os);
+	private void write(RExp rexp, OutputStream os, boolean ascii) throws IOException {
 
-		writer.write(rexp);
+		try(RExpWriter writer = new RExpWriter(os, ascii)){
+			writer.write(rexp);
+		}
 	}
 }

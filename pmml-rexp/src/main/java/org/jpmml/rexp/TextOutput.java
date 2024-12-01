@@ -18,45 +18,74 @@
  */
 package org.jpmml.rexp;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 abstract
-public class XDROutput implements RDataOutput {
+public class TextOutput implements RDataOutput {
 
-	private DataOutputStream dos = null;
+	private Writer writer = null;
 
 
-	public XDROutput(OutputStream os) throws IOException {
-		DataOutputStream dos = new DataOutputStream(os);
+	public TextOutput(OutputStream os) throws IOException {
+		Writer writer = new OutputStreamWriter(os);
 
-		dos.writeByte('X');
-		dos.writeByte('\n');
+		writer.write('A');
+		writer.write('\n');
 
-		this.dos = dos;
+		this.writer = writer;
 	}
-
-	abstract
-	public RExpWriter getWriter();
 
 	@Override
 	public void close() throws IOException {
-		this.dos.close();
+		this.writer.close();
+	}
+
+	@Override
+	public String escape(String string){
+		return encode(string);
 	}
 
 	@Override
 	public void writeInt(int value) throws IOException {
-		this.dos.writeInt(value);
+		this.writer.write(String.valueOf(value));
+		this.writer.write('\n');
 	}
 
 	@Override
 	public void writeDouble(double value) throws IOException {
-		this.dos.writeLong(Double.doubleToLongBits(value));
+		this.writer.write(String.valueOf(value));
+		this.writer.write('\n');
 	}
 
 	@Override
 	public void writeByteArray(byte[] bytes) throws IOException {
-		this.dos.write(bytes);
+		this.writer.write(new String(bytes));
+		this.writer.write('\n');
+	}
+
+	static
+	public String encode(String string){
+		StringBuilder sb = new StringBuilder(2 * string.length());
+
+		for(int i = 0; i < string.length(); i++){
+			char c = string.charAt(i);
+
+			if(c == '\\'){
+				sb.append('\\').append('\\');
+			} else
+
+			if(c <= 31 || c == ' ' || c >= 127){
+				sb.append('\\').append(Integer.toOctalString(c));
+			} else
+
+			{
+				sb.append(c);
+			}
+		}
+
+		return sb.toString();
 	}
 }
