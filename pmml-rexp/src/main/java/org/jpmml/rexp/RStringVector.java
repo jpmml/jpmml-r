@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -64,6 +65,37 @@ public class RStringVector extends RVector<String> {
 	@Override
 	public DataType getDataType(){
 		return DataType.STRING;
+	}
+
+	public RFactorVector toFactorVector(){
+		List<String> values = getValues();
+
+		List<String> levels = values.stream()
+			.distinct()
+			.sorted()
+			.collect(Collectors.toList());
+
+		return toFactorVector(levels);
+	}
+
+	public RFactorVector toFactorVector(List<String> levels){
+		List<String> values = getValues();
+
+		int[] levelValues = values.stream()
+			.mapToInt(value -> {
+				int index = levels.indexOf(value);
+
+				if(index < 0){
+					throw new IllegalArgumentException();
+				}
+
+				return (index + 1);
+			})
+			.toArray();
+
+		RPair attributes = new RPair(new RString("levels"), new RStringVector(levels, null), null);
+
+		return new RFactorVector(levelValues, attributes);
 	}
 
 	@Override
