@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -30,6 +31,25 @@ public class RBooleanVector extends RVector<Boolean> {
 
 	private int[] values = null;
 
+
+	public RBooleanVector(Boolean value, RPair attributes){
+		this(Collections.singletonList(value), attributes);
+	}
+
+	public RBooleanVector(List<Boolean> values, RPair attributes){
+		super(attributes);
+
+		this.values = values.stream()
+			.mapToInt(value -> {
+
+				if(value == null){
+					return Integer.MIN_VALUE;
+				}
+
+				return (value.booleanValue() ? 1 : 0);
+			})
+			.toArray();
+	}
 
 	public RBooleanVector(int[] values, RPair attributes){
 		super(attributes);

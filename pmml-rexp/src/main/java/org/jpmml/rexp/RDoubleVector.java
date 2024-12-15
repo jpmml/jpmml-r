@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.primitives.Doubles;
@@ -28,6 +29,25 @@ public class RDoubleVector extends RNumberVector<Double> {
 
 	private double[] values = null;
 
+
+	public RDoubleVector(Number value, RPair attributes){
+		this(Collections.singletonList(value), attributes);
+	}
+
+	public RDoubleVector(List<Number> values, RPair attributes){
+		super(attributes);
+
+		this.values = values.stream()
+			.mapToDouble(value -> {
+
+				if(value == null){
+					return Double.NaN;
+				}
+
+				return value.doubleValue();
+			})
+			.toArray();
+	}
 
 	public RDoubleVector(double[] values, RPair attributes){
 		super(attributes);

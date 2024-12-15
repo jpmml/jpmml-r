@@ -31,6 +31,10 @@ public class RStringVector extends RVector<String> {
 	private List<String> values = null;
 
 
+	public RStringVector(String value, RPair attributes){
+		this(Collections.singletonList(value), attributes);
+	}
+
 	public RStringVector(List<String> values, RPair attributes){
 		super(attributes);
 

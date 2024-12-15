@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -30,6 +31,25 @@ public class RIntegerVector extends RNumberVector<Integer> {
 
 	private int[] values = null;
 
+
+	public RIntegerVector(Number value, RPair attributes){
+		this(Collections.singletonList(value), attributes);
+	}
+
+	public RIntegerVector(List<Number> values, RPair attributes){
+		super(attributes);
+
+		this.values = values.stream()
+			.mapToInt(value -> {
+
+				if(value == null){
+					return Integer.MIN_VALUE;
+				}
+
+				return value.intValue();
+			})
+			.toArray();
+	}
 
 	public RIntegerVector(int[] values, RPair attributes){
 		super(attributes);
