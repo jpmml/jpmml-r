@@ -108,30 +108,30 @@ public class RExp {
 	}
 
 	public boolean hasAttribute(String name){
-		RPair attribute = getAttributes();
+		RPair attributes = getAttributes();
 
-		while(attribute != null){
+		while(attributes != null){
 
-			if(attribute.tagEquals(name)){
+			if(attributes.tagEquals(name)){
 				return true;
 			}
 
-			attribute = attribute.getNext();
+			attributes = attributes.getNext();
 		}
 
 		return false;
 	}
 
 	private RExp findAttribute(String name, boolean required){
-		RPair attribute = getAttributes();
+		RPair attributes = getAttributes();
 
-		while(attribute != null){
+		while(attributes != null){
 
-			if(attribute.tagEquals(name)){
-				return attribute.getValue();
+			if(attributes.tagEquals(name)){
+				return attributes.getValue();
 			}
 
-			attribute = attribute.getNext();
+			attributes = attributes.getNext();
 		}
 
 		if(required){
