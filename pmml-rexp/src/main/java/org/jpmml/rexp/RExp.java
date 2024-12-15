@@ -141,6 +141,32 @@ public class RExp {
 		return null;
 	}
 
+	public void addAttribute(String name, RExp rexp){
+		addAttribute(new RPair(new RString(name), rexp, null));
+	}
+
+	public void addAttribute(RPair pair){
+		RPair attributes = getAttributes();
+
+		if(attributes == null){
+			setAttributes(pair);
+
+			return;
+		}
+
+		while(attributes != null){
+			RPair next = attributes.getNext();
+
+			if(next == null){
+				break;
+			}
+
+			attributes = next;
+		}
+
+		attributes.setNext(pair);
+	}
+
 	public RPair getAttributes(){
 		return this.attributes;
 	}
