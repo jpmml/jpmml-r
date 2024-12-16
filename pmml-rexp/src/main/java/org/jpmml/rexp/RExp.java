@@ -35,6 +35,10 @@ public class RExp {
 		throw new UnsupportedOperationException();
 	}
 
+	public RStringVector _class(){
+		return getStringAttribute("class");
+	}
+
 	public RStringVector names(){
 		return getStringAttribute("names");
 	}

@@ -129,7 +129,7 @@ public class SerializeTest {
 		assertTrue(dataFrame.hasAttribute("names"));
 		assertTrue(dataFrame.hasAttribute("row.names"));
 
-		assertEquals(Arrays.asList("data.frame"), (dataFrame.getStringAttribute("class")).getValues());
+		assertEquals(Arrays.asList("data.frame"), (dataFrame._class()).getValues());
 
 		assertEquals(5, dataFrame.size());
 

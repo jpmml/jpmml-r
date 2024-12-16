@@ -66,13 +66,6 @@ public class RExpUtil {
 	}
 
 	static
-	public RStringVector getClassNames(RExp rexp){
-		RStringVector result = rexp.getStringAttribute("class");
-
-		return result;
-	}
-
-	static
 	public String makeName(String string){
 		StringBuilder sb = new StringBuilder();
 

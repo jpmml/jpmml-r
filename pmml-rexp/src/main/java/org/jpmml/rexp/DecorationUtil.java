@@ -65,7 +65,7 @@ public class DecorationUtil {
 
 	static
 	private RuntimeException toDecorationException(RGenericVector model, String name, Exception e){
-		RStringVector classNames = RExpUtil.getClassNames(model);
+		RStringVector classNames = model._class();
 
 		String className = classNames.getValue(0);
 

@@ -37,7 +37,7 @@ public class ConverterFactory {
 	}
 
 	public <R extends RExp> Converter<R> newConverter(R rexp){
-		RStringVector classNames = RExpUtil.getClassNames(rexp);
+		RStringVector classNames = rexp._class();
 
 		for(String className : classNames){
 			Class<? extends Converter<?>> clazz = ConverterFactory.converters.get(className);
