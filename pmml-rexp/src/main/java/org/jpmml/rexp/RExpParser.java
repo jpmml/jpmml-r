@@ -327,8 +327,12 @@ public class RExpParser implements Closeable {
 		}
 
 		RIntegerVector result = new RIntegerVector(values, readAttributes(flags));
-		if(result.hasAttribute("levels")){
-			result = new RFactorVector(values, result.getAttributes());
+		if(result.hasAttribute("class")){
+			RStringVector classNames = result._class();
+
+			if(classNames.indexOf("factor") > -1){
+				result = new RFactorVector(values, result.getAttributes());
+			}
 		}
 
 		return result;
