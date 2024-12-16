@@ -1,12 +1,21 @@
 source("util.R")
 
 realVec = c(-Inf, +Inf, NA, NaN, NULL)
+print(realVec)
+print(attributes(realVec))
 
 storeRds(realVec, "RealVector")
 
 integerVec = c(NA_integer_, as.integer(NaN), NULL)
+print(integerVec)
+print(attributes(integerVec))
 
 storeRds(integerVec, "IntegerVector")
+
+factorVec = factor(c("alpha", "beta", "gamma"))
+print(attributes(factorVec))
+
+storeRds(factorVec, "FactorVector")
 
 namedList = list(
 	"real" = 1.0,
@@ -21,6 +30,7 @@ namedList = list(
 	"factor_vector" = as.factor(c("alpha", "beta", "gamma"))
 )
 print(namedList)
+print(attributes(namedList))
 
 storeRds(namedList, "NamedList")
 
@@ -33,5 +43,6 @@ dataFrame = data.frame(
 	stringsAsFactors = FALSE
 )
 print(dataFrame)
+print(attributes(dataFrame))
 
 storeRds(dataFrame, "DataFrame")

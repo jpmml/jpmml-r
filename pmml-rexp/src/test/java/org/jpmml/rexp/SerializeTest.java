@@ -28,12 +28,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class SerializeTest {
 
 	@Test
 	public void rdsRealVector() throws IOException {
-		RDoubleVector realVec = (RDoubleVector)parse("RealVector");
+		RDoubleVector realVec = (RDoubleVector)unserialize("RealVector");
 
 		checkRealVector(rdsClone(realVec));
 		checkRealVector(rdsClone(realVec, true));
@@ -41,15 +43,23 @@ public class SerializeTest {
 
 	@Test
 	public void rdsIntegerVector() throws IOException {
-		RIntegerVector integerVec = (RIntegerVector)parse("IntegerVector");
+		RIntegerVector integerVec = (RIntegerVector)unserialize("IntegerVector");
 
 		checkIntegerVector(rdsClone(integerVec));
 		checkIntegerVector(rdsClone(integerVec, true));
 	}
 
 	@Test
+	public void rdsFactorVector() throws IOException {
+		RFactorVector factorVec = (RFactorVector)unserialize("FactorVector");
+
+		checkFactorVector(rdsClone(factorVec));
+		checkFactorVector(rdsClone(factorVec, true));
+	}
+
+	@Test
 	public void rdsNamedList() throws IOException {
-		RGenericVector namedList = (RGenericVector)parse("NamedList");
+		RGenericVector namedList = (RGenericVector)unserialize("NamedList");
 
 		checkNamedList(rdsClone(namedList));
 		checkNamedList(rdsClone(namedList, true));
@@ -57,7 +67,7 @@ public class SerializeTest {
 
 	@Test
 	public void rdsDataFrame() throws IOException {
-		RGenericVector dataFrame = (RGenericVector)parse("DataFrame");
+		RGenericVector dataFrame = (RGenericVector)unserialize("DataFrame");
 
 		checkDataFrame(rdsClone(dataFrame));
 		checkDataFrame(rdsClone(dataFrame, true));
@@ -65,21 +75,34 @@ public class SerializeTest {
 
 	static
 	private void checkRealVector(RDoubleVector realVec){
-		assertEquals(5 - 1, realVec.size());
+		assertNull(realVec.getAttributes());
 
+		assertEquals(5 - 1, realVec.size());
 		assertEquals(Arrays.asList(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, Double.NaN), realVec.getValues());
 	}
 
 	static
 	private void checkIntegerVector(RIntegerVector integerVec){
-		assertEquals(3 - 1, integerVec.size());
+		assertNull(integerVec.getAttributes());
 
+		assertEquals(3 - 1, integerVec.size());
 		assertEquals(Arrays.asList(null, null), integerVec.getValues());
+	}
+
+	static
+	private void checkFactorVector(RFactorVector factorVec){
+		assertTrue(factorVec.hasAttribute("class"));
+		assertTrue(factorVec.hasAttribute("levels"));
+
+		assertEquals(3, factorVec.size());
+		assertEquals(Arrays.asList(1, 2, 3), factorVec.getValues());
+		assertEquals(Arrays.asList("alpha", "beta", "gamma"), factorVec.getLevelValues());
 	}
 
 	static
 	private void checkNamedList(RGenericVector namedList){
 		assertFalse(namedList.hasAttribute("class"));
+		assertTrue(namedList.hasAttribute("names"));
 
 		assertEquals(10, namedList.size());
 
@@ -102,6 +125,10 @@ public class SerializeTest {
 
 	static
 	private void checkDataFrame(RGenericVector dataFrame){
+		assertTrue(dataFrame.hasAttribute("class"));
+		assertTrue(dataFrame.hasAttribute("names"));
+		assertTrue(dataFrame.hasAttribute("row.names"));
+
 		assertEquals(Arrays.asList("data.frame"), (dataFrame.getStringAttribute("class")).getValues());
 
 		assertEquals(5, dataFrame.size());
@@ -123,24 +150,24 @@ public class SerializeTest {
 		DirectByteArrayOutputStream buffer = new DirectByteArrayOutputStream(10 * 1024);
 
 		try(OutputStream os = buffer){
-			write(rexp, os, ascii);
+			serialize(rexp, os, ascii);
 		} // End try
 
 		try(InputStream is = buffer.getInputStream()){
-			return (E)parse(is);
+			return (E)unserialize(is);
 		}
 	}
 
 	static
-	private RExp parse(String name) throws IOException {
+	private RExp unserialize(String name) throws IOException {
 
 		try(InputStream is = SerializeTest.class.getResourceAsStream("/rds/" + name + ".rds")){
-			return parse(is);
+			return unserialize(is);
 		}
 	}
 
 	static
-	private RExp parse(InputStream is) throws IOException {
+	private RExp unserialize(InputStream is) throws IOException {
 
 		try(RExpParser parser = new RExpParser(is)){
 			return parser.parse();
@@ -148,7 +175,7 @@ public class SerializeTest {
 	}
 
 	static
-	private void write(RExp rexp, OutputStream os, boolean ascii) throws IOException {
+	private void serialize(RExp rexp, OutputStream os, boolean ascii) throws IOException {
 
 		try(RExpWriter writer = new RExpWriter(os, ascii)){
 			writer.write(rexp);
