@@ -12,6 +12,12 @@ print(attributes(integerVec))
 
 storeRds(integerVec, "IntegerVector")
 
+stringVec = c("alpha", "beta", "gamma")
+print(stringVec)
+print(attributes(stringVec))
+
+storeRds(stringVec, "StringVector")
+
 factorVec = factor(c("alpha", "beta", "gamma"))
 print(attributes(factorVec))
 

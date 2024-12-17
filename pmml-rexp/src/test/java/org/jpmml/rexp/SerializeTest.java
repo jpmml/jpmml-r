@@ -50,6 +50,19 @@ public class SerializeTest {
 	}
 
 	@Test
+	public void rdsStringVector() throws IOException {
+		RStringVector stringVec = (RStringVector)unserialize("StringVector");
+
+		checkStringVector(rdsClone(stringVec));
+		checkStringVector(rdsClone(stringVec, true));
+
+		RFactorVector factorVec = stringVec.toFactorVector();
+
+		checkFactorVector(rdsClone(factorVec));
+		checkFactorVector(rdsClone(factorVec, true));
+	}
+
+	@Test
 	public void rdsFactorVector() throws IOException {
 		RFactorVector factorVec = (RFactorVector)unserialize("FactorVector");
 
@@ -87,6 +100,14 @@ public class SerializeTest {
 
 		assertEquals(3 - 1, integerVec.size());
 		assertEquals(Arrays.asList(null, null), integerVec.getValues());
+	}
+
+	static
+	private void checkStringVector(RStringVector stringVec){
+		assertNull(stringVec.getAttributes());
+
+		assertEquals(3, stringVec.size());
+		assertEquals(Arrays.asList("alpha", "beta", "gamma"), stringVec.getValues());
 	}
 
 	static

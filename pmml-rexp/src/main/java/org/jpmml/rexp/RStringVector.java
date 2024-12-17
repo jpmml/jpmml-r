@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,9 +94,11 @@ public class RStringVector extends RVector<String> {
 			})
 			.toArray();
 
-		RPair attributes = new RPair(new RString("levels"), new RStringVector(levels, null), null);
+		RFactorVector result = new RFactorVector(levelValues, null);
+		result.addAttribute("class", new RStringVector(Arrays.asList("factor"), null));
+		result.addAttribute("levels", new RStringVector(levels, null));
 
-		return new RFactorVector(levelValues, attributes);
+		return result;
 	}
 
 	@Override
