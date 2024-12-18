@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,7 @@ public class RStringVector extends RVector<String> {
 
 		List<String> levels = values.stream()
 			.distinct()
-			.sorted()
+			.sorted(Comparator.nullsLast(Comparator.naturalOrder()))
 			.collect(Collectors.toList());
 
 		return toFactorVector(levels);
@@ -87,7 +88,7 @@ public class RStringVector extends RVector<String> {
 				int index = levels.indexOf(value);
 
 				if(index < 0){
-					throw new IllegalArgumentException();
+					return Integer.MIN_VALUE;
 				}
 
 				return (index + 1);

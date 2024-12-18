@@ -106,8 +106,8 @@ public class SerializeTest {
 	private void checkStringVector(RStringVector stringVec){
 		assertNull(stringVec.getAttributes());
 
-		assertEquals(3, stringVec.size());
-		assertEquals(Arrays.asList("alpha", "beta", "gamma"), stringVec.getValues());
+		assertEquals(5 - 1, stringVec.size());
+		assertEquals(Arrays.asList("alpha", "beta", "gamma", null), stringVec.getValues());
 	}
 
 	static
@@ -115,9 +115,9 @@ public class SerializeTest {
 		assertTrue(factorVec.hasAttribute("class"));
 		assertTrue(factorVec.hasAttribute("levels"));
 
-		assertEquals(3, factorVec.size());
-		assertEquals(Arrays.asList(1, 2, 3), factorVec.getValues());
-		assertEquals(Arrays.asList("alpha", "beta", "gamma"), factorVec.getLevelValues());
+		assertEquals(5 - 1, factorVec.size());
+		assertEquals(Arrays.asList(1, 2, 3, 4), factorVec.getValues());
+		assertEquals(Arrays.asList("alpha", "beta", "gamma", null), factorVec.getLevelValues());
 	}
 
 	static

@@ -45,5 +45,12 @@ public class RStringVectorTest {
 
 		assertEquals(Arrays.asList("c", "b", "a"), factorVector.getLevelValues());
 		assertEquals(Arrays.asList(1, 3, 1, 2, 3), factorVector.getValues());
+
+		factorVector = stringVector.toFactorVector(Arrays.asList("c", "a"));
+
+		assertEquals(5, factorVector.size());
+
+		assertEquals(Arrays.asList("c", "a"), factorVector.getLevelValues());
+		assertEquals(Arrays.asList(1, 2, 1, null, 2), factorVector.getValues());
 	}
 }

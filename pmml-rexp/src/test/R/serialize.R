@@ -6,19 +6,20 @@ print(attributes(realVec))
 
 storeRds(realVec, "RealVector")
 
-integerVec = c(NA_integer_, as.integer(NaN), NULL)
+integerVec = c(NA_integer_, NA_integer_, NULL)
 print(integerVec)
 print(attributes(integerVec))
 
 storeRds(integerVec, "IntegerVector")
 
-stringVec = c("alpha", "beta", "gamma")
+stringVec = c("alpha", "beta", "gamma", NA_character_, NULL)
 print(stringVec)
 print(attributes(stringVec))
 
 storeRds(stringVec, "StringVector")
 
-factorVec = factor(c("alpha", "beta", "gamma"))
+factorVec = factor(c("alpha", "beta", "gamma", NA, NULL), exclude = NULL)
+print(factorVec)
 print(attributes(factorVec))
 
 storeRds(factorVec, "FactorVector")
