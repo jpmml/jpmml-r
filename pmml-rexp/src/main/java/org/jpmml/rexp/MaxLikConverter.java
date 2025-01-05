@@ -778,15 +778,17 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 				case "^":
 					return toBinaryExpression(PMMLFunctions.POW, it, variables, estimates, encoder);
 				case "==":
-					return ExpressionUtil.createApply(PMMLFunctions.IF,
-						toBinaryExpression(PMMLFunctions.EQUAL, it, variables, estimates, encoder),
-						ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
-					);
+					return toComparisonExpression(PMMLFunctions.EQUAL, it, variables, estimates, encoder);
 				case "!=":
-					return ExpressionUtil.createApply(PMMLFunctions.IF,
-						toBinaryExpression(PMMLFunctions.NOTEQUAL, it, variables, estimates, encoder),
-						ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
-					);
+					return toComparisonExpression(PMMLFunctions.NOTEQUAL, it, variables, estimates, encoder);
+				case "<":
+					return toComparisonExpression(PMMLFunctions.LESSTHAN, it, variables, estimates, encoder);
+				case "<=":
+					return toComparisonExpression(PMMLFunctions.LESSOREQUAL, it, variables, estimates, encoder);
+				case ">":
+					return toComparisonExpression(PMMLFunctions.GREATERTHAN, it, variables, estimates, encoder);
+				case ">=":
+					return toComparisonExpression(PMMLFunctions.GREATEROREQUAL, it, variables, estimates, encoder);
 				case "ifelse":
 					return ExpressionUtil.createApply(PMMLFunctions.IF,
 						toPMML(it.next(), variables, estimates, encoder),
@@ -808,6 +810,14 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		return ExpressionUtil.createApply(function,
 			toPMML(it.next(), variables, estimates, encoder),
 			toPMML(it.next(), variables, estimates, encoder)
+		);
+	}
+
+	static
+	private Apply toComparisonExpression(String function, Iterator<RExp> it, Map<String, RExp> variables, Map<String, Double> estimates, RExpEncoder encoder){
+		return ExpressionUtil.createApply(PMMLFunctions.IF,
+			toBinaryExpression(function, it, variables, estimates, encoder),
+			ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
 		);
 	}
 
