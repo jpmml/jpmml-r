@@ -787,6 +787,12 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						toBinaryExpression(PMMLFunctions.NOTEQUAL, it, variables, estimates, encoder),
 						ExpressionUtil.createConstant(1d), ExpressionUtil.createConstant(0d)
 					);
+				case "ifelse":
+					return ExpressionUtil.createApply(PMMLFunctions.IF,
+						toPMML(it.next(), variables, estimates, encoder),
+						toPMML(it.next(), variables, estimates, encoder),
+						toPMML(it.next(), variables, estimates, encoder)
+					);
 				default:
 					throw new IllegalArgumentException(value.getValue());
 			}
