@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Villu Ruusmann
+ * Copyright (c) 2025 Villu Ruusmann
  *
  * This file is part of JPMML-R
  *
@@ -33,6 +33,7 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.dmg.pmml.PMMLFunctions;
+import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.True;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segment;
@@ -46,12 +47,11 @@ import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.mining.MiningModelUtil;
 import org.jpmml.converter.regression.RegressionModelUtil;
-import org.jpmml.rexp.evaluator.RExpFunctions;
 
-public class HurdleConverter extends MixtureModelConverter {
+public class ZeroInflConverter extends MixtureModelConverter {
 
-	public HurdleConverter(RGenericVector hurdle){
-		super(hurdle);
+	public ZeroInflConverter(RGenericVector zeroInfl){
+		super(zeroInfl);
 	}
 
 	@Override
@@ -61,6 +61,20 @@ public class HurdleConverter extends MixtureModelConverter {
 		OutputField zeroPredictField = ModelUtil.createPredictedField(FieldNameUtil.create("predict", MixtureModelConverter.NAME_ZERO), OpType.CONTINUOUS, DataType.DOUBLE);
 
 		encoder.createDerivedField(zeroModel, zeroPredictField, true);
+
+		Expression probaExpression = ExpressionUtil.createApply(PMMLFunctions.DIVIDE,
+			ExpressionUtil.createApply(PMMLFunctions.EXP, new FieldRef(zeroPredictField)),
+			ExpressionUtil.createApply(PMMLFunctions.ADD,
+				ExpressionUtil.createConstant(1),
+				ExpressionUtil.createApply(PMMLFunctions.EXP, new FieldRef(zeroPredictField))
+			)
+		);
+
+		OutputField zeroProbabilityField = new OutputField(FieldNameUtil.create("probability", MixtureModelConverter.NAME_ZERO), OpType.CONTINUOUS, DataType.DOUBLE)
+			.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
+			.setExpression(probaExpression);
+
+		encoder.createDerivedField(zeroModel, zeroProbabilityField, true);
 
 		Segment zeroSegment = new Segment(True.INSTANCE, zeroModel)
 			.setId(MixtureModelConverter.NAME_ZERO);
@@ -74,22 +88,19 @@ public class HurdleConverter extends MixtureModelConverter {
 		Segment countSegment = new Segment(True.INSTANCE, countModel)
 			.setId(MixtureModelConverter.NAME_COUNT);
 
-		Expression adjExpression = ExpressionUtil.createApply(PMMLFunctions.EXP,
+		Expression targetExpression = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY,
 			ExpressionUtil.createApply(PMMLFunctions.SUBTRACT,
-				ExpressionUtil.createApply(PMMLFunctions.LN, new FieldRef(zeroPredictField)),
-				ExpressionUtil.createApply(RExpFunctions.STATS_PPOIS, ExpressionUtil.createConstant(0), new FieldRef(countPredictField))
-			)
+				ExpressionUtil.createConstant(1),
+				new FieldRef(zeroProbabilityField)
+			),
+			new FieldRef(countPredictField)
 		);
-
-		DerivedField adjZeroPredictField = encoder.createDerivedField(FieldNameUtil.create("adjusted", zeroPredictField.requireName()), OpType.CONTINUOUS, DataType.DOUBLE, adjExpression);
-
-		Expression targetExpression = ExpressionUtil.createApply(PMMLFunctions.MULTIPLY, new FieldRef(countPredictField), new FieldRef(adjZeroPredictField));
 
 		DerivedField targetField = encoder.createDerivedField(FieldNameUtil.create("adjusted", countPredictField.requireName()), OpType.CONTINUOUS, DataType.DOUBLE, targetExpression);
 
 		ContinuousLabel label = getLabel();
 
-		Map<String, OutputField> outputFields = Collections.singletonMap(FieldNameUtil.create("truncated", label.getName()), countPredictField);
+		Map<String, OutputField> outputFields = Collections.singletonMap(FieldNameUtil.create("inflated", label.getName()), countPredictField);
 
 		Model fullModel = encodeTarget(targetField, outputFields, encoder);
 
@@ -109,27 +120,28 @@ public class HurdleConverter extends MixtureModelConverter {
 
 	@Override
 	protected Model encodeZeroComponent(List<Feature> features, List<Double> coefficients, Double intercept, Schema schema){
-		RGenericVector hurdle = getObject();
+		RGenericVector zeroInfl = getObject();
 
-		RStringVector dist = hurdle.getGenericElement("dist").getStringElement(MixtureModelConverter.NAME_ZERO);
+		RStringVector link = zeroInfl.getStringElement("link");
 
-		String distName = dist.asScalar();
-		switch(distName){
-			case "binomial":
-				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.LOGIT, schema);
+		String linkName = link.asScalar();
+		switch(linkName){
+			case "logit":
+				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.NONE, schema);
 			default:
-				throw new IllegalArgumentException(distName);
+				throw new IllegalArgumentException(linkName);
 		}
 	}
 
 	@Override
 	protected Model encodeCountComponent(List<Feature> features, List<Double> coefficients, Double intercept, Schema schema){
-		RGenericVector hurdle = getObject();
+		RGenericVector zeroInfl = getObject();
 
-		RStringVector dist = hurdle.getGenericElement("dist").getStringElement(MixtureModelConverter.NAME_COUNT);
+		RStringVector dist = zeroInfl.getStringElement("dist");
 
 		String distName = dist.asScalar();
 		switch(distName){
+			case "negbin":
 			case "poisson":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.EXP, schema);
 			default:

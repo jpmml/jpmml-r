@@ -19,12 +19,21 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
+import org.dmg.pmml.DerivedField;
+import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Model;
+import org.dmg.pmml.Output;
+import org.dmg.pmml.OutputField;
+import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.regression.RegressionModel;
+import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
@@ -41,11 +50,16 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 		super(object);
 	}
 
+	abstract
+	protected Model encodeZeroComponent(List<Feature> features, List<Double> coefficients, Double intercept, Schema schema);
+
+	abstract
+	protected Model encodeCountComponent(List<Feature> features, List<Double> coefficients, Double intercept, Schema schema);
+
 	protected Model encodeComponent(String name, RExpEncoder encoder){
 		RGenericVector object = getObject();
 
 		RDoubleVector coefficients = object.getGenericElement("coefficients").getDoubleElement(name);
-		RStringVector dist = object.getGenericElement("dist").getStringElement(name);
 		RExp terms = object.getGenericElement("terms").getElement(name);
 		RGenericVector model = object.getGenericElement("model");
 
@@ -101,32 +115,39 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 			featureCoefficients.add(coefficient);
 		}
 
-		RegressionModel regressionModel;
-
 		switch(name){
 			case MixtureModelConverter.NAME_ZERO:
-
-				switch(dist.asScalar()){
-					case "binomial":
-						regressionModel = RegressionModelUtil.createRegression(features, featureCoefficients, intercept, RegressionModel.NormalizationMethod.LOGIT, schema);
-						break;
-					default:
-						throw new IllegalArgumentException();
-				}
-				break;
+				return encodeZeroComponent(features, featureCoefficients, intercept, schema);
 			case MixtureModelConverter.NAME_COUNT:
-
-				switch(dist.asScalar()){
-					case "poisson":
-						regressionModel = RegressionModelUtil.createRegression(features, featureCoefficients, intercept, RegressionModel.NormalizationMethod.EXP, schema);
-						break;
-					default:
-						throw new IllegalArgumentException();
-				}
-				break;
+				return encodeCountComponent(features, featureCoefficients, intercept, schema);
 			default:
 				throw new IllegalArgumentException(name);
 		}
+	}
+
+	protected Model encodeTarget(DerivedField derivedField, Map<String, OutputField> outputFields, RExpEncoder encoder){
+		ContinuousLabel label = getLabel();
+
+		Feature feature = new ContinuousFeature(encoder, derivedField);
+
+		Schema targetSchema = new Schema(encoder, label, Collections.emptyList());
+
+		Output output = new Output();
+
+		Collection<Map.Entry<String, OutputField>> entries = outputFields.entrySet();
+		for(Map.Entry<String, OutputField> entry : entries){
+			String name = entry.getKey();
+			OutputField outputField = entry.getValue();
+
+			OutputField targetOutputField = new OutputField(name, outputField.requireOpType(), outputField.requireDataType())
+				.setResultFeature(ResultFeature.TRANSFORMED_VALUE)
+				.setExpression(new FieldRef(outputField));
+
+			output.addOutputFields(targetOutputField);
+		}
+
+		RegressionModel regressionModel = RegressionModelUtil.createRegression(Collections.singletonList(feature), Collections.singletonList(1d), null, RegressionModel.NormalizationMethod.NONE, targetSchema)
+			.setOutput(output);
 
 		return regressionModel;
 	}

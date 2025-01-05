@@ -70,6 +70,7 @@ Java library and command-line application for converting [R](https://www.r-proje
     * `mvr` - Multivariate Regression (MVR) regression
   * [`pscl`](https://cran.r-project.org/package=pscl) package:
     * `hurdle` - Hurdle regression
+    * `zeroinfl` - Zero-inflated Count Data regression
   * [`randomForest`](https://cran.r-project.org/package=randomForest) package:
     * `randomForest` - Random Forest (RF) regression and classification
   * [`ranger`](https://cran.r-project.org/package=ranger) package:
