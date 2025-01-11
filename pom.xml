@@ -86,23 +86,23 @@
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-converter</artifactId>
-				<version>1.5.10</version>
+				<version>1.5.12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-converter-testing</artifactId>
-				<version>1.5.10</version>
+				<version>1.5.12</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-evaluator</artifactId>
-				<version>1.6.8</version>
+				<version>1.6.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-evaluator-testing</artifactId>
-				<version>1.6.8</version>
+				<version>1.6.11</version>
 			</dependency>
 
 			<dependency>
