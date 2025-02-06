@@ -19,7 +19,7 @@
 package org.jpmml.rexp.testing;
 
 import org.jpmml.converter.testing.Datasets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class POLRConverterTest extends RExpEncoderBatchTest implements Datasets {
 

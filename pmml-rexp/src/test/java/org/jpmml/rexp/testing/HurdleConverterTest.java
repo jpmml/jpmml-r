@@ -20,12 +20,12 @@ package org.jpmml.rexp.testing;
 
 import org.jpmml.rexp.evaluator.RExpFunctionRegistry;
 import org.jpmml.rexp.evaluator.RExpFunctions;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class HurdleConverterTest extends RExpEncoderBatchTest {
 
-	@BeforeClass
+	@BeforeAll
 	static
 	public void setup(){
 		RExpFunctionRegistry.publish(RExpFunctions.STATS_PPOIS);

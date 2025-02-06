@@ -20,7 +20,7 @@ package org.jpmml.rexp.lightgbm.testing;
 
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.rexp.testing.RExpEncoderBatchTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LightGBMConverterTest extends RExpEncoderBatchTest implements Datasets {
 

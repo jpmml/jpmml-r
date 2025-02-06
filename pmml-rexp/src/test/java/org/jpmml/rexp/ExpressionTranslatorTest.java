@@ -30,13 +30,11 @@ import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.model.ReflectionUtil;
-import org.jpmml.rexp.ExpressionTranslator;
-import org.jpmml.rexp.FunctionExpression;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExpressionTranslatorTest {
 

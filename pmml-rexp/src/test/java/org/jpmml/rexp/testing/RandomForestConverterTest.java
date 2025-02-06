@@ -25,10 +25,9 @@ import java.util.function.Predicate;
 import com.google.common.primitives.UnsignedLong;
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.rexp.RandomForestConverter;
-import org.jpmml.rexp.testing.RExpEncoderBatchTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;;
 
 public class RandomForestConverterTest extends RExpEncoderBatchTest implements Datasets {
 

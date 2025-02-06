@@ -20,8 +20,7 @@ package org.jpmml.rexp.testing;
 
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.evaluator.testing.PMMLEquivalence;
-import org.jpmml.rexp.testing.RExpEncoderBatchTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NNetConverterTest extends RExpEncoderBatchTest implements Datasets {
 

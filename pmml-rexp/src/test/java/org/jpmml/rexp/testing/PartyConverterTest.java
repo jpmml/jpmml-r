@@ -18,8 +18,6 @@
  */
 package org.jpmml.rexp.testing;
 
-import org.jpmml.rexp.testing.RExpEncoderBatchTest;
-
 abstract
 public class PartyConverterTest extends RExpEncoderBatchTest {
 }
