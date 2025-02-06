@@ -10,7 +10,7 @@
 
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-r</artifactId>
-	<version>1.7-SNAPSHOT</version>
+	<version>1.7.0</version>
 	<packaging>pom</packaging>
 
 	<name>JPMML-R</name>
@@ -44,7 +44,7 @@
 		<connection>scm:git:git@github.com:jpmml/jpmml-r.git</connection>
 		<developerConnection>scm:git:git@github.com:jpmml/jpmml-r.git</developerConnection>
 		<url>git://github.com/jpmml/jpmml-r.git</url>
-		<tag>HEAD</tag>
+		<tag>1.7.0</tag>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
@@ -57,7 +57,7 @@
 		<jpmml-lightgbm.version>1.6.0</jpmml-lightgbm.version>
 		<jpmml-xgboost.version>1.9.0</jpmml-xgboost.version>
 		<jpmml-evaluator.version>1.7.1</jpmml-evaluator.version>
-		<project.build.outputTimestamp>2025-01-11T08:24:24Z</project.build.outputTimestamp>
+		<project.build.outputTimestamp>2025-02-06T08:32:55Z</project.build.outputTimestamp>
 	</properties>
 
 	<dependencyManagement>
@@ -65,27 +65,27 @@
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp</artifactId>
-				<version>1.7-SNAPSHOT</version>
+				<version>1.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-evaluator</artifactId>
-				<version>1.7-SNAPSHOT</version>
+				<version>1.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-example</artifactId>
-				<version>1.7-SNAPSHOT</version>
+				<version>1.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-lightgbm</artifactId>
-				<version>1.7-SNAPSHOT</version>
+				<version>1.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jpmml</groupId>
 				<artifactId>pmml-rexp-xgboost</artifactId>
-				<version>1.7-SNAPSHOT</version>
+				<version>1.7.0</version>
 			</dependency>
 
 			<dependency>
