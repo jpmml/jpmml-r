@@ -48,24 +48,24 @@ public class RExpFunctionRegistry {
 
 	static
 	private void publish(Predicate<String> predicate){
-		(RExpFunctionRegistry.rexpFunctions.entrySet()).stream()
+		(RExpFunctionRegistry.functions.entrySet()).stream()
 			.filter(entry -> predicate.test(entry.getKey()))
 			.forEach(entry -> FunctionRegistry.putFunction(entry.getKey(), entry.getValue()));
 
-		(RExpFunctionRegistry.rexpFunctionClazzes.entrySet()).stream()
+		(RExpFunctionRegistry.functionClazzes.entrySet()).stream()
 			.filter(entry -> predicate.test(entry.getKey()))
 			.forEach(entry -> FunctionRegistry.putFunction(entry.getKey(), entry.getValue()));
 	}
 
-	private static final Map<String, Function> rexpFunctions;
+	private static final Map<String, Function> functions;
 
 	static {
 		ImmutableMap.Builder<String, Function> builder = new ImmutableMap.Builder<>();
 
 		builder.put(RExpFunctions.STATS_PPOIS, new PPois());
 
-		rexpFunctions = builder.build();
+		functions = builder.build();
 	}
 
-	private static final Map<String, Class<? extends Function>> rexpFunctionClazzes = Collections.emptyMap();
+	private static final Map<String, Class<? extends Function>> functionClazzes = Collections.emptyMap();
 }
