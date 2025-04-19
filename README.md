@@ -109,7 +109,7 @@ Java library and command-line application for converting [R](https://www.r-proje
 
 # Prerequisites #
 
-* Java 1.8 or newer.
+* Java 11 or newer.
 
 # Installation #
 
