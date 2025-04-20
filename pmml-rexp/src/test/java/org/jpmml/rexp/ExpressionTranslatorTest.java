@@ -256,6 +256,17 @@ public class ExpressionTranslatorTest {
 	}
 
 	@Test
+	public void translateConstant(){
+		String string = "\"你好，世界!\"";
+
+		Expression expected = ExpressionUtil.createConstant(DataType.STRING, "你好，世界!");
+
+		Expression actual = ExpressionTranslator.translateExpression(string);
+
+		assertTrue(ReflectionUtil.equals(expected, actual));
+	}
+
+	@Test
 	public void translateInterval(){
 		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED)
 			.setLeftMargin(new Double("-10.0E0"))
