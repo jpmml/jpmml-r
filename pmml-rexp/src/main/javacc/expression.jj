@@ -740,9 +740,7 @@ Interval Interval():
 	(leftBound = <LPAREN> | leftBound = <LBRACKET>) leftMargin = SignedNumber() <COMMA> rightMargin = SignedNumber() (rightBound = <RPAREN> | rightBound = <RBRACKET>)
 
 	{
-		Interval interval = new Interval(translateClosure(leftBound.image, rightBound.image))
-			.setLeftMargin(filterMargin(leftMargin))
-			.setRightMargin(filterMargin(rightMargin));
+		Interval interval = new Interval(translateClosure(leftBound.image, rightBound.image), filterMargin(leftMargin), filterMargin(rightMargin));
 
 		return interval;
 	}

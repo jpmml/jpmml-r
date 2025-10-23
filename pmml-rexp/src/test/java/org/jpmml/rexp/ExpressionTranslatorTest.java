@@ -268,9 +268,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateInterval(){
-		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED)
-			.setLeftMargin(new Double("-10.0E0"))
-			.setRightMargin(new Double("+10.0E0"));
+		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED, new Double("-10.0E0"), new Double("+10.0E0"));
 
 		Interval actual = ExpressionTranslator.translateInterval("(-10.0E+0, +10.0E-0]");
 
@@ -284,9 +282,7 @@ public class ExpressionTranslatorTest {
 			// Ignored
 		}
 
-		expected = new Interval(Interval.Closure.CLOSED_CLOSED)
-			.setLeftMargin(null)
-			.setRightMargin(null);
+		expected = new Interval(Interval.Closure.CLOSED_CLOSED, null, null);
 
 		actual = ExpressionTranslator.translateInterval("[-Inf, +Inf]");
 
