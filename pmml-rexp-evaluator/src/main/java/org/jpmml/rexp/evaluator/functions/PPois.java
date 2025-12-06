@@ -19,27 +19,24 @@
 package org.jpmml.rexp.evaluator.functions;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.FieldValueUtil;
 import org.jpmml.evaluator.TypeInfos;
-import org.jpmml.evaluator.functions.AbstractFunction;
+import org.jpmml.evaluator.functions.BinaryFunction;
 import org.jpmml.rexp.evaluator.RExpFunctions;
 
-public class PPois extends AbstractFunction {
+public class PPois extends BinaryFunction {
 
 	public PPois(){
 		super(RExpFunctions.STATS_PPOIS, Arrays.asList("x", "lambda"));
 	}
 
 	@Override
-	public FieldValue evaluate(List<FieldValue> arguments){
-		checkFixedArityArguments(arguments, 2);
-
-		Integer x = getRequiredArgument(arguments, 0).asInteger();
-		Double lambda = getRequiredArgument(arguments, 1).asDouble();
+	public FieldValue evaluate(FieldValue first, FieldValue second){
+		Integer x = first.asInteger();
+		Double lambda = second.asDouble();
 
 		Double result = ppois(x, lambda);
 
