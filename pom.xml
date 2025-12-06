@@ -52,7 +52,7 @@
 	</issueManagement>
 
 	<properties>
-		<jpmml-converter.version>1.6.4</jpmml-converter.version>
+		<jpmml-converter.version>1.6.5</jpmml-converter.version>
 		<jpmml-evaluator.version>1.7.5</jpmml-evaluator.version>
 		<jpmml-lightgbm.version>1.6.2</jpmml-lightgbm.version>
 		<jpmml-xgboost.version>1.9.3</jpmml-xgboost.version>
