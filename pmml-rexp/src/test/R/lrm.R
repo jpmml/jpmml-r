@@ -13,7 +13,7 @@ predictLRMAudit = function(audit.lrm){
 }
 
 generateLRMFormulaAudit = function(){
-	audit.lrm = lrm(Adjusted ~ ifelse(Age < 18, 18, ifelse(Age > 75, 75, Age)) + Employment + Education + Marital + Occupation + ifelse(Income > 250000, yes = 250000, no = Income) + Gender + Deductions + ifelse(Hours <= 80, Hours, 80), data = audit)
+	audit.lrm = lrm(Adjusted ~ ifelse(Age < 18, 18, ifelse(Age > 75, 75, Age)) + Employment + Education + Marital + Occupation + ifelse(Income > 250000, yes = 250000, no = Income) + Gender + Deductions + ifelse(Hours <= 80, Hours, 80), data = audit, penalty = list(simple = 2))
 	print(audit.lrm)
 
 	storeRds(audit.lrm, "LRMFormulaAudit")

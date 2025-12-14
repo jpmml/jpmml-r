@@ -45,7 +45,15 @@ public class LRMConverter extends RMSConverter {
 
 		RIntegerVector freq = lrm.getIntegerElement("freq");
 
-		RStringVector freqNames = freq.dimnames(0);
+		RStringVector freqNames;
+
+		if(freq.hasAttribute("names")){
+			freqNames = freq.names();
+		} else
+
+		{
+			freqNames = freq.dimnames(0);
+		}
 
 		super.encodeSchema(encoder);
 
