@@ -28,13 +28,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.dmg.pmml.DataType;
 import org.dmg.pmml.VerificationField;
 import org.dmg.pmml.mining.MiningModel;
-import org.jpmml.converter.BinaryFeature;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
@@ -109,7 +105,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		List<Feature> features = featureMap.encodeFeatures(learner, encoder);
 
-		features = aggregateFeatures(booster._class(), features, encoder);
+		features = aggregateFeatures(features, encoder);
 
 		for(Feature feature : features){
 			encoder.addFeature(feature);
@@ -140,20 +136,6 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	@Override
 	protected Map<VerificationField, List<?>> encodeActiveValues(RGenericVector dataFrame){
-		RGenericVector booster = getObject();
-
-		RStringVector classNames = booster._class();
-
-		if(isLegacy(classNames)){
-			return encodeLegacyActiveValues(dataFrame);
-		} else
-
-		{
-			return encodeVerificationData(dataFrame);
-		}
-	}
-
-	private Map<VerificationField, List<?>> encodeLegacyActiveValues(RGenericVector dataFrame){
 		FeatureMap featureMap = ensureFeatureMap();
 
 		checkFeatureMap(featureMap, dataFrame);
@@ -233,6 +215,10 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		return encodeVerificationData(columns, names);
 	}
 
+	protected List<Feature> aggregateFeatures(List<? extends Feature> features, RExpEncoder encoder){
+		return (List)features;
+	}
+
 	private FeatureMap ensureFeatureMap(){
 
 		if(this.featureMap == null){
@@ -245,7 +231,9 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	private Learner ensureLearner(){
 
 		if(this.learner == null){
-			this.learner = loadLearner();
+			String jsonPath = getJsonPath();
+
+			this.learner = loadLearner(jsonPath);
 		}
 
 		return this.learner;
@@ -263,16 +251,20 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		}
 	}
 
-	private Learner loadLearner(){
+	private Learner loadLearner(String jsonPath){
 		RGenericVector booster = getObject();
 
 		RRaw raw = (RRaw)booster.getElement("raw");
 
 		try {
-			return loadLearner(booster._class(), raw);
+			return loadLearner(raw, jsonPath);
 		} catch(IOException ioe){
 			throw new IllegalArgumentException(ioe);
 		}
+	}
+
+	protected String getJsonPath(){
+		return "$.Model";
 	}
 
 	static
@@ -328,95 +320,11 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	}
 
 	static
-	private Learner loadLearner(RStringVector classNames, RRaw raw) throws IOException {
+	private Learner loadLearner(RRaw raw, String jsonPath) throws IOException {
 		byte[] value = raw.getValue();
 
 		try(InputStream is = new ByteArrayInputStream(value)){
-			String jsonPath = getSelector(classNames);
-
 			return XGBoostUtil.loadLearner(is, ByteOrder.nativeOrder(), null, jsonPath);
 		}
-	}
-
-	static
-	private String getSelector(RStringVector classNames){
-
-		if(isLegacy(classNames)){
-			return "$.Model";
-		} else
-
-		{
-			return "$";
-		}
-	}
-
-	static
-	private List<Feature> aggregateFeatures(RStringVector classNames, List<? extends Feature> features, RExpEncoder encoder){
-
-		if(isLegacy(classNames)){
-			return (List)features;
-		} else
-
-		{
-			return aggregateFeatures(features, encoder);
-		}
-	}
-
-	static
-	private List<Feature> aggregateFeatures(List<? extends Feature> features, RExpEncoder encoder){
-		List<Feature> result = new ArrayList<>();
-
-		for(int i = 0, max = features.size(); i < max; ){
-			Feature feature = features.get(i);
-
-			if(feature instanceof BinaryFeature){
-				BinaryFeature binaryFeature = (BinaryFeature)feature;
-
-				String name = binaryFeature.getName();
-				DataType dataType = binaryFeature.getDataType();
-
-				List<Object> values = new ArrayList<>();
-				values.add(binaryFeature.getValue());
-
-				i++;
-
-				while(i < max){
-					Feature nextFeature = features.get(i);
-
-					if(nextFeature instanceof BinaryFeature){
-						BinaryFeature nextBinaryFeature = (BinaryFeature)nextFeature;
-
-						String nextName = nextBinaryFeature.getName();
-
-						if(Objects.equals(name, nextName)){
-							values.add(nextBinaryFeature.getValue());
-
-							i++;
-
-							continue;
-						}
-					}
-
-					break;
-				}
-
-				CategoricalFeature categoricalFeature = new CategoricalFeature(encoder, name, dataType, values);
-
-				result.add(categoricalFeature);
-			} else
-
-			{
-				result.add(feature);
-
-				i++;
-			}
-		}
-
-		return result;
-	}
-
-	static
-	private boolean isLegacy(RStringVector classNames){
-		return classNames.indexOf("xgb3.Booster") < 0;
 	}
 }
