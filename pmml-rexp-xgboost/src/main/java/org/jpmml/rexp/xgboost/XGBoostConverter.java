@@ -140,6 +140,20 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	@Override
 	protected Map<VerificationField, List<?>> encodeActiveValues(RGenericVector dataFrame){
+		RGenericVector booster = getObject();
+
+		RStringVector classNames = booster._class();
+
+		if(isLegacy(classNames)){
+			return encodeLegacyActiveValues(dataFrame);
+		} else
+
+		{
+			return encodeVerificationData(dataFrame);
+		}
+	}
+
+	private Map<VerificationField, List<?>> encodeLegacyActiveValues(RGenericVector dataFrame){
 		FeatureMap featureMap = ensureFeatureMap();
 
 		checkFeatureMap(featureMap, dataFrame);

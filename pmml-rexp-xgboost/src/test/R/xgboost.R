@@ -10,7 +10,7 @@ auto_y = auto[, ncol(auto)]
 
 generateXGBoostAuto = function(){
 	auto.xgboost = xgboost(x = auto_X, y = auto_y, objective = "reg:squarederror", nrounds = 71)
-	#auto.xgboost = verify(auto.xgboost, newdata = auto_X[sample(nrow(auto_X), 10), ], response_name = "mpg")
+	auto.xgboost = verify(auto.xgboost, newdata = auto_X[sample(nrow(auto_X), 10), ], response_name = "mpg")
 
 	mpg = predict(auto.xgboost, newdata = auto_X)
 
@@ -35,7 +35,7 @@ audit_y = factor(audit_y, levels = c("1", "0"))
 
 generateXGBoostAuditNA = function(){
 	audit.xgboost = xgboost(x = audit_X, y = audit_y, objective = "binary:logistic", nrounds = 71)
-	#audit.xgboost = verify(audit.xgboost, newdata = audit_X[sample(nrow(audit_X), 10), ], response_name = "Adjusted", response_levels = c("0", "1"))
+	audit.xgboost = verify(audit.xgboost, newdata = audit_X[sample(nrow(audit_X), 10), ], response_name = "Adjusted", response_levels = c("1", "0"))
 
 	adjusted = predict(audit.xgboost, newdata = audit_X, type = "class")
 	prob = predict(audit.xgboost, newdata = audit_X, reshape = TRUE)
@@ -58,7 +58,7 @@ iris_y = iris[, ncol(iris)]
 
 generateXGBoostIris = function(){
 	iris.xgboost = xgboost(x = iris_X, y = iris_y, objective = "multi:softprob", nrounds = 15)
-	#iris.xgboost = verify(iris.xgboost, newdata = iris_X[sample(nrow(iris_X), 10), ], response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"))
+	iris.xgboost = verify(iris.xgboost, newdata = iris_X[sample(nrow(iris_X), 10), ], response_name = "Species", response_levels = c("setosa", "versicolor", "virginica"))
 
 	species = predict(iris.xgboost, newdata = iris_X, type = "class")
 	prob = predict(iris.xgboost, newdata = iris_X, reshape = TRUE)
