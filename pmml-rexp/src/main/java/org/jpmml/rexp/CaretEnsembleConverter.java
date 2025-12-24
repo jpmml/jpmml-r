@@ -33,8 +33,8 @@ import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousLabel;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
@@ -60,14 +60,14 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 
 			@Override
 			public Schema apply(Schema schema){
-				Label label = schema.getLabel();
+				ScalarLabel scalarLabel = schema.requireScalarLabel();
 
-				if(label instanceof ContinuousLabel){
+				if(scalarLabel instanceof ContinuousLabel){
 					return schema.toAnonymousSchema();
 				} else
 
 				// XXX: Ideally, the categorical target field should also be anonymized
-				if(label instanceof CategoricalLabel){
+				if(scalarLabel instanceof CategoricalLabel){
 					return schema;
 				} else
 
@@ -103,9 +103,9 @@ public class CaretEnsembleConverter extends Converter<RGenericVector> {
 					break;
 				case CLASSIFICATION:
 					{
-						CategoricalLabel categoricalLabel = (CategoricalLabel)segmentSchema.getLabel();
+						CategoricalLabel categoricalLabel = segmentSchema.requireCategoricalLabel();
 
-						SchemaUtil.checkSize(2, categoricalLabel);
+						SchemaUtil.checkCardinality(2, categoricalLabel);
 
 						outputField = ModelUtil.createProbabilityField(name, DataType.DOUBLE, categoricalLabel.getValue(1))
 							.setFinalResult(Boolean.FALSE);

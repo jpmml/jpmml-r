@@ -256,7 +256,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels));
 
 		return miningModel;
@@ -273,7 +273,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 		int rows = nrnodes.asScalar();
 		int columns = ValueUtil.asInt(ntree.asScalar());
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		ScoreEncoder<Integer> scoreEncoder = new ScoreEncoder<Integer>(){
 
@@ -316,7 +316,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 
 		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 

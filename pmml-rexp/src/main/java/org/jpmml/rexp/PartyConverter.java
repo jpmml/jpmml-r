@@ -39,7 +39,6 @@ import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 
@@ -141,14 +140,14 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		TreeModel treeModel;
 
 		if(response instanceof RFactorVector){
-			CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+			CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 			treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel), root)
 				.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 		} else
 
 		{
-			treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
+			treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), root);
 		}
 
 		return treeModel;
@@ -165,7 +164,6 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		Node result;
@@ -193,7 +191,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
 			result.setScore(factor.getFactorValue(index));
 
-			CategoricalLabel categoricalLabel = (CategoricalLabel)label;
+			CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 			List<Double> probabilities = FortranMatrixUtil.getRow(prob.getValues(), response.size(), categoricalLabel.size(), index);
 

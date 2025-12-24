@@ -110,7 +110,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 			} // End if
 
 			if(targetValues != null && outputValues == null){
-				ScalarLabel scalarLabel = (ScalarLabel)schema.getLabel();
+				ScalarLabel scalarLabel = schema.requireScalarLabel();
 
 				String name = scalarLabel.getName();
 

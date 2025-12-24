@@ -106,7 +106,7 @@ public class ScorecardConverter extends GLMConverter {
 			characteristics.addCharacteristics(characteristic);
 		}
 
-		Scorecard scorecard = new Scorecard(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), characteristics)
+		Scorecard scorecard = new Scorecard(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), characteristics)
 			.setInitialScore(formatScore((basePoints.asScalar()).doubleValue() - Math.log((odds.asScalar()).doubleValue()) * factor - (intercept != null ? intercept * factor : 0)))
 			.setUseReasonCodes(false);
 

@@ -38,7 +38,7 @@ public class ElNetConverter extends GLMNetConverter {
 		Double intercept = a0.getValue(column);
 		List<Double> coefficients = getCoefficients((S4Object)beta, column);
 
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERAL_LINEAR, MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), null, null, null)
 			.setDistribution(GeneralRegressionModel.Distribution.NORMAL);
 
 		GeneralRegressionModelUtil.encodeRegressionTable(generalRegressionModel, schema.getFeatures(), coefficients, intercept, null);

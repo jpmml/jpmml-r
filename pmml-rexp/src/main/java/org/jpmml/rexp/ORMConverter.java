@@ -72,7 +72,7 @@ public class ORMConverter extends RMSConverter {
 		RDoubleVector coefficients = orm.getDoubleElement("coefficients");
 
 		ModelEncoder encoder = schema.getEncoder();
-		OrdinalLabel ordinalLabel = (OrdinalLabel)schema.getLabel();
+		OrdinalLabel ordinalLabel = schema.requireOrdinalLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		List<Double> thresholdCoefficients = new ArrayList<>();
@@ -95,7 +95,7 @@ public class ORMConverter extends RMSConverter {
 		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
 		RegressionModel firstRegressionModel = RegressionModelUtil.createRegression(features, featureCoefficients, null, null, segmentSchema)
-			.setTargets(ModelUtil.createRescaleTargets(-1d, null, (ContinuousLabel)segmentSchema.getLabel()));
+			.setTargets(ModelUtil.createRescaleTargets(-1d, null, segmentSchema.requireContinuousLabel()));
 
 		OutputField linpredOutputField = ModelUtil.createPredictedField("linpred", OpType.CONTINUOUS, DataType.DOUBLE);
 

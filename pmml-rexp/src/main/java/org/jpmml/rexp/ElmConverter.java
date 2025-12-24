@@ -32,7 +32,6 @@ import org.dmg.pmml.neural_network.Neuron;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
@@ -75,7 +74,7 @@ public class ElmConverter extends ModelConverter<RGenericVector> {
 		RStringVector actfun = elm.getStringElement("actfun");
 		RDoubleVector nhid = elm.getDoubleElement("nhid");
 
-		Label label = schema.getLabel();
+		ContinuousLabel continuousLabel = schema.requireContinuousLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		switch(actfun.asScalar()){
@@ -129,9 +128,9 @@ public class ElmConverter extends ModelConverter<RGenericVector> {
 
 		entities = outputNeuralLayer.getNeurons();
 
-		NeuralOutputs neuralOutputs = NeuralNetworkUtil.createRegressionNeuralOutputs(entities, (ContinuousLabel)label);
+		NeuralOutputs neuralOutputs = NeuralNetworkUtil.createRegressionNeuralOutputs(entities, continuousLabel);
 
-		NeuralNetwork neuralNetwork = new NeuralNetwork(MiningFunction.REGRESSION, NeuralNetwork.ActivationFunction.IDENTITY, ModelUtil.createMiningSchema(label), neuralInputs, neuralLayers)
+		NeuralNetwork neuralNetwork = new NeuralNetwork(MiningFunction.REGRESSION, NeuralNetwork.ActivationFunction.IDENTITY, ModelUtil.createMiningSchema(continuousLabel), neuralInputs, neuralLayers)
 			.setNeuralOutputs(neuralOutputs);
 
 		return neuralNetwork;

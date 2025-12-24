@@ -42,7 +42,7 @@ public class MultNetConverter extends GLMNetConverter {
 
 	@Override
 	public Model encodeModel(RDoubleVector a0, RExp beta, int column, Schema schema){
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		RIntegerVector a0Dim = a0.dim();
 

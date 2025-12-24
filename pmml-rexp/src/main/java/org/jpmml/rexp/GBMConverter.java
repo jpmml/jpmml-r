@@ -183,7 +183,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	}
 
 	private MiningModel encodeMultinomialClassification(List<TreeModel> treeModels, Double initF, Schema schema){
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
@@ -202,7 +202,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 	private TreeModel encodeTreeModel(MiningFunction miningFunction, RGenericVector tree, RGenericVector c_splits, Schema schema){
 		Node root = encodeNode(0, True.INSTANCE, tree, c_splits, new FlagManager(), new CategoryManager(), schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.MULTI_SPLIT);
 
 		return treeModel;
@@ -319,7 +319,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 	static
 	private MiningModel createMiningModel(List<TreeModel> treeModels, Double initF, Schema schema){
-		ContinuousLabel continuousLabel = (ContinuousLabel)schema.getLabel();
+		ContinuousLabel continuousLabel = schema.requireContinuousLabel();
 
 		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(continuousLabel))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.SUM, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels))

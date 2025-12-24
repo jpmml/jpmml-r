@@ -27,7 +27,6 @@ import org.dmg.pmml.Model;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
@@ -81,7 +80,6 @@ public class GLMConverter extends LMConverter {
 		RStringVector familyFamily = family.getStringElement("family");
 		RStringVector familyLink = family.getStringElement("link");
 
-		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		SchemaUtil.checkSize(coefficients.size() - (intercept != null ? 1 : 0), features);
@@ -95,9 +93,9 @@ public class GLMConverter extends LMConverter {
 		switch(miningFunction){
 			case CLASSIFICATION:
 				{
-					CategoricalLabel categoricalLabel = (CategoricalLabel)label;
+					CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
-					SchemaUtil.checkSize(2, categoricalLabel);
+					SchemaUtil.checkCardinality(2, categoricalLabel);
 
 					targetCategory = categoricalLabel.getValue(1);
 				}
@@ -106,7 +104,7 @@ public class GLMConverter extends LMConverter {
 				break;
 		}
 
-		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(label), null, null, null)
+		GeneralRegressionModel generalRegressionModel = new GeneralRegressionModel(GeneralRegressionModel.ModelType.GENERALIZED_LINEAR, miningFunction, ModelUtil.createMiningSchema(schema), null, null, null)
 			.setDistribution(parseFamily(familyFamily.asScalar()))
 			.setDistParameter(parseDistParameter(familyFamily.asScalar()))
 			.setLinkFunction(parseLinkFunction(familyLink.asScalar()))
@@ -116,7 +114,11 @@ public class GLMConverter extends LMConverter {
 
 		switch(miningFunction){
 			case CLASSIFICATION:
-				generalRegressionModel.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, (CategoricalLabel)label));
+				{
+					CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
+
+					generalRegressionModel.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
+				}
 				break;
 			default:
 				break;

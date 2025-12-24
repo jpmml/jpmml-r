@@ -44,7 +44,7 @@ public class BoostingConverter extends AdaBagConverter {
 		RGenericVector trees = boosting.getGenericElement("trees");
 		RDoubleVector weights = boosting.getDoubleElement("weights");
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		List<TreeModel> treeModels = encodeTreeModels(trees);
 

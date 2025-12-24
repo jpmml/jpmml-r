@@ -181,7 +181,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.REGRESSION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels));
 
 		return miningModel;
@@ -208,7 +208,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		List<TreeModel> treeModels = encodeForest(forest, MiningFunction.CLASSIFICATION, scoreEncoder, schema);
 
-		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()))
+		MiningModel miningModel = new MiningModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.MAJORITY_VOTE, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels));
 
 		return miningModel;
@@ -217,7 +217,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 	private MiningModel encodeProbabilityForest(RGenericVector forest, Schema schema){
 		RStringVector levels = forest.getStringElement("levels");
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		ScoreEncoder scoreEncoder = new ScoreEncoder(){
 
@@ -290,7 +290,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftChildIDs, rightChildIDs, splitVarIDs, splitValues, terminalClassCounts, new CategoryManager(), schema);
 
-		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
+		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;

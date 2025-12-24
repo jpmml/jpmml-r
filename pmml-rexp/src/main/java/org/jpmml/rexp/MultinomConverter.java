@@ -70,7 +70,7 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 
 		n.checkSize(3);
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		if(categoricalLabel.size() == 2){

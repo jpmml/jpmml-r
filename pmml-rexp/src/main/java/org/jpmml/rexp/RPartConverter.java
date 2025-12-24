@@ -203,7 +203,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 
 		Node root = encodeNode(True.INSTANCE, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
-		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root);
+		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), root);
 
 		return configureTreeModel(treeModel);
 	}
@@ -211,7 +211,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 	private TreeModel encodeClassification(RGenericVector frame, RIntegerVector rowNames, RVector<?> var, RIntegerVector n, int[][] splitInfo, RNumberVector<?> splits, RIntegerVector csplit, Schema schema){
 		RDoubleVector yval2 = frame.getDoubleElement("yval2");
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 		List<?> categories = categoricalLabel.getValues();
 
@@ -274,7 +274,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 
 		Node root = encodeNode(True.INSTANCE, 1, rowNames, var, n, splitInfo, splits, csplit, scoreEncoder, schema);
 
-		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema.getLabel()), root);
+		TreeModel treeModel = new TreeModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(schema), root);
 
 		if(hasScoreDistribution){
 			treeModel.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));

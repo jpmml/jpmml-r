@@ -32,6 +32,7 @@ import org.dmg.pmml.SquaredEuclidean;
 import org.dmg.pmml.clustering.Cluster;
 import org.dmg.pmml.clustering.ClusteringModel;
 import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
 import org.jpmml.converter.Schema;
@@ -86,7 +87,7 @@ public class KMeansConverter extends ModelConverter<RGenericVector> {
 		ComparisonMeasure comparisonMeasure = new ComparisonMeasure(ComparisonMeasure.Kind.DISTANCE, new SquaredEuclidean())
 			.setCompareFunction(CompareFunction.ABS_DIFF);
 
-		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema(schema.getLabel()), comparisonMeasure, ClusteringModelUtil.createClusteringFields(schema.getFeatures()), clusters)
+		ClusteringModel clusteringModel = new ClusteringModel(MiningFunction.CLUSTERING, ClusteringModel.ModelClass.CENTER_BASED, rows, ModelUtil.createMiningSchema((Label)null), comparisonMeasure, ClusteringModelUtil.createClusteringFields(schema.getFeatures()), clusters)
 			.setOutput(ClusteringModelUtil.createOutput("cluster", DataType.DOUBLE, clusters));
 
 		return clusteringModel;

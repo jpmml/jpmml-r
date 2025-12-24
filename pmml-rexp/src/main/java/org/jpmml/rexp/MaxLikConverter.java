@@ -59,10 +59,12 @@ import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.InteractionFeature;
+import org.jpmml.converter.Label;
 import org.jpmml.converter.MissingValueDecorator;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.TypeUtil;
 import org.jpmml.converter.ValueUtil;
@@ -350,7 +352,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		String modelType = modelTypeList.getValue(0);
 
 		ModelEncoder encoder = schema.getEncoder();
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		Map<?, Feature> availabilityFeatures = this.availabilityFeatures;
@@ -466,7 +468,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		encodeTerm(choice, functionCall, MaxLikConverter.SIGN_PLUS, variables, estimates, features, coefficients, encoder);
 
-		RegressionModel regressionModel = new RegressionModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(null), null)
+		RegressionModel regressionModel = new RegressionModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema((Label)null), null)
 			.setNormalizationMethod(RegressionModel.NormalizationMethod.NONE)
 			.addRegressionTables(RegressionModelUtil.createRegressionTable(features, coefficients, null))
 			.setOutput(ModelUtil.createPredictedOutput(FieldNameUtil.create("utility", choice), OpType.CONTINUOUS, DataType.DOUBLE, new ExpTransformation()));
@@ -739,7 +741,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 			try {
 				field = encoder.getField(stringValue);
-			} catch(IllegalArgumentException iae){
+			} catch(ResolutionException re){
 
 				if(variables.containsKey(stringValue)){
 					Expression expression = toPMML(variables.get(stringValue), variables, estimates, encoder);

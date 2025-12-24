@@ -93,7 +93,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 		RIntegerVector apriori = naiveBayes.getIntegerElement("apriori");
 		RGenericVector tables = naiveBayes.getGenericElement("tables");
 
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		BayesInputs bayesInputs = new BayesInputs();

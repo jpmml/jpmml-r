@@ -128,11 +128,11 @@ public class ExpressionTranslatorTest {
 
 		Expression expected = ExpressionUtil.createApply(PMMLFunctions.IF,
 			ExpressionUtil.createApply(PMMLFunctions.LESSTHAN, new FieldRef("x"), ExpressionUtil.createConstant(DataType.INTEGER, "0")),
-			ExpressionUtil.createConstant(DataType.STRING, "negative"),
+			ExpressionUtil.createConstant("negative"),
 			ExpressionUtil.createApply(PMMLFunctions.IF,
 				ExpressionUtil.createApply(PMMLFunctions.GREATERTHAN, new FieldRef("x"), ExpressionUtil.createConstant(DataType.INTEGER, "0")),
-				ExpressionUtil.createConstant(DataType.STRING, "positive"),
-				ExpressionUtil.createConstant(DataType.STRING, "zero")
+				ExpressionUtil.createConstant("positive"),
+				ExpressionUtil.createConstant("zero")
 			)
 		);
 
@@ -259,7 +259,7 @@ public class ExpressionTranslatorTest {
 	public void translateConstant(){
 		String string = "\"你好，世界!\"";
 
-		Expression expected = ExpressionUtil.createConstant(DataType.STRING, "你好，世界!");
+		Expression expected = ExpressionUtil.createConstant("你好，世界!");
 
 		Expression actual = ExpressionTranslator.translateExpression(string);
 

@@ -33,7 +33,6 @@ import org.dmg.pmml.neural_network.Neuron;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousLabel;
 import org.jpmml.converter.Feature;
-import org.jpmml.converter.Label;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
@@ -77,7 +76,6 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 
 		n.checkSize(3);
 
-		Label label = schema.getLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		MiningFunction miningFunction;
@@ -169,17 +167,25 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 			throw new IllegalArgumentException();
 		}
 
-		NeuralNetwork neuralNetwork = new NeuralNetwork(miningFunction, NeuralNetwork.ActivationFunction.IDENTITY, ModelUtil.createMiningSchema(label), neuralInputs, neuralLayers);
+		NeuralNetwork neuralNetwork = new NeuralNetwork(miningFunction, NeuralNetwork.ActivationFunction.IDENTITY, ModelUtil.createMiningSchema(schema), neuralInputs, neuralLayers);
 
 		switch(miningFunction){
 			case REGRESSION:
-				neuralNetwork
-					.setNeuralOutputs(NeuralNetworkUtil.createRegressionNeuralOutputs(entities, (ContinuousLabel)label));
+				{
+					ContinuousLabel continuousLabel = schema.requireContinuousLabel();
+
+					neuralNetwork
+						.setNeuralOutputs(NeuralNetworkUtil.createRegressionNeuralOutputs(entities, continuousLabel));
+				}
 				break;
 			case CLASSIFICATION:
-				neuralNetwork
-					.setNeuralOutputs(NeuralNetworkUtil.createClassificationNeuralOutputs(entities, (CategoricalLabel)label))
-					.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, (CategoricalLabel)label));
+				{
+					CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
+
+					neuralNetwork
+						.setNeuralOutputs(NeuralNetworkUtil.createClassificationNeuralOutputs(entities, categoricalLabel))
+						.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
+				}
 				break;
 		}
 

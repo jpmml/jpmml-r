@@ -82,7 +82,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 				output = new Output();
 				break;
 			case CLASSIFICATION:
-				CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+				CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
 				output = ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel);
 				break;
@@ -179,7 +179,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 	private TreeModel encodeTreeModel(RGenericVector tree, Schema schema){
 		Node root = encodeNode(tree, True.INSTANCE, schema);
 
-		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema.getLabel()), root)
+		TreeModel treeModel = new TreeModel(this.miningFunction, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;
@@ -305,9 +305,9 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private Node encodeClassificationScore(Node node, RDoubleVector probabilities, Schema schema){
-		CategoricalLabel categoricalLabel = (CategoricalLabel)schema.getLabel();
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
 
-		SchemaUtil.checkSize(probabilities.size(), categoricalLabel);
+		SchemaUtil.checkCardinality(probabilities.size(), categoricalLabel);
 
 		node = new ClassifierNode(node);
 

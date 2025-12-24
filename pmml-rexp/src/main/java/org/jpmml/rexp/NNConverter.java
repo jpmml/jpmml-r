@@ -94,7 +94,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 				throw new IllegalArgumentException();
 		}
 
-		ContinuousLabel continuousLabel = (ContinuousLabel)schema.getLabel();
+		ContinuousLabel continuousLabel = schema.requireContinuousLabel();
 		List<? extends Feature> features = schema.getFeatures();
 
 		NeuralInputs neuralInputs = NeuralNetworkUtil.createNeuralInputs(features, DataType.DOUBLE);

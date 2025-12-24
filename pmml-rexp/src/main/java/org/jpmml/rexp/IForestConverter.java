@@ -144,7 +144,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			}
 		};
 
-		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()))
+		MiningModel miningModel = new MiningModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema))
 			.setSegmentation(MiningModelUtil.createSegmentation(Segmentation.MultipleModelMethod.AVERAGE, Segmentation.MissingPredictionTreatment.RETURN_MISSING, treeModels))
 			.setOutput(ModelUtil.createPredictedOutput("rawPathLength", OpType.CONTINUOUS, DataType.DOUBLE, normalizedPathLength, anomalyScore));
 
@@ -177,7 +177,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 			schema
 		);
 
-		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema.getLabel()), root)
+		TreeModel treeModel = new TreeModel(MiningFunction.REGRESSION, ModelUtil.createMiningSchema(schema), root)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
 		return treeModel;
