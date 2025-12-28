@@ -30,6 +30,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.ScalarLabel;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaException;
 
 public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 
@@ -86,7 +87,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		} else
 
 		if(outcomeNames.size() >= 2){
-			throw new IllegalArgumentException();
+			throw new SchemaException("Expected one label, got " + outcomeNames.size());
 		} // End if
 
 		if(steps != null){

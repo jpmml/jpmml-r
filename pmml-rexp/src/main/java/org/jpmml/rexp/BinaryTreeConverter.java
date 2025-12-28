@@ -44,6 +44,7 @@ import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNames;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
 
@@ -217,13 +218,15 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		Integer index = this.featureIndexes.get(name);
 		if(index == null){
-			throw new IllegalArgumentException();
+			throw new ResolutionException("Feature \'" + name + "\' is not defined");
 		}
 
 		Feature feature = schema.getFeature(index);
 
 		if(feature instanceof CategoricalFeature){
 			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+
+			SchemaUtil.checkCardinality(splitpoint.size(), categoricalFeature);
 
 			List<?> values = categoricalFeature.getValues();
 			List<Integer> splitValues = (List<Integer>)splitpoint.getValues();
@@ -265,11 +268,6 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private <E> List<E> selectValues(List<E> values, List<Integer> splits, boolean left){
-
-		if(values.size() != splits.size()){
-			throw new IllegalArgumentException();
-		}
-
 		List<E> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){

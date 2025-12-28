@@ -42,6 +42,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
+import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 
@@ -502,7 +503,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 				}
 			}
 
-			throw new IllegalArgumentException();
+			throw new ResolutionException("Feature \'" + stringName + "\' is not defined");
 		} else
 
 		if(var instanceof RFactorVector){

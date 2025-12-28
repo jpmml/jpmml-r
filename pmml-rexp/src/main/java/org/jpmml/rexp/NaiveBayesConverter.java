@@ -42,6 +42,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaException;
 
 public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 
@@ -152,7 +153,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			{
-				throw new IllegalArgumentException();
+				throw new SchemaException("Expected a categorical or continuous feature, got " + feature);
 			}
 
 			bayesInputs.addBayesInputs(bayesInput);

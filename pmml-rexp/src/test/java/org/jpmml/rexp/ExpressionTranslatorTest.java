@@ -29,10 +29,12 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ExpressionUtil;
+import org.jpmml.converter.TranslationException;
 import org.jpmml.model.ReflectionUtil;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -274,13 +276,7 @@ public class ExpressionTranslatorTest {
 
 		assertTrue(ReflectionUtil.equals(expected, actual));
 
-		try {
-			ExpressionTranslator.translateInterval("(0, NaN)");
-
-			fail();
-		} catch(IllegalArgumentException iae){
-			// Ignored
-		}
+		assertThrows(TranslationException.class, () -> ExpressionTranslator.translateInterval("(0, NaN)"));
 
 		expected = new Interval(Interval.Closure.CLOSED_CLOSED, null, null);
 

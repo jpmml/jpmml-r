@@ -41,6 +41,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.HasDerivedName;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.PowerFeature;
+import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.ValueUtil;
 
 public class Formula {
@@ -83,7 +84,7 @@ public class Formula {
 		Feature feature = getFeature(name);
 
 		if(feature == null){
-			throw new IllegalArgumentException(name);
+			throw new ResolutionException("Feature \'" + name + "\' is not defined");
 		}
 
 		return feature;

@@ -44,6 +44,8 @@ import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.PMMLUtil;
+import org.jpmml.converter.ResolutionException;
+import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.ValueUtil;
 
 public class FormulaUtil {
@@ -81,7 +83,7 @@ public class FormulaUtil {
 				} else
 
 				{
-					throw new IllegalArgumentException();
+					throw new ResolutionException("Data \'" + name + "\' is not defined");
 				}
 			}
 
@@ -268,7 +270,7 @@ public class FormulaUtil {
 		} else
 
 		{
-			throw new IllegalArgumentException();
+			throw new SchemaException("Expected a label, got no label");
 		}
 	}
 

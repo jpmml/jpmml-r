@@ -48,6 +48,7 @@ import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FlagManager;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 
@@ -267,6 +268,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 			RIntegerVector c_split = c_splits.getIntegerValue(index);
 
+			SchemaUtil.checkCardinality(c_split.size(), categoricalFeature);
+
 			List<Integer> splitValues = c_split.getValues();
 
 			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
@@ -330,11 +333,6 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 	static
 	private List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, List<Integer> splitValues, boolean left){
-
-		if(values.size() != splitValues.size()){
-			throw new IllegalArgumentException();
-		}
-
 		List<Object> result = new ArrayList<>();
 
 		for(int i = 0; i < values.size(); i++){

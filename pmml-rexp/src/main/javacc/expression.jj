@@ -37,6 +37,8 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ExpressionUtil;
+import org.jpmml.converter.ResolutionException;
+import org.jpmml.converter.TranslationException;
 import org.jpmml.converter.visitors.ExpressionCompactor;
 
 public class ExpressionTranslator {
@@ -54,8 +56,8 @@ public class ExpressionTranslator {
 			ExpressionTranslator translator = new ExpressionTranslator(string);
 			
 			expression = translator.translateExpressionInternal();
-		} catch(ParseException pe){
-			throw new IllegalArgumentException(string, pe);
+		} catch(Exception e){
+			throw new TranslationException("R expression \'" + toSingleLine(string) + "\' is invalid or not supported", e);
 		}
 
 		if(compact){
@@ -75,8 +77,8 @@ public class ExpressionTranslator {
 			ExpressionTranslator translator = new ExpressionTranslator(string);
 
 			interval = translator.translateIntervalInternal();
-		} catch(ParseException pe){
-			throw new IllegalArgumentException(string, pe);
+		} catch(Exception e){
+			throw new TranslationException("R interval \'" + toSingleLine(string) + "\' is invalid or not supported", e);
 		}
 
 		return interval;
@@ -91,7 +93,7 @@ public class ExpressionTranslator {
 			case OR:
 				return PMMLFunctions.OR;
 			default:
-				throw new IllegalArgumentException(operator.image);
+				throw new IllegalArgumentException();
 		}
 	}
 
@@ -107,7 +109,7 @@ public class ExpressionTranslator {
 			case MODULO:
 				return PMMLFunctions.MODULO;
 			default:
-				throw new IllegalArgumentException(operator.image);
+				throw new IllegalArgumentException();
 		}
 	}
 
@@ -128,7 +130,7 @@ public class ExpressionTranslator {
 			case GREATER_OR_EQUAL:
 				return PMMLFunctions.GREATEROREQUAL;
 			default:
-				throw new IllegalArgumentException(operator.image);
+				throw new IllegalArgumentException();
 		}
 	}
 
@@ -160,8 +162,10 @@ public class ExpressionTranslator {
 			case "is.na":
 				return PMMLFunctions.ISMISSING;
 			default:
-				throw new IllegalArgumentException(function);
+				break;
 		}
+
+		throw new ResolutionException("R function \'" + function + "\' is not supported");
 	}
 
 	static
@@ -211,7 +215,7 @@ public class ExpressionTranslator {
 			case "[]":
 				return Interval.Closure.CLOSED_CLOSED;
 			default:
-				throw new IllegalArgumentException(closure);
+				throw new IllegalArgumentException();
 		}
 	}
 
@@ -227,6 +231,13 @@ public class ExpressionTranslator {
 		}
 
 		return value;
+	}
+
+	static
+	public String toSingleLine(String string){
+		return string
+		.replaceAll("\t", "\\\\t")
+		.replaceAll("\n", "\\\\n");
 	}
 }
 PARSER_END(ExpressionTranslator)
@@ -608,7 +619,7 @@ Expression FunctionInvocationExpression():
 					return ExpressionUtil.createApply(pmmlFunction, argument.getExpression());
 				}
 			}
-		} catch(IllegalArgumentException iae){
+		} catch(ResolutionException re){
 			// Ignored
 		}
 

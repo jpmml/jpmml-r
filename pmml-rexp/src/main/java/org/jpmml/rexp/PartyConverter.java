@@ -41,6 +41,7 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaException;
 
 public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
@@ -116,7 +117,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		{
-			throw new IllegalArgumentException();
+			throw new SchemaException("Expected a label, got no label");
 		}
 
 		FormulaUtil.setLabel(formula, terms, levels, encoder);
