@@ -197,7 +197,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 						}
 					}
 					break;
-				case QUANTITIVE:
+				case QUANTITATIVE:
 				case INTEGER:
 				case FLOAT:
 					{
