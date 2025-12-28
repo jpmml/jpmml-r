@@ -44,7 +44,7 @@ public class RExpUtil {
 				break;
 		}
 
-		throw new IllegalArgumentException(type);
+		throw new RExpException("Expected atomic data type, got " + type);
 	}
 
 	static

@@ -161,7 +161,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		RGenericVector info = partyNode.getGenericElement("info");
 
 		if(surrogates != null){
-			throw new IllegalArgumentException();
+			throw new RExpException("Surrogate splits are not supported");
 		}
 
 		List<? extends Feature> features = schema.getFeatures();

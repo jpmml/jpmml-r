@@ -74,7 +74,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 					this.median = createArguments(preProcess.getDoubleElement("median"));
 					break;
 				default:
-					throw new IllegalArgumentException(methodName);
+					throw new RExpException("Method \'" + methodName + "\' is not supported");
 			}
 		}
 	}

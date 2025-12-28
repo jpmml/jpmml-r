@@ -19,7 +19,6 @@
 package org.jpmml.rexp.lightgbm;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +33,7 @@ import org.jpmml.lightgbm.LightGBMUtil;
 import org.jpmml.rexp.ModelConverter;
 import org.jpmml.rexp.REnvironment;
 import org.jpmml.rexp.RExpEncoder;
+import org.jpmml.rexp.RExpException;
 import org.jpmml.rexp.RRaw;
 
 public class LightGBMConverter extends ModelConverter<REnvironment> {
@@ -92,8 +92,8 @@ public class LightGBMConverter extends ModelConverter<REnvironment> {
 
 		try(InputStream is = new ByteArrayInputStream(raw.getValue())){
 			return LightGBMUtil.loadGBDT(is);
-		} catch(IOException ioe){
-			throw new IllegalArgumentException(ioe);
+		} catch(Exception e){
+			throw new RExpException("Failed to load LightGBM booster object", e);
 		}
 	}
 }

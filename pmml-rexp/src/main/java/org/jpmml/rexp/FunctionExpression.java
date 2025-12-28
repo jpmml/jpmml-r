@@ -53,6 +53,17 @@ public class FunctionExpression extends Expression {
 		return (Objects.equals(this.namespace, namespace) || Objects.equals(this.namespace, null)) && Objects.equals(this.function, function);
 	}
 
+	public String formatId(){
+		String namespace = getNamespace();
+		String function = getFunction();
+
+		if(namespace != null){
+			return namespace + "::" + function;
+		}
+
+		return function;
+	}
+
 	public Argument getArgument(String tag, int index){
 
 		if(tag != null){

@@ -70,7 +70,7 @@ public class IForestConverter extends TreeModelConverter<RGenericVector> {
 		}
 
 		if(hasFactors){
-			throw new IllegalArgumentException();
+			throw new RExpException("Factor features are not supported");
 		}
 
 		{

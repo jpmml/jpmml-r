@@ -28,8 +28,8 @@ public class DecorationUtil {
 
 		try {
 			return model.getGenericElement(name, true);
-		} catch(IllegalArgumentException iae){
-			throw toDecorationException(model, name, iae);
+		} catch(RExpException re){
+			throw toDecorationException(model, name, re);
 		}
 	}
 
@@ -38,8 +38,8 @@ public class DecorationUtil {
 
 		try {
 			return model.getBooleanElement(name, true);
-		} catch(IllegalArgumentException iae){
-			throw toDecorationException(model, name, iae);
+		} catch(RExpException re){
+			throw toDecorationException(model, name, re);
 		}
 	}
 
@@ -48,8 +48,8 @@ public class DecorationUtil {
 
 		try {
 			return model.getNumericElement(name, true);
-		} catch(IllegalArgumentException iae){
-			throw toDecorationException(model, name, iae);
+		} catch(RExpException re){
+			throw toDecorationException(model, name, re);
 		}
 	}
 
@@ -58,17 +58,18 @@ public class DecorationUtil {
 
 		try {
 			return model.getVectorElement(name, true);
-		} catch(IllegalArgumentException iae){
-			throw toDecorationException(model, name, iae);
+		} catch(RExpException re){
+			throw toDecorationException(model, name, re);
 		}
 	}
 
 	static
-	private RuntimeException toDecorationException(RGenericVector model, String name, Exception e){
+	private RExpException toDecorationException(RGenericVector model, String name, Exception e){
 		RStringVector classNames = model._class();
 
 		String className = classNames.getValue(0);
 
-		return new IllegalArgumentException("Missing \'" + className + "$" + name + "\' element. Please decorate the model object using the \'r2pmml::decorate." + className + "\' function before saving it into the RDS file");
+		return (RExpException)new RExpException("Missing \'" + className + "$" + name + "\' element")
+			.setSolution("Decorate the model object using the \'r2pmml::decorate." + className + "\' function before saving it into the RDS file");
 	}
 }

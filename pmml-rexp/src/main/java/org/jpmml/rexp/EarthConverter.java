@@ -176,7 +176,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			case 1:
 				return FieldNameUtil.create("h", feature.getName() + " - " + cut);
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Hinge direction " + dir + " is not supported");
 		}
 	}
 
@@ -192,7 +192,7 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 				expression = ExpressionUtil.createApply(PMMLFunctions.SUBTRACT, feature.ref(), ExpressionUtil.createConstant(cut));
 				break;
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Hinge direction " + dir + " is not supported");
 		}
 
 		return ExpressionUtil.createApply(PMMLFunctions.MAX, expression, ExpressionUtil.createConstant(0d));

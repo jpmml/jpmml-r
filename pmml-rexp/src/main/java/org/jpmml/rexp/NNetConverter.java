@@ -81,15 +81,14 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 		MiningFunction miningFunction;
 
 		if(lev == null){
-
-			if(linout != null && !linout.asScalar()){
-				throw new IllegalArgumentException();
-			}
-
 			miningFunction = MiningFunction.REGRESSION;
 		} else
 
 		{
+			if(censored != null && censored.asScalar()){
+				throw new RExpException("Censored response is not supported");
+			}
+
 			miningFunction = MiningFunction.CLASSIFICATION;
 		}
 
@@ -148,11 +147,6 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 			NeuralLayer neuralLayer = encodeNeuralLayer("output", nOutput, entities, wts, offset);
 
 			if(softmax != null && softmax.asScalar()){
-
-				if(censored != null && censored.asScalar()){
-					throw new IllegalArgumentException();
-				}
-
 				neuralLayer.setNormalizationMethod(NeuralNetwork.NormalizationMethod.SOFTMAX);
 			}
 

@@ -89,7 +89,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			case "classification":
 				return encodeClassification(forest, schema);
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Model type \'" + type.asScalar() + "\' is not supported");
 		}
 	}
 
@@ -356,7 +356,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			BooleanFeature booleanFeature = (BooleanFeature)feature;
 
 			if(split != 0.5d){
-				throw new IllegalArgumentException();
+				throw new RExpException("Expected 0.5 as a threshold value for boolean feature \'" + booleanFeature.getName() + "\', got " + split);
 			}
 
 			leftPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(0));

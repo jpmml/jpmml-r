@@ -155,7 +155,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 			case "class":
 				return encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Method \'" + method.asScalar() + "\' is not supported");
 		}
 	}
 

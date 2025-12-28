@@ -81,18 +81,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 		// Select the first repetition
 		weights = weights.getGenericValue(0);
 
-		NeuralNetwork.ActivationFunction activationFunction = NeuralNetwork.ActivationFunction.LOGISTIC;
-
-		switch(actFctType.asScalar()){
-			case "logistic":
-				activationFunction = NeuralNetwork.ActivationFunction.LOGISTIC;
-				break;
-			case "tanh":
-				activationFunction = NeuralNetwork.ActivationFunction.TANH;
-				break;
-			default:
-				throw new IllegalArgumentException();
-		}
+		NeuralNetwork.ActivationFunction activationFunction = parseActivationFunction(actFctType.asScalar());
 
 		ContinuousLabel continuousLabel = schema.requireContinuousLabel();
 		List<? extends Feature> features = schema.getFeatures();
@@ -147,5 +136,18 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 			.setNeuralOutputs(NeuralNetworkUtil.createRegressionNeuralOutputs(entities, continuousLabel));
 
 		return neuralNetwork;
+	}
+
+	static
+	private NeuralNetwork.ActivationFunction parseActivationFunction(String actFctType){
+
+		switch(actFctType){
+			case "logistic":
+				return NeuralNetwork.ActivationFunction.LOGISTIC;
+			case "tanh":
+				return NeuralNetwork.ActivationFunction.TANH;
+			default:
+				throw new RExpException("Activation function \'" + actFctType + "\' is not supported");
+		}
 	}
 }

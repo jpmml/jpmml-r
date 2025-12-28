@@ -107,7 +107,7 @@ public class RExp {
 		try {
 			return clazz.cast(rexp);
 		} catch(ClassCastException cce){
-			throw new IllegalArgumentException("Invalid \'" + name + "\' attribute. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+			throw new RExpException("Invalid \'" + name + "\' attribute. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
 		}
 	}
 
@@ -139,7 +139,7 @@ public class RExp {
 		}
 
 		if(required){
-			throw new IllegalArgumentException("Missing \'" + name + "\' attribute");
+			throw new RExpException("Missing \'" + name + "\' attribute");
 		}
 
 		return null;

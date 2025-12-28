@@ -83,22 +83,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 				responseName = "y";
 			}
 
-			DataField dataField;
-
-			switch(distributionName.asScalar()){
-				case "gaussian":
-					dataField = encoder.createDataField(responseName, OpType.CONTINUOUS, DataType.DOUBLE);
-					break;
-				case "adaboost":
-				case "bernoulli":
-					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.INTEGER, GBMConverter.BINARY_CLASSES);
-					break;
-				case "multinomial":
-					dataField = encoder.createDataField(responseName, OpType.CATEGORICAL, DataType.STRING, classes.getValues());
-					break;
-				default:
-					throw new IllegalArgumentException();
-			}
+			DataField dataField = encodeLabel(distributionName.asScalar(), responseName, classes, encoder);
 
 			encoder.setLabel(dataField);
 		}
@@ -146,14 +131,29 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			treeModels.add(treeModel);
 		}
 
-		MiningModel miningModel = encodeMiningModel(distributionName, treeModels, initF.asScalar(), schema);
+		MiningModel miningModel = encodeMiningModel(distributionName.asScalar(), treeModels, initF.asScalar(), schema);
 
 		return miningModel;
 	}
 
-	private MiningModel encodeMiningModel(RStringVector distributionName, List<TreeModel> treeModels, Double initF, Schema schema){
+	private DataField encodeLabel(String distributionName, String name, RStringVector classes, RExpEncoder encoder){
 
-		switch(distributionName.asScalar()){
+		switch(distributionName){
+			case "gaussian":
+				return encoder.createDataField(name, OpType.CONTINUOUS, DataType.DOUBLE);
+			case "adaboost":
+			case "bernoulli":
+				return encoder.createDataField(name, OpType.CATEGORICAL, DataType.INTEGER, GBMConverter.BINARY_CLASSES);
+			case "multinomial":
+				return encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, classes.getValues());
+			default:
+				throw new RExpException("Distribution family \'" + distributionName + "\' is not supported");
+		}
+	}
+
+	private MiningModel encodeMiningModel(String distributionName, List<TreeModel> treeModels, Double initF, Schema schema){
+
+		switch(distributionName){
 			case "gaussian":
 				return encodeRegression(treeModels, initF, schema);
 			case "adaboost":
@@ -163,7 +163,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			case "multinomial":
 				return encodeMultinomialClassification(treeModels, initF, schema);
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Distribution family \'" + distributionName + "\' is not supported");
 		}
 	}
 

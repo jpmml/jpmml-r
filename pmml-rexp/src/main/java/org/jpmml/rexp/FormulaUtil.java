@@ -438,7 +438,7 @@ public class FormulaUtil {
 				return encodeIfElseExpression(functionExpression, expressionFields, encoder);
 			}
 
-			throw new IllegalArgumentException();
+			throw new RExpException("R function \'" + functionExpression.formatId() + "\' is not supported");
 		}
 
 		return expression;
@@ -550,11 +550,11 @@ public class FormulaUtil {
 	private FunctionExpression toVectorExpression(FunctionExpression.Argument argument){
 		FunctionExpression functionExpression = (FunctionExpression)ExpressionTranslator.translateExpression((argument.formatExpression()).trim());
 
-		if(!functionExpression.hasId("base", "c")){
-			throw new IllegalArgumentException();
+		if(functionExpression.hasId("base", "c")){
+			return functionExpression;
 		}
 
-		return functionExpression;
+		throw new RExpException("R function \'" + functionExpression.formatId() + "\' is not supported");
 	}
 
 	static

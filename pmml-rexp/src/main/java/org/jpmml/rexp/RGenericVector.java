@@ -103,7 +103,7 @@ public class RGenericVector extends RVector<RExp> {
 		try {
 			return clazz.cast(rexp);
 		} catch(ClassCastException cce){
-			throw new IllegalArgumentException("Invalid value on position " + (index + 1) + ". Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+			throw new RExpException("Invalid value at position " + (index + 1) + ". Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()), cce);
 		}
 	}
 
@@ -177,7 +177,7 @@ public class RGenericVector extends RVector<RExp> {
 		try {
 			return clazz.cast(rexp);
 		} catch(ClassCastException cce){
-			throw new IllegalArgumentException("Invalid \'" + name + "\' element. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+			throw new RExpException("Invalid \'" + name + "\' element. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()), cce);
 		}
 	}
 

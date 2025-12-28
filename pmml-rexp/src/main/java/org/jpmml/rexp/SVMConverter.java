@@ -82,13 +82,13 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector rho = svm.getDoubleElement("rho");
 		RDoubleVector coefs = svm.getDoubleElement("coefs");
 
-		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
-		Kernel svmKernel = Kernel.values()[ValueUtil.asInt(kernel.asScalar())];
+		Kernel svmKernel = parseKernel(kernel.asScalar());
 
 		org.dmg.pmml.support_vector_machine.Kernel pmmlKernel = svmKernel.createKernel(degree.asScalar(), gamma.asScalar(), coef0.asScalar());
 
 		SupportVectorMachineModel supportVectorMachineModel;
 
+		Type svmType = parseType(type.asScalar());
 		switch(svmType){
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
@@ -108,10 +108,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 					supportVectorMachineModel = encodeRegression(pmmlKernel, sv, rho, coefs, schema)
 						.setOutput(ModelUtil.createPredictedOutput("decisionFunction", OpType.CONTINUOUS, DataType.DOUBLE, outlier));
-
-					if(yScale != null && !yScale.isEmpty()){
-						throw new IllegalArgumentException();
-					}
 				}
 				break;
 			case EPS_REGRESSION:
@@ -143,8 +139,6 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RExp terms = svm.getElement("terms");
 		RGenericVector xlevels = DecorationUtil.getGenericElement(svm, "xlevels");
 
-		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
-
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
@@ -152,6 +146,7 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 		Formula formula = FormulaUtil.createFormula(terms, context, encoder);
 
+		Type svmType = parseType(type.asScalar());
 		switch(svmType){
 			case C_CLASSIFICATION:
 			case NU_CLASSIFICATION:
@@ -178,37 +173,34 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RDoubleVector sv = svm.getDoubleElement("SV");
 		RVector<?> levels = svm.getVectorElement("levels");
 
-		Type svmType = Type.values()[ValueUtil.asInt(type.asScalar())];
-
 		RStringVector rowNames = sv.dimnames(0);
 		RStringVector columnNames = sv.dimnames(1);
 
-		{
-			switch(svmType){
-				case C_CLASSIFICATION:
-				case NU_CLASSIFICATION:
-					{
-						RStringVector stringLevels = (RStringVector)levels;
+		Type svmType = parseType(type.asScalar());
+		switch(svmType){
+			case C_CLASSIFICATION:
+			case NU_CLASSIFICATION:
+				{
+					RStringVector stringLevels = (RStringVector)levels;
 
-						DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, stringLevels.getValues());
+					DataField dataField = encoder.createDataField("_target", OpType.CATEGORICAL, DataType.STRING, stringLevels.getValues());
 
-						encoder.setLabel(dataField);
-					}
-					break;
-				case ONE_CLASSIFICATION:
-					{
-						encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
-					}
-					break;
-				case EPS_REGRESSION:
-				case NU_REGRESSION:
-					{
-						DataField dataField = encoder.createDataField("_target", OpType.CONTINUOUS, DataType.DOUBLE);
+					encoder.setLabel(dataField);
+				}
+				break;
+			case ONE_CLASSIFICATION:
+				{
+					encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
+				}
+				break;
+			case EPS_REGRESSION:
+			case NU_REGRESSION:
+				{
+					DataField dataField = encoder.createDataField("_target", OpType.CONTINUOUS, DataType.DOUBLE);
 
-						encoder.setLabel(dataField);
-					}
-					break;
-			}
+					encoder.setLabel(dataField);
+				}
+				break;
 		}
 
 		for(int i = 0; i < columnNames.size(); i++){
@@ -287,6 +279,28 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 		RStringVector columnNames = sv.dimnames(1);
 
 		return LibSVMUtil.createRegression(kernel, new FortranMatrix<>(sv.getValues(), rowNames.size(), columnNames.size()), rowNames.getValues(), rho.asScalar(), Lists.transform(coefs.getValues(), SVMConverter.FUNCTION_NEGATE), schema);
+	}
+
+	static
+	private Type parseType(Number value){
+		int index = ValueUtil.asInt(value);
+
+		if(index < 0 || index >= Type.values().length){
+			throw new RExpException("SVM type " + index + " is not supported");
+		}
+
+		return Type.values()[index];
+	}
+
+	static
+	private Kernel parseKernel(Number value){
+		int index = ValueUtil.asInt(value);
+
+		if(index < 0 || index >= Kernel.values().length){
+			throw new RExpException("SVM kernel " + index + " is not supported");
+		}
+
+		return Kernel.values()[index];
 	}
 
 	private static final Function<Double, Double> FUNCTION_NEGATE = new Function<Double, Double>(){

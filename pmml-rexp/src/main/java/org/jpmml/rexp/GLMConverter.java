@@ -167,7 +167,7 @@ public class GLMConverter extends LMConverter {
 			case "Tweedie":
 				return GeneralRegressionModel.Distribution.TWEEDIE;
 			default:
-				throw new IllegalArgumentException(family);
+				throw new RExpException("Distribution family \'" + family + "\' is not supported");
 		}
 	}
 
@@ -211,7 +211,7 @@ public class GLMConverter extends LMConverter {
 			case "sqrt":
 				return GeneralRegressionModel.LinkFunction.POWER;
 			default:
-				throw new IllegalArgumentException(link);
+				throw new RExpException("Link function \'" + link + "\' is not supported");
 		}
 	}
 

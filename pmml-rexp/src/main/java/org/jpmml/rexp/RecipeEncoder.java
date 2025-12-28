@@ -90,7 +90,7 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		} // End if
 
 		if(steps != null){
-			throw new IllegalArgumentException();
+			throw new RExpException("Steps are not supported");
 		}
 
 		return new Schema(this, label, features);

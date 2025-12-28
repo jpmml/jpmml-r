@@ -118,7 +118,7 @@ public class HurdleConverter extends MixtureModelConverter {
 			case "binomial":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.LOGIT, schema);
 			default:
-				throw new IllegalArgumentException(distName);
+				throw new RExpException("Distribution family \'" + distName + "\' is not supported");
 		}
 	}
 
@@ -133,7 +133,7 @@ public class HurdleConverter extends MixtureModelConverter {
 			case "poisson":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.EXP, schema);
 			default:
-				throw new IllegalArgumentException(distName);
+				throw new RExpException("Distribution family \'" + distName + "\' is not supported");
 		}
 	}
 }

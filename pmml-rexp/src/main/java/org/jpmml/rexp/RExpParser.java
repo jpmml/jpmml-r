@@ -83,7 +83,7 @@ public class RExpParser implements Closeable {
 		int version = readInt();
 
 		if(version < 2 || version > 3){
-			throw new IllegalArgumentException(String.valueOf(version));
+			throw new RExpException("Version \'" + String.valueOf(version) + "\' is not supported");
 		}
 
 		int writerVersion = readInt();

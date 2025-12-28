@@ -119,7 +119,7 @@ public class ORMConverter extends RMSConverter {
 			case "cauchit":
 				return RegressionModel.NormalizationMethod.CAUCHIT;
 			default:
-				throw new IllegalArgumentException(family);
+				throw new RExpException("Family \'" + family + "\' is not supported");
 		}
 	}
 }

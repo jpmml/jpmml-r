@@ -129,7 +129,7 @@ public class ZeroInflConverter extends MixtureModelConverter {
 			case "logit":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.NONE, schema);
 			default:
-				throw new IllegalArgumentException(linkName);
+				throw new RExpException("Link function \'" + linkName + "\' is not supported");
 		}
 	}
 
@@ -145,7 +145,7 @@ public class ZeroInflConverter extends MixtureModelConverter {
 			case "poisson":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.EXP, schema);
 			default:
-				throw new IllegalArgumentException(distName);
+				throw new RExpException("Distribution family \'" + distName + "\' is not supported");
 		}
 	}
 }

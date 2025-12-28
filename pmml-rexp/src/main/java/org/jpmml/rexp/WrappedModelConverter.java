@@ -93,7 +93,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 				}
 				break;
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Task type \'" + type.asScalar() + "\' is not supported");
 		}
 	}
 

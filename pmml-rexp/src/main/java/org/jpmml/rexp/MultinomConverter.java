@@ -90,7 +90,7 @@ public class MultinomConverter extends ModelConverter<RGenericVector> {
 			if(softmax != null && softmax.asScalar()){
 
 				if(censored != null && censored.asScalar()){
-					throw new IllegalArgumentException();
+					throw new RExpException("Censored response is not supported");
 				}
 			}
 

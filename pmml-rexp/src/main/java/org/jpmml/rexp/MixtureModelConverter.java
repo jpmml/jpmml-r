@@ -85,7 +85,7 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 			case MixtureModelConverter.NAME_ZERO:
 				break;
 			default:
-				throw new IllegalArgumentException(name);
+				throw new RExpException("Component \'" + name + "\' is not supported");
 		}
 
 		encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
@@ -121,7 +121,7 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 			case MixtureModelConverter.NAME_COUNT:
 				return encodeCountComponent(features, featureCoefficients, intercept, schema);
 			default:
-				throw new IllegalArgumentException(name);
+				throw new RExpException("Component \'" + name + "\' is not supported");
 		}
 	}
 

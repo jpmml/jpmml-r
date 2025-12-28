@@ -64,7 +64,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		RGenericVector forest = ranger.getGenericElement("forest", false);
 		if(forest == null){
-			throw new IllegalArgumentException("Missing \'forest\' element. Please re-train the model object with \'write.forest\' argument set to TRUE");
+			throw new RExpException("Missing \'forest\' element")
+				.setSolution("Re-train the model object with \'write.forest\' argument set to TRUE");
 		}
 
 		RStringVector treeType = ranger.getStringElement("treetype");
@@ -90,7 +91,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 					}
 					break;
 				default:
-					throw new IllegalArgumentException();
+					throw new RExpException("Tree type \'" + treeType.asScalar() + "\' is not supported");
 			}
 
 			encoder.setLabel(dataField);
@@ -104,7 +105,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 		for(int i = 0; i < independentVariableNames.size(); i++){
 
 			if(!isOrdered.getValue(this.hasDependentVar ? (i + 1) : i)){
-				throw new IllegalArgumentException();
+				throw new RExpException("Ordinal features are not supported");
 			}
 
 			String independentVariableName = independentVariableNames.getValue(i);
@@ -142,7 +143,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 			case "Probability estimation":
 				return encodeProbabilityForest(forest, schema);
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Tree type \'" + treeType.asScalar() + "\' is not supported");
 		}
 	}
 
@@ -224,7 +225,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 			@Override
 			public Node encode(Node node, Number splitValue, RNumberVector<?> terminalClassCount){
 
-				if(splitValue.doubleValue() != 0d || (terminalClassCount == null)){
+				if(splitValue.doubleValue() != 0d){
 					throw new IllegalArgumentException();
 				}
 

@@ -81,7 +81,7 @@ public class ElmConverter extends ModelConverter<RGenericVector> {
 			case "purelin":
 				break;
 			default:
-				throw new IllegalArgumentException();
+				throw new RExpException("Activation function \'" + actfun.asScalar() + "\' is not supported");
 		}
 
 		NeuralInputs neuralInputs = NeuralNetworkUtil.createNeuralInputs(features, DataType.DOUBLE);

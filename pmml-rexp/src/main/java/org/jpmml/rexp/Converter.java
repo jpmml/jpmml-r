@@ -65,7 +65,8 @@ public class Converter<R extends RExp> {
 		} // End if
 
 		if(preProcess != null && recipe != null){
-			throw new IllegalArgumentException();
+			throw new RExpException("Cannot use \'preProcess\' (caret) and \'recipe\' (tidymodels) data pre-processing simultaneously")
+				.setSolution("Choose one data pre-processing approach");
 		}
 
 		RExpEncoder encoder;

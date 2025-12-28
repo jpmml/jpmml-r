@@ -98,7 +98,7 @@ public class POLRConverter extends LMConverter {
 			case "cauchit":
 				return RegressionModel.NormalizationMethod.CAUCHIT;
 			default:
-				throw new IllegalArgumentException(method);
+				throw new RExpException("Method \'" + method + "\' is not supported");
 		}
 	}
 }

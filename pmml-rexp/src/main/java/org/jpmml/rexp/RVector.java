@@ -155,7 +155,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		} // End if
 
 		if(required){
-			throw new IllegalArgumentException("Missing \'" + name + "\' element");
+			throw new RExpException("Missing \'" + name + "\' element");
 		}
 
 		return null;

@@ -38,6 +38,7 @@ import org.jpmml.converter.ValueUtil;
 import org.jpmml.rexp.DecorationUtil;
 import org.jpmml.rexp.ModelConverter;
 import org.jpmml.rexp.RExpEncoder;
+import org.jpmml.rexp.RExpException;
 import org.jpmml.rexp.RFactorVector;
 import org.jpmml.rexp.RGenericVector;
 import org.jpmml.rexp.RIntegerVector;
@@ -246,8 +247,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		try {
 			return loadFeatureMap(fmap);
-		} catch(IOException ioe){
-			throw new IllegalArgumentException(ioe);
+		} catch(Exception e){
+			throw new RExpException("Failed to load XGBoost feature map object", e);
 		}
 	}
 
@@ -258,8 +259,8 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		try {
 			return loadLearner(raw, jsonPath);
-		} catch(IOException ioe){
-			throw new IllegalArgumentException(ioe);
+		} catch(Exception e){
+			throw new RExpException("Failed to load XGBoost booster object", e);
 		}
 	}
 
@@ -272,7 +273,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		List<FeatureMap.Entry> entries = featureMap.getEntries();
 
 		if(vector.size() != entries.size()){
-			throw new IllegalArgumentException("Invalid \'fmap\' element. Expected " + vector.size() + " features, got " + entries.size() + " features");
+			throw new RExpException("Invalid \'fmap\' element. Expected " + vector.size() + " features, got " + entries.size() + " features");
 		}
 	}
 
@@ -310,7 +311,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 		for(int i = 0; i < id.size(); i++){
 
 			if(i != id.getValue(i)){
-				throw new IllegalArgumentException();
+				throw new RExpException("Expected entry identifier " + i + ", got " + id.getValue(i));
 			}
 
 			featureMap.addEntry(name.getFactorValue(i), type.getFactorValue(i));

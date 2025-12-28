@@ -207,7 +207,7 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 		RStringVector variableName = psplit.getStringElement("variableName");
 
 		if(!ssplits.isEmpty()){
-			throw new IllegalArgumentException();
+			throw new RExpException("Surrogate splits are not supported");
 		}
 
 		Predicate leftPredicate;
