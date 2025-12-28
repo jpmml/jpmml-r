@@ -447,7 +447,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 	public UnsignedLong toUnsignedLong(double value){
 
 		if(!DoubleMath.isMathematicalInteger(value)){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Expected integer value, got " + value);
 		}
 
 		return UnsignedLong.fromLongBits((long)value);

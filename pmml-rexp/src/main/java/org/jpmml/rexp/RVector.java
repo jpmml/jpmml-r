@@ -88,7 +88,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		List<E> values = getValues();
 
 		if(values.size() != size){
-			throw new IllegalArgumentException("Expected " + size + " element(s), got " + values.size() + " element(s)");
+			throw new IllegalArgumentException("Expected " + size + " element(s), got " + values.size());
 		}
 	}
 
@@ -96,7 +96,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		List<E> values = getValues();
 
 		if(values.size() < size){
-			throw new IllegalArgumentException("Expected " + size + " or more element(s), got " + values.size() + " element(s)");
+			throw new IllegalArgumentException("Expected " + size + " or more element(s), got " + values.size());
 		}
 	}
 
