@@ -36,9 +36,8 @@ import org.dmg.pmml.Expression;
 import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.ExpressionUtil;
-import org.jpmml.converter.ResolutionException;
-import org.jpmml.converter.TranslationException;
 import org.jpmml.converter.visitors.ExpressionCompactor;
 
 public class ExpressionTranslator {
@@ -57,7 +56,7 @@ public class ExpressionTranslator {
 			
 			expression = translator.translateExpressionInternal();
 		} catch(Exception e){
-			throw new TranslationException("R expression \'" + toSingleLine(string) + "\' is invalid or not supported", e);
+			throw new RExpException("Expression " + ExceptionUtil.formatName(toSingleLine(string)) + " is invalid or not supported", e);
 		}
 
 		if(compact){
@@ -78,7 +77,7 @@ public class ExpressionTranslator {
 
 			interval = translator.translateIntervalInternal();
 		} catch(Exception e){
-			throw new TranslationException("R interval \'" + toSingleLine(string) + "\' is invalid or not supported", e);
+			throw new RExpException("Interval " + ExceptionUtil.formatName(toSingleLine(string)) + " is invalid or not supported", e);
 		}
 
 		return interval;
@@ -165,7 +164,7 @@ public class ExpressionTranslator {
 				break;
 		}
 
-		throw new ResolutionException("R function \'" + function + "\' is not supported");
+		throw new RExpException("Function " + ExceptionUtil.formatName(function) + " is not supported");
 	}
 
 	static
@@ -619,7 +618,7 @@ Expression FunctionInvocationExpression():
 					return ExpressionUtil.createApply(pmmlFunction, argument.getExpression());
 				}
 			}
-		} catch(ResolutionException re){
+		} catch(RExpException re){
 			// Ignored
 		}
 

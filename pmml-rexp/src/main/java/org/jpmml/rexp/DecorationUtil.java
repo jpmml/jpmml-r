@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.ExceptionUtil;
+
 public class DecorationUtil {
 
 	private DecorationUtil(){
@@ -69,7 +71,7 @@ public class DecorationUtil {
 
 		String className = classNames.getValue(0);
 
-		return (RExpException)new RExpException("Missing \'" + className + "$" + name + "\' element")
-			.setSolution("Decorate the model object using the \'r2pmml::decorate." + className + "\' function before saving it into the RDS file");
+		return (RExpException)new RExpException("Missing " + ExceptionUtil.formatName(className + "$" + name) + " element")
+			.setSolution("Decorate the model object using the " + ExceptionUtil.formatName("r2pmml::decorate." + className) + " function before saving it into the RDS file");
 	}
 }

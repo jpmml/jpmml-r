@@ -30,6 +30,7 @@ import org.dmg.pmml.neural_network.NeuralNetwork;
 import org.dmg.pmml.neural_network.NeuralOutputs;
 import org.dmg.pmml.neural_network.Neuron;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
@@ -81,7 +82,7 @@ public class ElmConverter extends ModelConverter<RGenericVector> {
 			case "purelin":
 				break;
 			default:
-				throw new RExpException("Activation function \'" + actfun.asScalar() + "\' is not supported");
+				throw new RExpException("Activation function " + ExceptionUtil.formatParameter(actfun.asScalar()) + " is not supported");
 		}
 
 		NeuralInputs neuralInputs = NeuralNetworkUtil.createNeuralInputs(features, DataType.DOUBLE);

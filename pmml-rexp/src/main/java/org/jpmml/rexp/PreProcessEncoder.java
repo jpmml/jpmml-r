@@ -31,6 +31,7 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
@@ -74,7 +75,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 					this.median = createArguments(preProcess.getDoubleElement("median"));
 					break;
 				default:
-					throw new RExpException("Method \'" + methodName + "\' is not supported");
+					throw new RExpException("Method " + ExceptionUtil.formatParameter(methodName) + " is not supported");
 			}
 		}
 	}

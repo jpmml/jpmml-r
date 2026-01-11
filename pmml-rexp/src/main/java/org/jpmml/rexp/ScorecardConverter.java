@@ -35,8 +35,8 @@ import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.SchemaUtil;
+import org.jpmml.converter.UnsupportedFeatureException;
 
 public class ScorecardConverter extends GLMConverter {
 
@@ -70,7 +70,7 @@ public class ScorecardConverter extends GLMConverter {
 			String name = feature.getName();
 
 			if(!(feature instanceof BinaryFeature)){
-				throw new SchemaException("Expected a binary feature, got " + feature);
+				throw new UnsupportedFeatureException("Expected a binary feature, got " + feature.typeString());
 			}
 
 			Double coefficient = getFeatureCoefficient(feature, coefficients);

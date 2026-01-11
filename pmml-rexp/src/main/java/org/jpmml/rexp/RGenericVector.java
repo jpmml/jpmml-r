@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
+import org.jpmml.converter.ExceptionUtil;
 
 public class RGenericVector extends RVector<RExp> {
 
@@ -177,7 +178,7 @@ public class RGenericVector extends RVector<RExp> {
 		try {
 			return clazz.cast(rexp);
 		} catch(ClassCastException cce){
-			throw new RExpException("Invalid \'" + name + "\' element. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()), cce);
+			throw new RExpException("Invalid " + ExceptionUtil.formatName(name) + " element. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()), cce);
 		}
 	}
 

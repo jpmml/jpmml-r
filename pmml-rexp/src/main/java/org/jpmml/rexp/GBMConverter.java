@@ -38,17 +38,17 @@ import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.CMatrixUtil;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
 import org.jpmml.converter.FlagManager;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SchemaUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
 
@@ -148,7 +148,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			case "multinomial":
 				return encoder.createDataField(name, OpType.CATEGORICAL, DataType.STRING, classes.getValues());
 			default:
-				throw new RExpException("Distribution family \'" + distributionName + "\' is not supported");
+				throw new RExpException("Distribution family " + ExceptionUtil.formatParameter(distributionName) + " is not supported");
 		}
 	}
 
@@ -164,7 +164,7 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			case "multinomial":
 				return encodeMultinomialClassification(treeModels, initF, schema);
 			default:
-				throw new RExpException("Distribution family \'" + distributionName + "\' is not supported");
+				throw new RExpException("Distribution family " + ExceptionUtil.formatParameter(distributionName) + " is not supported");
 		}
 	}
 
@@ -258,17 +258,17 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 
 		Double split = splitCodePred.getValue(i);
 
-		if(feature instanceof CategoricalFeature){
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+		if(feature instanceof DiscreteFeature){
+			DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
-			String name = categoricalFeature.getName();
-			List<?> values = categoricalFeature.getValues();
+			String name = discreteFeature.getName();
+			List<?> values = discreteFeature.getValues();
 
 			int index = ValueUtil.asInt(split);
 
 			RIntegerVector c_split = c_splits.getIntegerValue(index);
 
-			SchemaUtil.checkCardinality(c_split.size(), categoricalFeature);
+			discreteFeature.expectCardinality(c_split.size());
 
 			List<Integer> splitValues = c_split.getValues();
 
@@ -280,8 +280,8 @@ public class GBMConverter extends TreeModelConverter<RGenericVector> {
 			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
 			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
 
-			leftPredicate = createPredicate(categoricalFeature, leftValues);
-			rightPredicate = createPredicate(categoricalFeature, rightValues);
+			leftPredicate = createPredicate(discreteFeature, leftValues);
+			rightPredicate = createPredicate(discreteFeature, rightValues);
 		} else
 
 		{

@@ -29,7 +29,6 @@ import org.dmg.pmml.FieldRef;
 import org.dmg.pmml.Interval;
 import org.dmg.pmml.PMMLFunctions;
 import org.jpmml.converter.ExpressionUtil;
-import org.jpmml.converter.TranslationException;
 import org.jpmml.model.ReflectionUtil;
 import org.junit.jupiter.api.Test;
 
@@ -276,7 +275,7 @@ public class ExpressionTranslatorTest {
 
 		assertTrue(ReflectionUtil.equals(expected, actual));
 
-		assertThrows(TranslationException.class, () -> ExpressionTranslator.translateInterval("(0, NaN)"));
+		assertThrows(RExpException.class, () -> ExpressionTranslator.translateInterval("(0, NaN)"));
 
 		expected = new Interval(Interval.Closure.CLOSED_CLOSED, null, null);
 

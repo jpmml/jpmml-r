@@ -32,6 +32,7 @@ import org.dmg.pmml.neural_network.NeuralLayer;
 import org.dmg.pmml.neural_network.NeuralNetwork;
 import org.dmg.pmml.neural_network.Neuron;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
@@ -147,7 +148,7 @@ public class NNConverter extends ModelConverter<RGenericVector> {
 			case "tanh":
 				return NeuralNetwork.ActivationFunction.TANH;
 			default:
-				throw new RExpException("Activation function \'" + actFctType + "\' is not supported");
+				throw new RExpException("Activation function " + ExceptionUtil.formatParameter(actFctType) + " is not supported");
 		}
 	}
 }

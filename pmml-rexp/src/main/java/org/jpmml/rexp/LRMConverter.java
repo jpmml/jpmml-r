@@ -70,9 +70,8 @@ public class LRMConverter extends RMSConverter {
 
 		RDoubleVector coefficients = lrm.getDoubleElement("coefficients");
 
-		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
-
-		SchemaUtil.checkCardinality(2, categoricalLabel);
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel()
+			.expectCardinality(2);
 
 		Object targetCategory = categoricalLabel.getValue(1);
 

@@ -32,6 +32,7 @@ import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
@@ -119,7 +120,7 @@ public class ORMConverter extends RMSConverter {
 			case "cauchit":
 				return RegressionModel.NormalizationMethod.CAUCHIT;
 			default:
-				throw new RExpException("Family \'" + family + "\' is not supported");
+				throw new RExpException("Family " + ExceptionUtil.formatParameter(family) + " is not supported");
 		}
 	}
 }

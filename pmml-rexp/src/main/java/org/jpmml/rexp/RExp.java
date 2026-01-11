@@ -20,6 +20,8 @@ package org.jpmml.rexp;
 
 import java.io.IOException;
 
+import org.jpmml.converter.ExceptionUtil;
+
 abstract
 public class RExp {
 
@@ -107,7 +109,7 @@ public class RExp {
 		try {
 			return clazz.cast(rexp);
 		} catch(ClassCastException cce){
-			throw new RExpException("Invalid \'" + name + "\' attribute. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
+			throw new RExpException("Invalid " + ExceptionUtil.formatName(name) + " attribute. Expected " + RExpUtil.getVectorType(clazz) + ", got " + RExpUtil.getVectorType(rexp.getClass()));
 		}
 	}
 
@@ -139,7 +141,7 @@ public class RExp {
 		}
 
 		if(required){
-			throw new RExpException("Missing \'" + name + "\' attribute");
+			throw new RExpException("Missing " + ExceptionUtil.formatName(name) + " attribute");
 		}
 
 		return null;

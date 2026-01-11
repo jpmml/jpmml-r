@@ -18,6 +18,8 @@
  */
 package org.jpmml.rexp;
 
+import org.jpmml.converter.ConversionException;
+
 public class RVectorUtil {
 
 	private RVectorUtil(){
@@ -30,7 +32,7 @@ public class RVectorUtil {
 		for(RVector<?> vector : vectors){
 
 			if(prevVector != null && vector.size() != prevVector.size()){
-				throw new IllegalArgumentException("Expected the same number of elements, got a different number of elements");
+				throw new ConversionException("Expected the same number of elements, got a different number of elements");
 			}
 
 			prevVector = vector;

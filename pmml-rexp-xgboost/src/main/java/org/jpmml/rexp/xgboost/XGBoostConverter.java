@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.dmg.pmml.VerificationField;
 import org.dmg.pmml.mining.MiningModel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
@@ -50,6 +51,7 @@ import org.jpmml.xgboost.FeatureMap;
 import org.jpmml.xgboost.HasXGBoostOptions;
 import org.jpmml.xgboost.Learner;
 import org.jpmml.xgboost.ObjFunction;
+import org.jpmml.xgboost.XGBoostException;
 import org.jpmml.xgboost.XGBoostUtil;
 
 public class XGBoostConverter extends ModelConverter<RGenericVector> {
@@ -205,8 +207,12 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 						data.put(name, column);
 					}
 					break;
+				case CATEGORICAL:
+					{
+						throw new XGBoostException("Entry type " + ExceptionUtil.formatParameter("c") + " is not supported");
+					}
 				default:
-					throw new IllegalArgumentException(String.valueOf(type));
+					throw new IllegalArgumentException();
 			}
 		}
 

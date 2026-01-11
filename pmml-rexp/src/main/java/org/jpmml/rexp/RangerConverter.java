@@ -38,10 +38,11 @@ import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.ModelUtil;
@@ -64,8 +65,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		RGenericVector forest = ranger.getGenericElement("forest", false);
 		if(forest == null){
-			throw new RExpException("Missing \'forest\' element")
-				.setSolution("Re-train the model object with \'write.forest\' argument set to TRUE");
+			throw new RExpException("Missing " + ExceptionUtil.formatName("forest") + " element")
+				.setSolution("Re-train the model object with " + ExceptionUtil.formatName("write.forest") + " argument set to TRUE");
 		}
 
 		RStringVector treeType = ranger.getStringElement("treetype");
@@ -91,7 +92,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 					}
 					break;
 				default:
-					throw new RExpException("Tree type \'" + treeType.asScalar() + "\' is not supported");
+					throw new RExpException("Tree type " + ExceptionUtil.formatParameter(treeType.asScalar()) + " is not supported");
 			}
 
 			encoder.setLabel(dataField);
@@ -143,7 +144,7 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 			case "Probability estimation":
 				return encodeProbabilityForest(forest, schema);
 			default:
-				throw new RExpException("Tree type \'" + treeType.asScalar() + "\' is not supported");
+				throw new RExpException("Tree type " + ExceptionUtil.formatParameter(treeType.asScalar()) + " is not supported");
 		}
 	}
 
@@ -320,13 +321,13 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 
 		Feature feature = schema.getFeature(this.hasDependentVar ? (splitVarIndex - 1) : splitVarIndex);
 
-		if(feature instanceof CategoricalFeature){
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+		if(feature instanceof DiscreteFeature){
+			DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
 			int splitLevelIndex = ValueUtil.asInt(Math.floor(splitValue.doubleValue()));
 
-			String name = categoricalFeature.getName();
-			List<?> values = categoricalFeature.getValues();
+			String name = discreteFeature.getName();
+			List<?> values = discreteFeature.getValues();
 
 			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
 
@@ -336,8 +337,8 @@ public class RangerConverter extends TreeModelConverter<RGenericVector> implemen
 			leftCategoryManager = leftCategoryManager.fork(name, leftValues);
 			rightCategoryManager = rightCategoryManager.fork(name, rightValues);
 
-			leftPredicate = createPredicate(categoricalFeature, leftValues);
-			rightPredicate = createPredicate(categoricalFeature, rightValues);
+			leftPredicate = createPredicate(discreteFeature, leftValues);
+			rightPredicate = createPredicate(discreteFeature, rightValues);
 		} else
 
 		{

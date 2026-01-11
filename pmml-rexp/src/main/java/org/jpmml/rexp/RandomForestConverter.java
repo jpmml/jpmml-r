@@ -39,10 +39,12 @@ import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
 import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.CMatrixUtil;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.CategoryManager;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ConversionException;
+import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.FortranMatrixUtil;
@@ -89,7 +91,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			case "classification":
 				return encodeClassification(forest, schema);
 			default:
-				throw new RExpException("Model type \'" + type.asScalar() + "\' is not supported");
+				throw new RExpException("Model type " + ExceptionUtil.formatParameter(type.asScalar()) + " is not supported");
 		}
 	}
 
@@ -356,18 +358,18 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			BooleanFeature booleanFeature = (BooleanFeature)feature;
 
 			if(split != 0.5d){
-				throw new RExpException("Expected 0.5 as a threshold value for boolean feature \'" + booleanFeature.getName() + "\', got " + split);
+				throw new RExpException("Expected a 0.5 threshold value for boolean feature " + ExceptionUtil.formatName(booleanFeature) + ", got " + split);
 			}
 
 			leftPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(0));
 			rightPredicate = createSimplePredicate(booleanFeature, SimplePredicate.Operator.EQUAL, booleanFeature.getValue(1));
 		} else
 
-		if(feature instanceof CategoricalFeature){
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+		if(feature instanceof DiscreteFeature){
+			DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
-			String name = categoricalFeature.getName();
-			List<?> values = categoricalFeature.getValues();
+			String name = discreteFeature.getName();
+			List<?> values = discreteFeature.getValues();
 
 			java.util.function.Predicate<Object> valueFilter = categoryManager.getValueFilter(name);
 
@@ -377,8 +379,8 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 			leftCategoryManager = categoryManager.fork(name, leftValues);
 			rightCategoryManager = categoryManager.fork(name, rightValues);
 
-			leftPredicate = createPredicate(categoricalFeature, leftValues);
-			rightPredicate = createPredicate(categoricalFeature, rightValues);
+			leftPredicate = createPredicate(discreteFeature, leftValues);
+			rightPredicate = createPredicate(discreteFeature, rightValues);
 		} else
 
 		{
@@ -447,7 +449,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 	public UnsignedLong toUnsignedLong(double value){
 
 		if(!DoubleMath.isMathematicalInteger(value)){
-			throw new IllegalArgumentException("Expected integer value, got " + value);
+			throw new ConversionException("Expected integer value, got " + value);
 		}
 
 		return UnsignedLong.fromLongBits((long)value);

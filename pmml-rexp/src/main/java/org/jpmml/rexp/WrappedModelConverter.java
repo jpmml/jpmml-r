@@ -26,6 +26,7 @@ import org.dmg.pmml.DataType;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.OpType;
 import org.jpmml.converter.CategoricalLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.FieldUtil;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
@@ -93,7 +94,7 @@ public class WrappedModelConverter extends FilterModelConverter<RGenericVector, 
 				}
 				break;
 			default:
-				throw new RExpException("Task type \'" + type.asScalar() + "\' is not supported");
+				throw new RExpException("Task type " + ExceptionUtil.formatParameter(type.asScalar()) + " is not supported");
 		}
 	}
 

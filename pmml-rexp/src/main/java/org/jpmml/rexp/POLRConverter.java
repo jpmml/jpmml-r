@@ -29,6 +29,7 @@ import org.dmg.pmml.OutputField;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
@@ -98,7 +99,7 @@ public class POLRConverter extends LMConverter {
 			case "cauchit":
 				return RegressionModel.NormalizationMethod.CAUCHIT;
 			default:
-				throw new RExpException("Method \'" + method + "\' is not supported");
+				throw new RExpException("Method " + ExceptionUtil.formatParameter(method) + " is not supported");
 		}
 	}
 }

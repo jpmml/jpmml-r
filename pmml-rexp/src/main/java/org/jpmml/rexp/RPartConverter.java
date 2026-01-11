@@ -36,14 +36,15 @@ import org.dmg.pmml.tree.CountingBranchNode;
 import org.dmg.pmml.tree.CountingLeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
+import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.ValueUtil;
 
 public class RPartConverter extends TreeModelConverter<RGenericVector> implements HasFeatureImportances {
@@ -156,7 +157,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 			case "class":
 				return encodeClassification(frame, rowNames, var, n, splitInfo, splits, csplit, schema);
 			default:
-				throw new RExpException("Method \'" + method.asScalar() + "\' is not supported");
+				throw new RExpException("Method " + ExceptionUtil.formatParameter(method.asScalar()) + " is not supported");
 		}
 	}
 
@@ -433,7 +434,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 		} else
 
 		{
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+			DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
 			RIntegerVector csplitDim = csplit.dim();
 
@@ -442,10 +443,10 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 
 			List<Integer> csplitRow = FortranMatrixUtil.getRow(csplit.getValues(), csplitRows, csplitColumns, ValueUtil.asInt(splitValue) - 1);
 
-			List<?> values = categoricalFeature.getValues();
+			List<?> values = discreteFeature.getValues();
 
-			leftPredicate = createPredicate(categoricalFeature, selectValues(values, csplitRow, 1));
-			rightPredicate = createPredicate(categoricalFeature, selectValues(values, csplitRow, 3));
+			leftPredicate = createPredicate(discreteFeature, selectValues(values, csplitRow, 1));
+			rightPredicate = createPredicate(discreteFeature, selectValues(values, csplitRow, 3));
 		}
 
 		return Arrays.asList(leftPredicate, rightPredicate);
@@ -503,7 +504,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 				}
 			}
 
-			throw new ResolutionException("Feature \'" + stringName + "\' is not defined");
+			throw new SchemaException("Feature " + ExceptionUtil.formatName(stringName) + " is not defined");
 		} else
 
 		if(var instanceof RFactorVector){

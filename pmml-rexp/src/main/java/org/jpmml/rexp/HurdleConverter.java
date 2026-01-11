@@ -39,6 +39,7 @@ import org.dmg.pmml.mining.Segment;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
@@ -118,7 +119,7 @@ public class HurdleConverter extends MixtureModelConverter {
 			case "binomial":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.LOGIT, schema);
 			default:
-				throw new RExpException("Distribution family \'" + distName + "\' is not supported");
+				throw new RExpException("Distribution family " + ExceptionUtil.formatParameter(distName) + " is not supported");
 		}
 	}
 
@@ -133,7 +134,7 @@ public class HurdleConverter extends MixtureModelConverter {
 			case "poisson":
 				return RegressionModelUtil.createRegression(features, coefficients, intercept, RegressionModel.NormalizationMethod.EXP, schema);
 			default:
-				throw new RExpException("Distribution family \'" + distName + "\' is not supported");
+				throw new RExpException("Distribution family " + ExceptionUtil.formatParameter(distName) + " is not supported");
 		}
 	}
 }

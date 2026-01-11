@@ -55,6 +55,7 @@ import org.dmg.pmml.regression.RegressionTable;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ConstantFeature;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNameUtil;
@@ -64,8 +65,8 @@ import org.jpmml.converter.MissingValueDecorator;
 import org.jpmml.converter.ModelEncoder;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
+import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.TypeUtil;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.regression.RegressionModelUtil;
@@ -119,8 +120,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 		RFunctionCall settings = this.settings;
 		if(settings == null){
-			throw new RExpException("Invalid \'apollo_probabilities\' element")
-				.setSolution("Define model settings (variable \'" + modelType.toLowerCase() + "_settings\')");
+			throw new RExpException("Invalid " + ExceptionUtil.formatName("apollo_probabilities") + " element")
+				.setSolution("Define model settings (variable " + ExceptionUtil.formatName(modelType.toLowerCase() + "_settings") + ")");
 		}
 
 		Map<String, RExp> settingsMap = parseList(settings, (value) -> value);
@@ -140,12 +141,12 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 		Map<?, RFunctionCall> utilityFunctions = this.utilityFunctions;
 
 		if(utilityFunctions.isEmpty()){
-			throw new RExpException("Invalid \'apollo_probabilities\' element")
-				.setSolution("Define utility function set (variable \'V\')");
+			throw new RExpException("Invalid " + ExceptionUtil.formatName("apollo_probabilities") + " element")
+				.setSolution("Define utility function set (variable " + ExceptionUtil.formatName("V") + ")");
 		} else
 
 		if(!(new LinkedHashSet<>(choices)).equals(utilityFunctions.keySet())){
-			throw new RExpException("Invalid \'apollo_probabilities\' element")
+			throw new RExpException("Invalid " + ExceptionUtil.formatName("apollo_probabilities") + " element")
 				.setSolution("Define complete utility function set for choices " + choices);
 		}
 
@@ -227,15 +228,15 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 					Map<?, RFunctionCall> nlStructures = this.nlStructures;
 
 					if(nlNests == null){
-						throw new RExpException("Invalid \'apollo_probabilities\' element")
-							.setSolution("Define nest lambda parameters (variable \'nlNests\')");
+						throw new RExpException("Invalid " + ExceptionUtil.formatName("apollo_probabilities") + " element")
+							.setSolution("Define nest lambda parameters (variable "+ ExceptionUtil.formatName("nlNests") + ")");
 					}
 
 					Map<?, Number> lambdas = parseLambdas(nlNests, estimates);
 
 					if(nlStructures.isEmpty()){
-						throw new RExpException("Invalid \'apollo_probabilities\' element")
-							.setSolution("Define nest structure (variable \'nlStructure\')");
+						throw new RExpException("Invalid " + ExceptionUtil.formatName("apollo_probabilities") + " element")
+							.setSolution("Define nest structure (variable " + ExceptionUtil.formatName("nlStructure") + ")");
 					} // End if
 
 					List<?> nestChoices = new ArrayList<>(nlStructures.keySet());
@@ -339,7 +340,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 				}
 				break;
 			default:
-				throw new RExpException("Model type \'" + modelType + "\' (" + modelTypeList.getValues() + ") is not supported");
+				throw new RExpException("Model type " + ExceptionUtil.formatParameter(modelType) + " is not supported");
 		}
 
 		this.availabilityFeatures = availabilityFeatures;
@@ -457,7 +458,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 				}
 				break;
 			default:
-				throw new RExpException("Model type \'" + modelType + "\' (" + modelTypeList.getValues() + ") is not supported");
+				throw new RExpException("Model type " + ExceptionUtil.formatParameter(modelType) + " is not supported");
 		}
 
 		RegressionModel regressionModel = new RegressionModel(MiningFunction.CLASSIFICATION, ModelUtil.createMiningSchema(categoricalLabel), regressionTables)
@@ -746,7 +747,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 
 			try {
 				field = encoder.getField(stringValue);
-			} catch(ResolutionException re){
+			} catch(SchemaException se){
 
 				if(variables.containsKey(stringValue)){
 					Expression expression = toPMML(variables.get(stringValue), variables, estimates, encoder);
@@ -803,7 +804,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						toPMML(it.next(), variables, estimates, encoder)
 					);
 				default:
-					throw new RExpException("R function \'" + value.getValue() + "\' is not supported");
+					throw new RExpException("Function " + ExceptionUtil.formatName(value.getValue()) + " is not supported");
 			}
 		} else
 

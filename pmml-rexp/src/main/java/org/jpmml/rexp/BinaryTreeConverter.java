@@ -38,15 +38,15 @@ import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FieldNames;
 import org.jpmml.converter.ModelUtil;
-import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SchemaUtil;
+import org.jpmml.converter.SchemaException;
 
 public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
@@ -218,21 +218,20 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 		Integer index = this.featureIndexes.get(name);
 		if(index == null){
-			throw new ResolutionException("Feature \'" + name + "\' is not defined");
+			throw new SchemaException("Feature " + ExceptionUtil.formatName(name) + " is not defined");
 		}
 
 		Feature feature = schema.getFeature(index);
 
-		if(feature instanceof CategoricalFeature){
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+		if(feature instanceof DiscreteFeature){
+			DiscreteFeature discreteFeature = ((DiscreteFeature)feature)
+				.expectCardinality(splitpoint.size());
 
-			SchemaUtil.checkCardinality(splitpoint.size(), categoricalFeature);
-
-			List<?> values = categoricalFeature.getValues();
+			List<?> values = discreteFeature.getValues();
 			List<Integer> splitValues = (List<Integer>)splitpoint.getValues();
 
-			leftPredicate = createPredicate(categoricalFeature, selectValues(values, splitValues, true));
-			rightPredicate = createPredicate(categoricalFeature, selectValues(values, splitValues, false));
+			leftPredicate = createPredicate(discreteFeature, selectValues(values, splitValues, true));
+			rightPredicate = createPredicate(discreteFeature, selectValues(values, splitValues, false));
 		} else
 
 		{
@@ -303,9 +302,8 @@ public class BinaryTreeConverter extends TreeModelConverter<S4Object> {
 
 	static
 	private Node encodeClassificationScore(Node node, RDoubleVector probabilities, Schema schema){
-		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
-
-		SchemaUtil.checkCardinality(probabilities.size(), categoricalLabel);
+		CategoricalLabel categoricalLabel = schema.requireCategoricalLabel()
+			.expectCardinality(probabilities.size());
 
 		node = new ClassifierNode(node);
 

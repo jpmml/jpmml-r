@@ -35,6 +35,7 @@ import org.dmg.pmml.ResultFeature;
 import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.ContinuousLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
@@ -85,7 +86,7 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 			case MixtureModelConverter.NAME_ZERO:
 				break;
 			default:
-				throw new RExpException("Component \'" + name + "\' is not supported");
+				throw new RExpException("Component " + ExceptionUtil.formatName(name) + " is not supported");
 		}
 
 		encoder.setLabel(new ContinuousLabel(DataType.DOUBLE));
@@ -121,7 +122,7 @@ public class MixtureModelConverter extends Converter<RGenericVector> {
 			case MixtureModelConverter.NAME_COUNT:
 				return encodeCountComponent(features, featureCoefficients, intercept, schema);
 			default:
-				throw new RExpException("Component \'" + name + "\' is not supported");
+				throw new RExpException("Component " + ExceptionUtil.formatName(name) + " is not supported");
 		}
 	}
 

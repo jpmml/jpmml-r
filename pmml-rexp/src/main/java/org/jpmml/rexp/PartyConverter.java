@@ -34,14 +34,14 @@ import org.dmg.pmml.tree.ClassifierNode;
 import org.dmg.pmml.tree.LeafNode;
 import org.dmg.pmml.tree.Node;
 import org.dmg.pmml.tree.TreeModel;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.DiscreteFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.MissingLabelException;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SchemaException;
 
 public class PartyConverter extends TreeModelConverter<RGenericVector> {
 
@@ -117,7 +117,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		{
-			throw new SchemaException("Expected a label, got no label");
+			throw new MissingLabelException();
 		}
 
 		FormulaUtil.setLabel(formula, terms, levels, encoder);
@@ -250,17 +250,17 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 		} else
 
 		if(breaks == null && index != null){
-			CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+			DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
 			kids.checkMinSize(2);
 
-			List<?> values = categoricalFeature.getValues();
+			List<?> values = discreteFeature.getValues();
 
 			for(int i = 0; i < kids.size(); i++){
 				Predicate childPredicate;
 
 				if(right.asScalar()){
-					childPredicate = createPredicate(categoricalFeature, selectValues(values, index, i + 1));
+					childPredicate = createPredicate(discreteFeature, selectValues(values, index, i + 1));
 				} else
 
 				{

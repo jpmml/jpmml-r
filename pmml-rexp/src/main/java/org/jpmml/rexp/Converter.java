@@ -19,6 +19,7 @@
 package org.jpmml.rexp;
 
 import org.dmg.pmml.PMML;
+import org.jpmml.converter.ExceptionUtil;
 
 abstract
 public class Converter<R extends RExp> {
@@ -65,7 +66,7 @@ public class Converter<R extends RExp> {
 		} // End if
 
 		if(preProcess != null && recipe != null){
-			throw new RExpException("Cannot use \'preProcess\' (caret) and \'recipe\' (tidymodels) data pre-processing simultaneously")
+			throw new RExpException("Cannot use " + ExceptionUtil.formatName("preProcess") + " (caret) and " + ExceptionUtil.formatName("recipe") + " (tidymodels) data pre-processing simultaneously")
 				.setSolution("Choose one data pre-processing approach");
 		}
 

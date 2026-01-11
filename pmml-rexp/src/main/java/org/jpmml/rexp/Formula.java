@@ -37,11 +37,12 @@ import org.jpmml.converter.BinaryFeature;
 import org.jpmml.converter.BooleanFeature;
 import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.HasDerivedName;
 import org.jpmml.converter.InteractionFeature;
 import org.jpmml.converter.PowerFeature;
-import org.jpmml.converter.ResolutionException;
+import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.ValueUtil;
 
 public class Formula {
@@ -84,7 +85,7 @@ public class Formula {
 		Feature feature = getFeature(name);
 
 		if(feature == null){
-			throw new ResolutionException("Feature \'" + name + "\' is not defined");
+			throw new SchemaException("Feature " + ExceptionUtil.formatName(name) + " is not defined");
 		}
 
 		return feature;

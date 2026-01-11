@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import com.google.common.io.ByteStreams;
+import org.jpmml.converter.ExceptionUtil;
 
 public class RExpParser implements Closeable {
 
@@ -83,7 +84,7 @@ public class RExpParser implements Closeable {
 		int version = readInt();
 
 		if(version < 2 || version > 3){
-			throw new RExpException("Version \'" + String.valueOf(version) + "\' is not supported");
+			throw new RExpException("Version " + ExceptionUtil.formatVersion(String.valueOf(version)) + " is not supported");
 		}
 
 		int writerVersion = readInt();

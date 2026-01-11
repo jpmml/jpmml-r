@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.collect.Iterables;
+import org.jpmml.converter.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class ConverterFactory {
 			}
 		}
 
-		throw new RExpException("R class " + Iterables.getFirst(classNames.getValues(), null) + " (" + classNames.getValues() +") is not supported");
+		throw new RExpException("Class " + ExceptionUtil.formatNameList(classNames.getValues()) +" is not supported");
 	}
 
 	public <R extends RExp> Converter<R> newConverter(Class<? extends Converter<?>> clazz, R rexp){
@@ -65,7 +65,7 @@ public class ConverterFactory {
 
 			return (Converter)constructor.newInstance(rexp);
 		} catch(ReflectiveOperationException roe){
-			throw new RExpException("R class " + Iterables.getFirst(classNames.getValues(), null) + " (" + classNames.getValues() + ") is not supported", roe);
+			throw new RExpException("Class " + ExceptionUtil.formatNameList(classNames.getValues()) + " is not supported", roe);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class ConverterFactory {
 			}
 
 			if(!(Converter.class).isAssignableFrom(converterClazz)){
-				throw new RExpException("Converter class " + converterClazz.getName() + " is not a subclass of " + Converter.class.getName());
+				throw new RExpException("Converter class " + ExceptionUtil.formatClass(converterClazz) + " is not a subclass of " + ExceptionUtil.formatClass(Converter.class));
 			}
 
 			ConverterFactory.converters.put(key, converterClazz);

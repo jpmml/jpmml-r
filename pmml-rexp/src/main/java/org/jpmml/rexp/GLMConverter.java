@@ -26,6 +26,7 @@ import org.dmg.pmml.MiningFunction;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.general_regression.GeneralRegressionModel;
 import org.jpmml.converter.CategoricalLabel;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.ScalarLabel;
@@ -93,9 +94,8 @@ public class GLMConverter extends LMConverter {
 		switch(miningFunction){
 			case CLASSIFICATION:
 				{
-					CategoricalLabel categoricalLabel = schema.requireCategoricalLabel();
-
-					SchemaUtil.checkCardinality(2, categoricalLabel);
+					CategoricalLabel categoricalLabel = schema.requireCategoricalLabel()
+						.expectCardinality(2);
 
 					targetCategory = categoricalLabel.getValue(1);
 				}
@@ -167,7 +167,7 @@ public class GLMConverter extends LMConverter {
 			case "Tweedie":
 				return GeneralRegressionModel.Distribution.TWEEDIE;
 			default:
-				throw new RExpException("Distribution family \'" + family + "\' is not supported");
+				throw new RExpException("Distribution family " + ExceptionUtil.formatParameter(family) + " is not supported");
 		}
 	}
 
@@ -211,7 +211,7 @@ public class GLMConverter extends LMConverter {
 			case "sqrt":
 				return GeneralRegressionModel.LinkFunction.POWER;
 			default:
-				throw new RExpException("Link function \'" + link + "\' is not supported");
+				throw new RExpException("Link function " + ExceptionUtil.formatParameter(link) + " is not supported");
 		}
 	}
 

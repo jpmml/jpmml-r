@@ -93,7 +93,7 @@ public class GLMNetConverter extends ModelConverter<RGenericVector> {
 
 		int column = (lambda.getValues()).indexOf(lambdaS);
 		if(column < 0){
-			throw new RExpException("Lambda value " + lambdaS + " not in fitted lambda sequence (" + lambda.getValues() + ")");
+			throw new RExpException("Lambda value " + lambdaS + " not in fitted lambda sequence " + lambda.getValues());
 		}
 
 		return encodeModel(a0, beta, column, schema);

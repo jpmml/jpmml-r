@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.dmg.pmml.DataType;
+import org.jpmml.converter.ConversionException;
+import org.jpmml.converter.ExceptionUtil;
 
 abstract
 public class RVector<E> extends RExp implements Iterable<E> {
@@ -88,7 +90,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		List<E> values = getValues();
 
 		if(values.size() != size){
-			throw new IllegalArgumentException("Expected " + size + " element(s), got " + values.size());
+			throw new ConversionException("Expected " + ExceptionUtil.formatCount(size, "element") + ", got " + values.size());
 		}
 	}
 
@@ -96,7 +98,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		List<E> values = getValues();
 
 		if(values.size() < size){
-			throw new IllegalArgumentException("Expected " + size + " or more element(s), got " + values.size());
+			throw new ConversionException("Expected " + size + " or more elements, got " + values.size());
 		}
 	}
 
@@ -155,7 +157,7 @@ public class RVector<E> extends RExp implements Iterable<E> {
 		} // End if
 
 		if(required){
-			throw new RExpException("Missing \'" + name + "\' element");
+			throw new RExpException("Missing " + ExceptionUtil.formatName(name) + " element");
 		}
 
 		return null;

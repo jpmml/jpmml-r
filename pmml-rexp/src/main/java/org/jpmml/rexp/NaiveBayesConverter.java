@@ -35,14 +35,14 @@ import org.dmg.pmml.naive_bayes.TargetValueCount;
 import org.dmg.pmml.naive_bayes.TargetValueCounts;
 import org.dmg.pmml.naive_bayes.TargetValueStat;
 import org.dmg.pmml.naive_bayes.TargetValueStats;
-import org.jpmml.converter.CategoricalFeature;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
+import org.jpmml.converter.DiscreteFeature;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
-import org.jpmml.converter.SchemaException;
+import org.jpmml.converter.UnsupportedFeatureException;
 
 public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 
@@ -111,8 +111,8 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 
 			BayesInput bayesInput = new BayesInput(name, null, null);
 
-			if(feature instanceof CategoricalFeature){
-				CategoricalFeature categoricalFeature = (CategoricalFeature)feature;
+			if(feature instanceof DiscreteFeature){
+				DiscreteFeature discreteFeature = (DiscreteFeature)feature;
 
 				for(int column = 0; column < tableColumns.size(); column++){
 					TargetValueCounts targetValueCounts = new TargetValueCounts();
@@ -153,7 +153,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			{
-				throw new SchemaException("Expected a categorical or continuous feature, got " + feature);
+				throw new UnsupportedFeatureException("Expected a categorical or continuous feature, got " + feature.typeString());
 			}
 
 			bayesInputs.addBayesInputs(bayesInput);

@@ -41,10 +41,11 @@ import org.dmg.pmml.Interval;
 import org.dmg.pmml.MapValues;
 import org.dmg.pmml.OpType;
 import org.dmg.pmml.PMMLFunctions;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.ExpressionUtil;
 import org.jpmml.converter.Feature;
+import org.jpmml.converter.MissingLabelException;
 import org.jpmml.converter.PMMLUtil;
-import org.jpmml.converter.ResolutionException;
 import org.jpmml.converter.SchemaException;
 import org.jpmml.converter.ValueUtil;
 
@@ -83,7 +84,7 @@ public class FormulaUtil {
 				} else
 
 				{
-					throw new ResolutionException("Data \'" + name + "\' is not defined");
+					throw new SchemaException("Data " + ExceptionUtil.formatName(name) + " is not defined");
 				}
 			}
 
@@ -270,7 +271,7 @@ public class FormulaUtil {
 		} else
 
 		{
-			throw new SchemaException("Expected a label, got no label");
+			throw new MissingLabelException();
 		}
 	}
 
@@ -440,7 +441,7 @@ public class FormulaUtil {
 				return encodeIfElseExpression(functionExpression, expressionFields, encoder);
 			}
 
-			throw new RExpException("R function \'" + functionExpression.formatId() + "\' is not supported");
+			throw new RExpException("Function " + ExceptionUtil.formatName(functionExpression.formatId()) + " is not supported");
 		}
 
 		return expression;
@@ -556,7 +557,7 @@ public class FormulaUtil {
 			return functionExpression;
 		}
 
-		throw new RExpException("R function \'" + functionExpression.formatId() + "\' is not supported");
+		throw new RExpException("Function " + ExceptionUtil.formatName(functionExpression.formatId()) + " is not supported");
 	}
 
 	static
