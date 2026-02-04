@@ -8,9 +8,7 @@
 		<version>1.7-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.jpmml</groupId>
 	<artifactId>pmml-rexp-evaluator</artifactId>
-	<packaging>jar</packaging>
 
 	<name>JPMML R JPMML-Evaluator integration</name>
 	<description>JPMML R JPMML-Evaluator integration</description>

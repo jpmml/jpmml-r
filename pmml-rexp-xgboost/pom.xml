@@ -8,9 +8,7 @@
 		<version>1.7-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.jpmml</groupId>
 	<artifactId>pmml-rexp-xgboost</artifactId>
-	<packaging>jar</packaging>
 
 	<name>JPMML R XGBoost converter</name>
 	<description>JPMML R XGBoost to PMML converter</description>

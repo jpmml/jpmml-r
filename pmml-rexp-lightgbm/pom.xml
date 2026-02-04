@@ -8,9 +8,7 @@
 		<version>1.7-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.jpmml</groupId>
 	<artifactId>pmml-rexp-lightgbm</artifactId>
-	<packaging>jar</packaging>
 
 	<name>JPMML R LightGBM converter</name>
 	<description>JPMML R LightGBM to PMML converter</description>
