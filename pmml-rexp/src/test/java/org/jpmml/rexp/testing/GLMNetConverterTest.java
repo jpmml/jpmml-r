@@ -41,7 +41,7 @@ public class GLMNetConverterTest extends RExpEncoderBatchTest implements Dataset
 
 	@Test
 	public void evaluateLogNetWineColor() throws Exception {
-		evaluate("LogNet", WINE_COLOR, new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("LogNet", WINE_COLOR, new PMMLEquivalence(3e-11, 3e-11));
 	}
 
 	@Test

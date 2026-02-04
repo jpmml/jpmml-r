@@ -33,7 +33,7 @@ public class XGBoostConverterTest extends RExpEncoderBatchTest implements Datase
 
 	@Test
 	public void evaluateAuto() throws Exception {
-		evaluate("XGBoost", AUTO, new FloatEquivalence(8 + 4));
+		evaluate("XGBoost", AUTO, new FloatEquivalence(8 + 2));
 	}
 
 	@Test
@@ -43,6 +43,6 @@ public class XGBoostConverterTest extends RExpEncoderBatchTest implements Datase
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("XGBoost", IRIS, new FloatEquivalence(16));
+		evaluate("XGBoost", IRIS, new FloatEquivalence(12 + 2));
 	}
 }

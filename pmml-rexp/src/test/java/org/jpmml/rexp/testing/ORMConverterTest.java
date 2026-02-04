@@ -26,12 +26,12 @@ public class ORMConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateLogisticWineQuality() throws Exception {
-		evaluate("ORM" + "Logistic", WINE_QUALITY, excludeFields("quality"), new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("ORM" + "Logistic", WINE_QUALITY, excludeFields("quality"), new PMMLEquivalence(5e-12, 5e-12));
 	}
 
 	@Test
 	public void evaluateProbitWineQuality() throws Exception {
-		evaluate("ORM" + "Probit", WINE_QUALITY, excludeFields("quality"), new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("ORM" + "Probit", WINE_QUALITY, excludeFields("quality"), new PMMLEquivalence(5e-12, 5e-12));
 	}
 
 	@Test

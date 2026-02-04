@@ -36,6 +36,6 @@ public class CrossValGLMNetConverterTest extends RExpEncoderBatchTest implements
 
 	@Test
 	public void evaluateWineColor() throws Exception {
-		evaluate("CrossValLogNet", WINE_COLOR, new PMMLEquivalence(5e-11, 5e-11));
+		evaluate("CrossValLogNet", WINE_COLOR, new PMMLEquivalence(1e-11, 1e-11));
 	}
 }

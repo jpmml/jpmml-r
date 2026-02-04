@@ -31,7 +31,7 @@ public class GBMConverterTest extends RExpEncoderBatchTest implements Datasets {
 
 	@Test
 	public void evaluateWrappedAdaBoostAuditNA() throws Exception {
-		evaluate("WrappedGBMAdaBoost", AUDIT_NA, new PMMLEquivalence(5e-13, 5e-13));
+		evaluate("WrappedGBMAdaBoost", AUDIT_NA, new PMMLEquivalence(3e-13, 3e-13));
 	}
 
 	@Test
