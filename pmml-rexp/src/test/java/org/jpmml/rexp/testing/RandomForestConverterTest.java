@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.google.common.primitives.UnsignedLong;
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.rexp.RandomForestConverter;
 import org.junit.jupiter.api.Test;
@@ -45,13 +44,6 @@ public class RandomForestConverterTest extends RExpEncoderBatchTest implements D
 
 		assertEquals(Arrays.asList("1", "3", "4"), RandomForestConverter.selectValues(values, truePredicate, 13d, true));
 		assertEquals(Arrays.asList("2"), RandomForestConverter.selectValues(values, truePredicate, 13d, false));
-	}
-
-	@Test
-	public void toUnsignedLong(){
-		assertEquals(UnsignedLong.valueOf("13"), RandomForestConverter.toUnsignedLong(13d));
-
-		assertEquals(UnsignedLong.valueOf("18446744071562067968"), RandomForestConverter.toUnsignedLong(-2147483648d));
 	}
 
 	@Test

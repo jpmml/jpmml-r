@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableMap;
 import org.jpmml.evaluator.Function;
 import org.jpmml.evaluator.FunctionRegistry;
 import org.jpmml.rexp.evaluator.functions.PPois;
@@ -57,15 +56,9 @@ public class RExpFunctionRegistry {
 			.forEach(entry -> FunctionRegistry.putFunction(entry.getKey(), entry.getValue()));
 	}
 
-	private static final Map<String, Function> functions;
-
-	static {
-		ImmutableMap.Builder<String, Function> builder = new ImmutableMap.Builder<>();
-
-		builder.put(RExpFunctions.STATS_PPOIS, new PPois());
-
-		functions = builder.build();
-	}
+	private static final Map<String, Function> functions = Map.ofEntries(
+		Map.entry(RExpFunctions.STATS_PPOIS, new PPois())
+	);
 
 	private static final Map<String, Class<? extends Function>> functionClazzes = Collections.emptyMap();
 }

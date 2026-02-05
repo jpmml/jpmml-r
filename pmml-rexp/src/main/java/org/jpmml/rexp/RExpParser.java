@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import com.google.common.io.ByteStreams;
 import org.jpmml.converter.ExceptionUtil;
 
 public class RExpParser implements Closeable {
@@ -597,9 +596,7 @@ public class RExpParser implements Closeable {
 
 	static
 	private InputStream maybeDecompress(PushbackInputStream is) throws IOException {
-		byte[] gzipMagic = new byte[2];
-
-		ByteStreams.readFully(is, gzipMagic);
+		byte[] gzipMagic = is.readNBytes(RExpParser.GZIP_MAGIC.length);
 
 		is.unread(gzipMagic);
 

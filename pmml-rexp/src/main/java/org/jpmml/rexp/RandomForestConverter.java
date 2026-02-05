@@ -19,10 +19,10 @@
 package org.jpmml.rexp;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import com.google.common.math.DoubleMath;
-import com.google.common.primitives.UnsignedLong;
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
@@ -414,7 +414,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 
 	static
 	public List<Object> selectValues(List<?> values, java.util.function.Predicate<Object> valueFilter, Double split, boolean left){
-		UnsignedLong bits = toUnsignedLong(split.doubleValue());
+		BitSet bits = toBitSet(split.doubleValue());
 
 		List<Object> result = new ArrayList<>();
 
@@ -425,34 +425,30 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 
 			// Send "true" categories to the left
 			if(left){
-				// Test if the least significant bit (LSB) is 1
-				append = (bits.mod(RandomForestConverter.TWO)).equals(UnsignedLong.ONE);
+				append = bits.get(i);
 			} else
 
 			// Send all other categories to the right
 			{
-				// Test if the LSB is 0
-				append = (bits.mod(RandomForestConverter.TWO)).equals(UnsignedLong.ZERO);
+				append = !bits.get(i);
 			} // End if
 
 			if(append && valueFilter.test(value)){
 				result.add(value);
 			}
-
-			bits = bits.dividedBy(RandomForestConverter.TWO);
 		}
 
 		return result;
 	}
 
 	static
-	public UnsignedLong toUnsignedLong(double value){
+	private BitSet toBitSet(double value){
 
 		if(!DoubleMath.isMathematicalInteger(value)){
 			throw new ConversionException("Expected integer value, got " + value);
 		}
 
-		return UnsignedLong.fromLongBits((long)value);
+		return BitSet.valueOf(new long[]{(long)value});
 	}
 
 	static
@@ -460,6 +456,4 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 
 		Object encode(V value);
 	}
-
-	private static final UnsignedLong TWO = UnsignedLong.valueOf(2L);
 }
