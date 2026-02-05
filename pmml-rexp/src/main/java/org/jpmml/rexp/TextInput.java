@@ -23,6 +23,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 abstract
 public class TextInput implements RDataInput {
@@ -59,7 +60,7 @@ public class TextInput implements RDataInput {
 			throw new EOFException();
 		} else
 
-		if(("NA").equals(line)){
+		if(Objects.equals("NA", line)){
 			return Integer.MIN_VALUE;
 		}
 

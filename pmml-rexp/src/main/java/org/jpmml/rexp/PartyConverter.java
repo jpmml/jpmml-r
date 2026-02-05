@@ -20,6 +20,7 @@ package org.jpmml.rexp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.dmg.pmml.DataType;
 import org.dmg.pmml.MiningFunction;
@@ -96,7 +97,7 @@ public class PartyConverter extends TreeModelConverter<RGenericVector> {
 					return data.getVectorElement(variable);
 				} // End if
 
-				if((variable).equals(responseVariable)){
+				if(Objects.equals(responseVariable, variable)){
 					return fitted.getVectorElement("(response)");
 				}
 

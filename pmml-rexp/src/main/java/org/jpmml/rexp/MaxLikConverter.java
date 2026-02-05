@@ -583,7 +583,7 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 				children.add(entry.getKey());
 			});
 
-		if(!parents.isEmpty() && Objects.equals(parents.get(parents.size() - 1), "root")){
+		if(!parents.isEmpty() && Objects.equals("root", parents.get(parents.size() - 1))){
 			Collections.reverse(parents);
 			Collections.reverse(children);
 		}

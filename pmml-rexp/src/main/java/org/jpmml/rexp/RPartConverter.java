@@ -21,6 +21,7 @@ package org.jpmml.rexp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.dmg.pmml.CompoundPredicate;
@@ -478,7 +479,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 	static
 	private List<String> getFeatureNames(List<String> names){
 		return names.stream()
-			.filter(name -> !("<leaf>").equals(name))
+			.filter(name -> !Objects.equals("<leaf>", name))
 			.distinct()
 			.collect(Collectors.toList());
 	}
@@ -490,7 +491,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 			RStringVector stringVar = (RStringVector)var;
 
 			String stringName = stringVar.getValue(offset);
-			if(("<leaf>").equals(stringName)){
+			if(Objects.equals("<leaf>", stringName)){
 				return RPartConverter.INDEX_LEAF;
 			}
 
@@ -499,7 +500,7 @@ public class RPartConverter extends TreeModelConverter<RGenericVector> implement
 
 				String name = feature.getName();
 
-				if((name).equals(stringName)){
+				if(Objects.equals(name, stringName)){
 					return (i + 1);
 				}
 			}

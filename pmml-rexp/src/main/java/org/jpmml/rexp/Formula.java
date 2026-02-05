@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -190,7 +191,7 @@ public class Formula {
 	private void putFeature(String name, Feature feature){
 		String validName = RExpUtil.makeName(name);
 
-		if(!(name).equals(validName)){
+		if(!Objects.equals(validName, name)){
 			this.validNames.put(validName, name);
 		}
 
@@ -245,10 +246,11 @@ public class Formula {
 		return result;
 	}
 
+	@SafeVarargs
 	static
 	private boolean checkApply(Apply apply, String function, Class<? extends Expression>... expressionClazzes){
 
-		if((function).equals(apply.requireFunction())){
+		if(Objects.equals(function, apply.requireFunction())){
 			List<Expression> expressions = apply.getExpressions();
 
 			if(expressionClazzes.length == expressions.size()){

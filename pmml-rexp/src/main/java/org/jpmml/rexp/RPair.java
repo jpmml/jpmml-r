@@ -117,7 +117,7 @@ public class RPair extends RExp {
 	public boolean tagEquals(String string){
 		RString tag = (RString)getTag();
 
-		return Objects.equals(string, tag != null ? tag.getValue() : null);
+		return Objects.equals(tag != null ? tag.getValue() : null, string);
 	}
 
 	public RExp getTag(){

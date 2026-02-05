@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -118,7 +119,7 @@ public class ModelConverter<R extends RExp> extends Converter<R> {
 				for(Iterator<VerificationField> verificationFieldIt = verificationFields.iterator(); verificationFieldIt.hasNext(); ){
 					VerificationField verificationField = verificationFieldIt.next();
 
-					if((verificationField.requireField()).equals(name)){
+					if(Objects.equals(name, verificationField.requireField())){
 						verificationFieldIt.remove();
 					}
 				}

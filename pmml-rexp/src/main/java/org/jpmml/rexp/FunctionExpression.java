@@ -91,7 +91,7 @@ public class FunctionExpression extends Expression {
 		List<Argument> arguments = this.arguments;
 		for(Argument argument : arguments){
 
-			if((tag).equals(argument.getTag())){
+			if(Objects.equals(tag, argument.getTag())){
 				return argument;
 			}
 		}

@@ -140,6 +140,8 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 						entities = neuralLayer.getNeurons();
 					}
 					break;
+				default:
+					break;
 			}
 		} else
 
@@ -180,6 +182,8 @@ public class NNetConverter extends ModelConverter<RGenericVector> {
 						.setNeuralOutputs(NeuralNetworkUtil.createClassificationNeuralOutputs(entities, categoricalLabel))
 						.setOutput(ModelUtil.createProbabilityOutput(DataType.DOUBLE, categoricalLabel));
 				}
+				break;
+			default:
 				break;
 		}
 

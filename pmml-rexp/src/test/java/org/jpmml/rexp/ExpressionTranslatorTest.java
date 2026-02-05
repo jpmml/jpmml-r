@@ -269,7 +269,7 @@ public class ExpressionTranslatorTest {
 
 	@Test
 	public void translateInterval(){
-		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED, new Double("-10.0E0"), new Double("+10.0E0"));
+		Interval expected = new Interval(Interval.Closure.OPEN_CLOSED, Double.valueOf("-10.0E0"), Double.valueOf("+10.0E0"));
 
 		Interval actual = ExpressionTranslator.translateInterval("(-10.0E+0, +10.0E-0]");
 

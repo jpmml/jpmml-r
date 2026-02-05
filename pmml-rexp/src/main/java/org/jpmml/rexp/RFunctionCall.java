@@ -33,7 +33,7 @@ public class RFunctionCall extends RPair {
 	public boolean hasValue(String string){
 		RString value = (RString)getValue();
 
-		return Objects.equals(string, value.getValue());
+		return Objects.equals(value.getValue(), string);
 	}
 
 	public Iterator<RPair> arguments(){

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
@@ -89,7 +90,7 @@ public class PreProcessEncoder extends TransformerEncoder<RGenericVector> {
 			Expression expression = feature.ref();
 			Expression transformedExpression = encodeExpression(name, expression);
 
-			if(!(expression).equals(transformedExpression)){
+			if(!Objects.equals(expression, transformedExpression)){
 				DerivedField derivedField = createDerivedField(FieldNameUtil.create("preProcess", feature), OpType.CONTINUOUS, DataType.DOUBLE, transformedExpression);
 
 				feature = new ContinuousFeature(PreProcessEncoder.this, derivedField);

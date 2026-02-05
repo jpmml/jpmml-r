@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.dmg.pmml.Apply;
@@ -184,7 +185,7 @@ public class FormulaUtil {
 					formula.addField(derivedField);
 				} // End if
 
-				if(!(name).equals(shortName)){
+				if(!Objects.equals(name, shortName)){
 					encoder.renameField(name, shortName);
 				}
 			} else
@@ -317,7 +318,7 @@ public class FormulaUtil {
 	public List<String> removeSpecialSymbol(List<String> names, String specialName, int specialNameIndex){
 		String name = names.get(specialNameIndex);
 
-		if((name).equals(specialName)){
+		if(Objects.equals(name, specialName)){
 			names = new ArrayList<>(names);
 
 			names.remove(specialNameIndex);

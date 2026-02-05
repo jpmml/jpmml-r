@@ -159,6 +159,8 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 			case NU_REGRESSION:
 				FormulaUtil.setLabel(formula, terms, null, encoder);
 				break;
+			default:
+				break;
 		}
 
 		FormulaUtil.addFeatures(formula, columnNames, true, encoder);
@@ -200,6 +202,8 @@ public class SVMConverter extends ModelConverter<RGenericVector> {
 
 					encoder.setLabel(dataField);
 				}
+				break;
+			default:
 				break;
 		}
 
