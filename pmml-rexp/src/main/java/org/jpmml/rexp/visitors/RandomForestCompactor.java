@@ -151,7 +151,7 @@ public class RandomForestCompactor extends AbstractTreeModelTransformer {
 	private boolean isDefinedField(HasFieldReference<?> hasFieldReference){
 		String name = hasFieldReference.requireField();
 
-		Node ancestorNode = getAncestorNode(node -> hasFieldReference(node.requirePredicate(), name));
+		Node ancestorNode = getAncestorNode(parentNode -> hasFieldReference(parentNode.requirePredicate(), name));
 
 		return (ancestorNode != null);
 	}
