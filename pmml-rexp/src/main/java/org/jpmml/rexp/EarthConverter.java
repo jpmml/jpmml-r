@@ -134,7 +134,8 @@ public class EarthConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			if(features.size() > 1){
-				feature = new InteractionFeature(encoder, dirsRows.getValue(i), DataType.DOUBLE, features);
+				feature = new InteractionFeature(encoder, dirsRows.getValue(i), DataType.DOUBLE, features)
+					.simplify();
 			} else
 
 			{

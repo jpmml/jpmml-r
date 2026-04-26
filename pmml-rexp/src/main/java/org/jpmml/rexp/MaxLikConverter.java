@@ -379,7 +379,8 @@ public class MaxLikConverter extends ModelConverter<RGenericVector> {
 						if(availabilityFeatures != null && !availabilityFeatures.isEmpty()){
 							Feature availabilityFeature = availabilityFeatures.get(choice);
 
-							feature = new InteractionFeature(encoder, FieldNameUtil.create("interaction", availabilityFeature, feature), DataType.DOUBLE, Arrays.asList(availabilityFeature, feature));
+							feature = new InteractionFeature(encoder, FieldNameUtil.create("interaction", availabilityFeature, feature), DataType.DOUBLE, Arrays.asList(availabilityFeature, feature))
+								.simplify();
 						}
 
 						RegressionTable regressionTable = RegressionModelUtil.createRegressionTable(Collections.singletonList(feature), Collections.singletonList(1d), null)

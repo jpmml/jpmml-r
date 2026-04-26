@@ -78,7 +78,8 @@ public class Formula {
 				variableFeatures.add(variableFeature);
 			}
 
-			return new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures);
+			return new InteractionFeature(encoder, name, DataType.DOUBLE, variableFeatures)
+				.simplify();
 		}
 	}
 
