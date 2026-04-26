@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.dmg.pmml.mining.MiningModel;
+import org.dmg.pmml.Model;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
 import org.jpmml.converter.Schema;
@@ -62,7 +62,7 @@ public class LightGBMConverter extends ModelConverter<REnvironment> {
 	}
 
 	@Override
-	public MiningModel encodeModel(Schema schema){
+	public Model encodeModel(Schema schema){
 		GBDT gbdt = ensureGBDT();
 
 		// XXX
