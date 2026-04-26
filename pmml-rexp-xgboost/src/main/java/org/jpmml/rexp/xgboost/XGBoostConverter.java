@@ -29,8 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dmg.pmml.Model;
 import org.dmg.pmml.VerificationField;
-import org.dmg.pmml.mining.MiningModel;
 import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Label;
@@ -116,7 +116,7 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 	}
 
 	@Override
-	public MiningModel encodeModel(Schema schema){
+	public Model encodeModel(Schema schema){
 		RGenericVector booster = getObject();
 
 		RNumberVector<?> ntreeLimit = booster.getNumericElement("ntreelimit", false);
