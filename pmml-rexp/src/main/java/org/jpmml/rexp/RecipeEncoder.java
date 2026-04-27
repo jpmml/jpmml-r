@@ -53,13 +53,38 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 		RGenericVector varInfo = recipe.getGenericElement("var_info");
 		RGenericVector termInfo = recipe.getGenericElement("term_info");
 
-		this.varRoles = parseInfo(varInfo, "role", value -> Role.valueOf(value.toUpperCase()));
-		this.varSources = parseInfo(varInfo, "source", value -> Source.valueOf(value.toUpperCase()));
-		this.varTypes = parseInfo(varInfo, "type", value -> Type.valueOf(value.toUpperCase()));
+		Function<Object, Role> roleParser = (value) -> {
+			String string = (String)value;
 
-		this.termRoles = parseInfo(termInfo, "role", value -> Role.valueOf(value.toUpperCase()));
-		this.termSources = parseInfo(termInfo, "source", value -> Source.valueOf(value.toUpperCase()));
-		this.termTypes = parseInfo(termInfo, "type", value -> Type.valueOf(value.toUpperCase()));
+			return Role.valueOf(string.toUpperCase());
+		};
+
+		Function<Object, Source> sourceParser = (value) -> {
+			String string = (String)value;
+
+			return Source.valueOf(string.toUpperCase());
+		};
+
+		Function<Object, Type> typeParser = (value) -> {
+
+			if(value instanceof RStringVector){
+				RStringVector stringVector = (RStringVector)value;
+
+				value = stringVector.getValue(stringVector.size() - 1);
+			}
+
+			String string = (String)value;
+
+			return Type.valueOf(string.toUpperCase());
+		};
+
+		this.varRoles = parseInfo(varInfo, "role", roleParser);
+		this.varSources = parseInfo(varInfo, "source", sourceParser);
+		this.varTypes = parseInfo(varInfo, "type", typeParser);
+
+		this.termRoles = parseInfo(termInfo, "role", roleParser);
+		this.termSources = parseInfo(termInfo, "source", sourceParser);
+		this.termTypes = parseInfo(termInfo, "type", typeParser);
 	}
 
 	@Override
@@ -106,16 +131,19 @@ public class RecipeEncoder extends TransformerEncoder<RGenericVector> {
 	}
 
 	static
-	private <E extends Enum<E>> Map<String, E> parseInfo(RGenericVector info, String name, Function<String, E> function){
-		RStringVector variable = info.getStringElement("variable");
-		RStringVector value = info.getStringElement(name);
+	private <E extends Enum<E>> Map<String, E> parseInfo(RGenericVector info, String name, Function<Object, E> function){
+		RStringVector variables = info.getStringElement("variable");
+		RVector<?> values = info.getVectorElement(name);
 
-		RVectorUtil.checkSize(variable, value);
+		RVectorUtil.checkSize(variables, values);
 
 		Map<String, E> result = new LinkedHashMap<>();
 
-		for(int i = 0; i < variable.size(); i++){
-			result.put(variable.getValue(i), function.apply(value.getValue(i)));
+		for(int i = 0; i < variables.size(); i++){
+			String variable = variables.getValue(i);
+			Object value = values.getValue(i);
+
+			result.put(variable, function.apply(value));
 		}
 
 		return result;

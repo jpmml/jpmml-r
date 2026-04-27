@@ -101,7 +101,7 @@ set.seed(42)
 generateRPartIris()
 
 generateTrainRPartIris = function(){
-	iris.train = train(iris.recipe, data = iris, method = "rpart", control = list(c = 0, usesurrogate = 0))
+	iris.train = train(iris.recipe, data = iris, method = "rpart", control = list(cp = 0, usesurrogate = 0))
 	iris.train = verify(iris.train, newdata = sample_n(iris, 10))
 	print(iris.train)
 
