@@ -7,12 +7,12 @@ print("R package versions:")
 packages = c("ada", "adabag", "apollo", "caret", "caretEnsemble", "CHAID", "e1071", "earth", "elmNNRcpp", "evtree", "gbm", "glmnet", "IsolationForest", "lightgbm", "MASS", "mlr", "neuralnet", "nnet", "party", "partykit", "pls", "pscl", "randomForest", "ranger", "rattle", "recipes", "rms", "rpart", "statmod", "xgboost")
 for(package in packages){
 	version = tryCatch({
-		packageVersion(package)
-	}, error = function(cond){ print(cond) })
+		as.character(packageVersion(package))
+	}, error = function(cond){ NA_character_ })
 
 	latest_version = tryCatch({
 		latest_versions[package, "Version"]
-	}, error = function(cond){ print(cond) })
+	}, error = function(cond){ NA_character_ })
 
 	print(paste(package, version, latest_version))
 }
