@@ -50,7 +50,7 @@
 		<jpmml-converter.version>1.6.10</jpmml-converter.version>
 		<jpmml-evaluator.version>1.7.7</jpmml-evaluator.version>
 		<jpmml-lightgbm.version>1.6.7</jpmml-lightgbm.version>
-		<jpmml-xgboost.version>1.9.9</jpmml-xgboost.version>
+		<jpmml-xgboost.version>1.9.10</jpmml-xgboost.version>
 		<project.build.outputTimestamp>2026-02-05T18:03:16Z</project.build.outputTimestamp>
 	</properties>
 
