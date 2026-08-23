@@ -31,13 +31,23 @@ public class XGBoostConverterTest extends RExpEncoderBatchTest implements Datase
 	}
 
 	@Test
+	public void evaluateAudit() throws Exception {
+		evaluate("XGBoost", AUDIT, excludeFields(AUDIT_PROBABILITY_FALSE), new FloatEquivalence(54));
+	}
+
+	@Test
 	public void evaluateAuditNA() throws Exception {
-		evaluate("XGBoost", AUDIT_NA, excludeFields(AUDIT_PROBABILITY_TRUE), new FloatEquivalence(32));
+		evaluate("XGBoost", AUDIT_NA, excludeFields(AUDIT_PROBABILITY_FALSE), new FloatEquivalence(71));
 	}
 
 	@Test
 	public void evaluateAuto() throws Exception {
 		evaluate("XGBoost", AUTO, new FloatEquivalence(7));
+	}
+
+	@Test
+	public void evaluateAutoNA() throws Exception {
+		evaluate("XGBoost", AUTO_NA, new FloatEquivalence(9));
 	}
 
 	@Test
