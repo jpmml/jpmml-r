@@ -21,7 +21,6 @@ package org.jpmml.rexp.xgboost.testing;
 import org.jpmml.converter.testing.Datasets;
 import org.jpmml.converter.testing.Fields;
 import org.jpmml.evaluator.testing.FloatEquivalence;
-import org.jpmml.evaluator.testing.PMMLEquivalence;
 import org.jpmml.rexp.testing.RExpEncoderBatchTest;
 import org.junit.jupiter.api.Test;
 
@@ -32,17 +31,17 @@ public class XGBoostConverterTest extends RExpEncoderBatchTest implements Datase
 	}
 
 	@Test
-	public void evaluateAuto() throws Exception {
-		evaluate("XGBoost", AUTO, new FloatEquivalence(8 + 2));
+	public void evaluateAuditNA() throws Exception {
+		evaluate("XGBoost", AUDIT_NA, excludeFields(AUDIT_PROBABILITY_TRUE), new FloatEquivalence(32));
 	}
 
 	@Test
-	public void evaluateAuditNA() throws Exception {
-		evaluate("XGBoost", AUDIT_NA, excludeFields(AUDIT_PROBABILITY_FALSE), new PMMLEquivalence(5e-5, 5e-5));
+	public void evaluateAuto() throws Exception {
+		evaluate("XGBoost", AUTO, new FloatEquivalence(7));
 	}
 
 	@Test
 	public void evaluateIris() throws Exception {
-		evaluate("XGBoost", IRIS, new FloatEquivalence(12 + 2));
+		evaluate("XGBoost", IRIS, new FloatEquivalence(4));
 	}
 }
