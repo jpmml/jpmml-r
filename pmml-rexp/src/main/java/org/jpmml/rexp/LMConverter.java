@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmg.pmml.Model;
+import org.dmg.pmml.regression.RegressionModel;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.SchemaUtil;
@@ -135,7 +136,7 @@ public class LMConverter extends ModelConverter<RGenericVector> {
 
 		List<Double> featureCoefficients = getFeatureCoefficients(features, coefficients);
 
-		return RegressionModelUtil.createRegression(features, featureCoefficients, intercept, null, schema);
+		return RegressionModelUtil.createRegression(features, featureCoefficients, intercept, RegressionModel.NormalizationMethod.NONE, schema);
 	}
 
 	public String getInterceptName(){

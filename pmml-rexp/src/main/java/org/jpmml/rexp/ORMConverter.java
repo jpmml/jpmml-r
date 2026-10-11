@@ -95,7 +95,7 @@ public class ORMConverter extends RMSConverter {
 
 		Schema segmentSchema = schema.toAnonymousRegressorSchema(DataType.DOUBLE);
 
-		RegressionModel firstRegressionModel = RegressionModelUtil.createRegression(features, featureCoefficients, null, null, segmentSchema)
+		RegressionModel firstRegressionModel = RegressionModelUtil.createRegression(features, featureCoefficients, null, RegressionModel.NormalizationMethod.NONE, segmentSchema)
 			.setTargets(ModelUtil.createRescaleTargets(-1d, null, segmentSchema.requireContinuousLabel()));
 
 		OutputField linpredOutputField = ModelUtil.createPredictedField("linpred", OpType.CONTINUOUS, DataType.DOUBLE);

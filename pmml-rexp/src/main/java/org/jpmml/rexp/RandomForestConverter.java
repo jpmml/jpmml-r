@@ -30,7 +30,6 @@ import org.dmg.pmml.OpType;
 import org.dmg.pmml.Predicate;
 import org.dmg.pmml.SimplePredicate;
 import org.dmg.pmml.True;
-import org.dmg.pmml.Visitor;
 import org.dmg.pmml.mining.MiningModel;
 import org.dmg.pmml.mining.Segmentation;
 import org.dmg.pmml.tree.BranchNode;
@@ -48,11 +47,13 @@ import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureImportanceMap;
 import org.jpmml.converter.FortranMatrixUtil;
+import org.jpmml.converter.ModelTransformer;
 import org.jpmml.converter.ModelUtil;
 import org.jpmml.converter.Schema;
 import org.jpmml.converter.ValueUtil;
 import org.jpmml.converter.mining.MiningModelUtil;
-import org.jpmml.rexp.visitors.RandomForestCompactor;
+import org.jpmml.converter.tree.HasTreeModelOptions;
+import org.jpmml.converter.tree.TreeModelTransformerBuilder;
 
 public class RandomForestConverter extends TreeModelConverter<RGenericVector> implements HasFeatureImportances {
 
@@ -62,7 +63,7 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 	public RandomForestConverter(RGenericVector randomForest){
 		super(randomForest);
 
-		this.compact = getOption("compact", Boolean.TRUE);
+		this.compact = getOption(HasTreeModelOptions.OPTION_COMPACT, Boolean.TRUE);
 	}
 
 	@Override
@@ -319,14 +320,14 @@ public class RandomForestConverter extends TreeModelConverter<RGenericVector> im
 		Node root = encodeNode(True.INSTANCE, 0, scoreEncoder, leftDaughter, rightDaughter, bestvar, xbestsplit, nodepred, new CategoryManager(), schema);
 
 		TreeModel treeModel = new TreeModel(miningFunction, ModelUtil.createMiningSchema(schema), root)
-			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NULL_PREDICTION)
+			.setMissingValueStrategy(TreeModel.MissingValueStrategy.NONE)
 			.setSplitCharacteristic(TreeModel.SplitCharacteristic.BINARY_SPLIT);
 
-		if(this.compact){
-			Visitor visitor = new RandomForestCompactor();
+		ModelTransformer modelTransformer = new TreeModelTransformerBuilder(miningFunction)
+			.putOption(HasTreeModelOptions.OPTION_COMPACT, this.compact)
+			.build();
 
-			visitor.applyTo(treeModel);
-		}
+		modelTransformer.applyTo(treeModel);
 
 		return treeModel;
 	}
