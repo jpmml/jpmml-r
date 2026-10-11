@@ -31,6 +31,7 @@ import org.dmg.pmml.scorecard.Characteristic;
 import org.dmg.pmml.scorecard.Characteristics;
 import org.dmg.pmml.scorecard.Scorecard;
 import org.jpmml.converter.BinaryFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FeatureUtil;
 import org.jpmml.converter.ModelUtil;
@@ -70,7 +71,7 @@ public class ScorecardConverter extends GLMConverter {
 			String name = feature.getName();
 
 			if(!(feature instanceof BinaryFeature)){
-				throw new UnsupportedFeatureException("Expected a binary feature, got " + feature.typeString());
+				throw new UnsupportedFeatureException("Expected a binary feature, got " + ExceptionUtil.formatFeature(feature));
 			}
 
 			Double coefficient = getFeatureCoefficient(feature, coefficients);

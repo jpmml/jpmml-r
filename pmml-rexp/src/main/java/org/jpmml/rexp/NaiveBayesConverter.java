@@ -38,6 +38,7 @@ import org.dmg.pmml.naive_bayes.TargetValueStats;
 import org.jpmml.converter.CategoricalLabel;
 import org.jpmml.converter.ContinuousFeature;
 import org.jpmml.converter.DiscreteFeature;
+import org.jpmml.converter.ExceptionUtil;
 import org.jpmml.converter.Feature;
 import org.jpmml.converter.FortranMatrixUtil;
 import org.jpmml.converter.ModelUtil;
@@ -153,7 +154,7 @@ public class NaiveBayesConverter extends ModelConverter<RGenericVector> {
 			} else
 
 			{
-				throw new UnsupportedFeatureException("Expected a categorical or continuous feature, got " + feature.typeString());
+				throw new UnsupportedFeatureException("Expected a categorical or continuous feature, got " + ExceptionUtil.formatFeature(feature));
 			}
 
 			bayesInputs.addBayesInputs(bayesInput);
