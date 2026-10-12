@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.dmg.pmml.Model;
 import org.dmg.pmml.VerificationField;
@@ -60,13 +61,13 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 	private FeatureMap featureMap = null;
 
-	private boolean compact = true;
+	private Boolean compact = null;
 
 
 	public XGBoostConverter(RGenericVector booster){
 		super(booster);
 
-		this.compact = getOption("compact", Boolean.TRUE);
+		this.compact = getOption("compact", null);
 	}
 
 	@Override
@@ -128,9 +129,10 @@ public class XGBoostConverter extends ModelConverter<RGenericVector> {
 
 		Map<String, Object> options = new LinkedHashMap<>();
 		options.put(HasXGBoostOptions.OPTION_MISSING, missing != null ? missing.asScalar() : null);
-		options.put(HasXGBoostOptions.OPTION_COMPACT, this.compact);
-		options.put(HasXGBoostOptions.OPTION_NUMERIC, true);
 		options.put(HasXGBoostOptions.OPTION_NTREE_LIMIT, ntreeLimit != null ? ValueUtil.asInteger(ntreeLimit.asScalar()) : null);
+		options.put(HasXGBoostOptions.OPTION_COMPACT, this.compact);
+
+		options.values().removeIf(Objects::isNull);
 
 		Schema xgbSchema = learner.toXGBoostSchema(schema);
 
